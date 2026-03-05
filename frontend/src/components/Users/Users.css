@@ -1,31 +1,64 @@
 .role-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    display: inline-block;
+  padding: 0.4rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .role-super-admin {
-    background: rgba(139, 92, 246, 0.15); /* violet-500 */
-    color: #c4b5fd;
-    border: 1px solid rgba(139, 92, 246, 0.3);
+  background: rgba(99, 102, 241, 0.08); /* Indigo */
+  color: var(--primary);
+  border: 1px solid rgba(99, 102, 241, 0.1);
+}
+.role-super-admin::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--primary);
 }
 
 .role-admin {
-    background: rgba(59, 130, 246, 0.15); /* blue-500 */
-    color: #93c5fd;
-    border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.08); /* Blue */
+  color: var(--info);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+}
+.role-admin::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--info);
 }
 
 .role-area-manager {
-    background: rgba(245, 158, 11, 0.15); /* amber-500 */
-    color: #fcd34d;
-    border: 1px solid rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.08); /* Amber */
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 11, 0.1);
+}
+.role-area-manager::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--warning);
 }
 
 .role-technician {
-    background: rgba(16, 185, 129, 0.15); /* emerald-500 */
-    color: #6ee7b7;
-    border: 1px solid rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.08); /* Emerald */
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.1);
 }
+.role-technician::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--success);
+}
+

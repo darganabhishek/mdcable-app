@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import PaymentForm from './PaymentForm';
+import '../Customers/Customers.css';
 import './Payments.css';
 
 const PaymentsList = () => {
   const [payments, setPayments] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -23,48 +26,99 @@ const PaymentsList = () => {
     fetchPayments();
   }, []);
 
-  if (loading) return <div className="loading-state">Loading payments...</div>;
+  const filteredPayments = payments.filter(p => {
+    const matchesSearch = 
+      p.customer?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.customer?.phone.includes(searchQuery);
+    
+    const matchesStatus = statusFilter === 'All' || p.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
+
+  if (loading) return <div className="loading-state">Loading ledger...</div>;
 
   return (
-    <div className="module-container animate-fade-in">
+    <div className="module-container">
       <div className="module-header">
-        <h2>Collections & Payments</h2>
-        <button className="btn-primary" onClick={() => setIsModalOpen(true)}>Record Payment</button>
+        <h2>Revenue & Collections</h2>
+        <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
+            <i className="ri-add-line"></i>
+            Record Payment
+        </button>
       </div>
 
-      <div className="table-responsive glass-panel">
+      <div className="search-bar-container glass-panel" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '1rem', alignItems: 'center', marginBottom: '2rem' }}>
+          <div className="search-input-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center', flex: 1 }}>
+              <i className="ri-search-line" style={{ position: 'absolute', left: '1rem', color: 'var(--text-muted)' }}></i>
+              <input 
+                type="text" 
+                placeholder="Search by customer name or phone..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="search-input"
+                style={{ paddingLeft: '2.5rem', width: '100%' }}
+              />
+          </div>
+          <select 
+            className="input-control" 
+            value={statusFilter} 
+            onChange={(e) => setStatusFilter(e.target.value)}
+            style={{ width: 'auto', minWidth: '160px' }}
+          >
+            <option value="All">All Transactions</option>
+            <option value="Completed">Completed</option>
+            <option value="Pending">Pending</option>
+            <option value="Failed">Failed</option>
+            <option value="Refunded">Refunded</option>
+          </select>
+      </div>
+
+      <div className="table-responsive">
         <table className="data-table">
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Customer</th>
-              <th>Amount</th>
-              <th>Status</th>
+              <th>Payment Date</th>
+              <th>Customer Details</th>
+              <th>Amount Settled</th>
+              <th>Transaction Status</th>
               <th>Collected By</th>
             </tr>
           </thead>
           <tbody>
-            {payments.map((payment) => (
+            {filteredPayments.map((payment) => (
               <tr key={payment.id}>
-                <td>{new Date(payment.payment_date).toLocaleDateString()}</td>
+                <td>
+                    <div className="user-cell">
+                        <div className="user-avatar" style={{ background: 'rgba(99, 102, 241, 0.1)' }}>
+                            <i className="ri-calendar-line"></i>
+                        </div>
+                        <span style={{ fontWeight: 600 }}>{new Date(payment.payment_date).toLocaleDateString()}</span>
+                    </div>
+                </td>
                 <td>
                     <div className="customer-info">
                         <strong>{payment.customer?.name}</strong>
-                        <span className="text-muted text-sm">{payment.customer?.phone}</span>
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{payment.customer?.phone}</span>
                     </div>
                 </td>
-                <td className="amount-col">₹ {payment.amount}</td>
+                <td className="amount-col">₹ {parseFloat(payment.amount).toLocaleString()}</td>
                 <td>
                   <span className={`status-badge status-${payment.status.toLowerCase()}`}>
                     {payment.status}
                   </span>
                 </td>
-                <td>{payment.collector?.name}</td>
+                <td>
+                    <div className="collector-badge">
+                        <i className="ri-user-follow-line"></i>
+                        {payment.collector?.name}
+                    </div>
+                </td>
               </tr>
             ))}
-            {payments.length === 0 && (
+            {filteredPayments.length === 0 && (
               <tr>
-                <td colSpan="5" className="text-center py-4 text-muted">No payments recorded yet.</td>
+                <td colSpan="5" className="text-center py-4 text-muted">No payments found matching your filters.</td>
               </tr>
             )}
           </tbody>

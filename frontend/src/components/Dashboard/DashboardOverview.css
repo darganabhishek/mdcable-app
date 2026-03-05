@@ -1,82 +1,122 @@
 .dashboard-overview {
+  animation: fadeIn 0.5s ease-out;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 2.5rem;
+}
+
+.page-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -0.025em;
+  color: var(--text-main);
 }
 
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
 }
 
 .kpi-card {
-  padding: 1.5rem;
-  border-radius: 16px;
+  padding: 2.25rem;
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  align-items: center;
+  gap: 1.75rem;
+  transition: var(--transition);
+  cursor: default;
 }
 
 .kpi-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  transform: translateY(-8px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
 }
 
-.kpi-card h3 {
-  color: #94a3b8;
-  font-size: 1rem;
-  font-weight: 500;
-  margin: 0;
+.kpi-icon {
+  width: 68px;
+  height: 68px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.kpi-icon.monthly {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+
+.kpi-icon.yearly {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--info);
+}
+
+.kpi-icon.due {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+}
+
+.kpi-info h3 {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.075em;
+  margin-bottom: 0.5rem;
 }
 
 .kpi-value {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 2.25rem;
+  font-weight: 800;
   margin: 0;
+  letter-spacing: -0.03em;
 }
 
 .kpi-value.positive {
-  color: #10b981;
+  color: var(--text-main);
 }
 
 .kpi-value.negative {
-  color: #f43f5e;
+  color: var(--danger);
 }
 
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+  gap: 2rem;
 }
 
 .chart-container {
-  padding: 1.5rem;
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  padding: 2.5rem;
+  border-radius: var(--radius-xl);
 }
 
 .chart-container h3 {
-  color: #f1f5f9;
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0 0 1rem 0;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 2.5rem;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.chart-container h3 i {
+  color: var(--primary);
+  opacity: 0.8;
 }
 
 .chart-wrapper {
   flex: 1;
-  min-height: 300px;
+  min-height: 320px;
 }
 
-/* Make Recharts labels more readable */
-.recharts-pie-label-text {
-  fill: #e2e8f0 !important;
-  font-size: 12px;
+@media (max-width: 768px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
 }
+

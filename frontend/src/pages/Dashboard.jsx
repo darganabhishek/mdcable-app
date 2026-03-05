@@ -23,52 +23,70 @@ const Dashboard = () => {
         <div className="dashboard-layout">
             <aside className="sidebar glass-panel">
                 <div className="sidebar-header">
-                    <h2>M.D. Cable</h2>
+                    <h2 className="text-gradient">M.D. Cable</h2>
                 </div>
                 <nav className="nav-menu">
                     <button 
                       className={`nav-item ${activeTab === 'Overview' ? 'active' : ''}`}
                       onClick={() => setActiveTab('Overview')}
-                    >Dashboard</button>
+                    >
+                        <i className="ri-dashboard-3-line"></i>
+                        <span>Dashboard</span>
+                    </button>
                     <button 
                       className={`nav-item ${activeTab === 'Customers' ? 'active' : ''}`}
                       onClick={() => setActiveTab('Customers')}
-                    >Customers</button>
+                    >
+                        <i className="ri-user-heart-line"></i>
+                        <span>Customers</span>
+                    </button>
                     <button 
-                      className={`nav-item ${activeTab === 'Packages' ? 'active' : ''}`} // Added Packages tab
+                      className={`nav-item ${activeTab === 'Packages' ? 'active' : ''}`}
                       onClick={() => setActiveTab('Packages')}
-                    >Packages</button>
+                    >
+                        <i className="ri-box-3-line"></i>
+                        <span>Packages</span>
+                    </button>
                     <button 
                       className={`nav-item ${activeTab === 'Payments' ? 'active' : ''}`}
                       onClick={() => setActiveTab('Payments')}
-                    >Payments</button>
+                    >
+                        <i className="ri-bank-card-line"></i>
+                        <span>Payments</span>
+                    </button>
                     <button 
                       className={`nav-item ${activeTab === 'Reports' ? 'active' : ''}`}
                       onClick={() => setActiveTab('Reports')}
-                    >Reports</button>
+                    >
+                        <i className="ri-bar-chart-box-line"></i>
+                        <span>Reports</span>
+                    </button>
                     {user?.role === 'Super Admin' && (
                         <button 
                           className={`nav-item ${activeTab === 'Access Control' ? 'active' : ''}`}
                           onClick={() => setActiveTab('Access Control')}
-                        >Access Control</button>
+                        >
+                            <i className="ri-shield-user-line"></i>
+                            <span>Access Control</span>
+                        </button>
                     )}
                 </nav>
             </aside>
             <main className="main-content">
-                <header className="topbar glass-panel">
+                <header className="topbar">
                     <div className="user-info">
-                        Welcome, <strong>{user?.name}</strong> ({user?.role})
+                        <i className="ri-user-6-fill"></i>
+                        Welcome, <strong>{user?.name}</strong>
                     </div>
-                    <button onClick={handleLogout} className="btn-logout">Logout</button>
+                    <button onClick={handleLogout} className="btn-logout">
+                        <i className="ri-logout-box-r-line"></i>
+                        Logout
+                    </button>
                 </header>
-                <div className="content-area animate-fade-in">
-                    {activeTab === 'Overview' && (
-                        <>
-                            <DashboardOverview />
-                        </>
-                    )}
+                <div className="content-area">
+                    {activeTab === 'Overview' && <DashboardOverview />}
                     {activeTab === 'Customers' && <CustomersList />}
-                    {activeTab === 'Packages' && <PackagesList />} {/* Added PackagesList component */}
+                    {activeTab === 'Packages' && <PackagesList />}
                     {activeTab === 'Payments' && <PaymentsList />}
                     {activeTab === 'Reports' && <Reports />}
                     {activeTab === 'Access Control' && <UsersList />}

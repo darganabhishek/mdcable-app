@@ -6,6 +6,9 @@ import './Customers.css';
 
 const CustomersList = () => {
   const [customers, setCustomers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [serviceTypeFilter, setServiceTypeFilter] = useState('All');
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
@@ -26,6 +29,18 @@ const CustomersList = () => {
     fetchCustomers();
   }, []);
 
+  const filteredCustomers = customers.filter(c => {
+    const matchesSearch = 
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.phone.includes(searchQuery) ||
+      (c.area && c.area.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    const matchesStatus = statusFilter === 'All' || c.status === statusFilter;
+    const matchesService = serviceTypeFilter === 'All' || c.service_type === serviceTypeFilter;
+
+    return matchesSearch && matchesStatus && matchesService;
+  });
+
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this customer?')) {
       try {
@@ -33,7 +48,6 @@ const CustomersList = () => {
         fetchCustomers();
       } catch (error) {
         console.error('Failed to delete customer', error);
-        alert('Failed to delete customer. Ensure you have Super Admin privileges.');
       }
     }
   };
@@ -48,38 +62,85 @@ const CustomersList = () => {
     setIsModalOpen(true);
   };
 
-  if (loading) return <div className="loading-state">Loading customers...</div>;
+  if (loading) return <div className="loading-state">Loading users...</div>;
 
   return (
-    <div className="module-container animate-fade-in">
+    <div className="module-container">
       <div className="module-header">
-        <h2>Customer Management</h2>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-            <button className="btn-secondary" onClick={() => setIsBulkModalOpen(true)}>Bulk Import</button>
-            <button className="btn-primary" onClick={openAddModal}>Add New Customer</button>
+        <h2>Customer Base</h2>
+        <div className="action-buttons">
+            <button className="btn-secondary" onClick={() => setIsBulkModalOpen(true)}>
+                <i className="ri-file-upload-line"></i>
+                Bulk Import
+            </button>
+            <button className="btn-primary btn-add" onClick={openAddModal}>
+                <i className="ri-add-line"></i>
+                New Customer
+            </button>
         </div>
       </div>
 
-      <div className="table-responsive glass-panel">
+      <div className="search-bar-container glass-panel" style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: '1rem', alignItems: 'center' }}>
+          <div className="search-input-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center', flex: 1 }}>
+              <i className="ri-search-line" style={{ position: 'absolute', left: '1rem', color: 'var(--text-muted)' }}></i>
+              <input 
+                type="text" 
+                placeholder="Search by name, phone or area..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="search-input"
+                style={{ paddingLeft: '2.5rem', width: '100%' }}
+              />
+          </div>
+          <select 
+            className="input-control" 
+            value={statusFilter} 
+            onChange={(e) => setStatusFilter(e.target.value)}
+            style={{ width: 'auto', minWidth: '140px' }}
+          >
+            <option value="All">All Statuses</option>
+            <option value="Active">Active Only</option>
+            <option value="Inactive">Inactive Only</option>
+            <option value="Suspended">Suspended</option>
+          </select>
+          <select 
+            className="input-control" 
+            value={serviceTypeFilter} 
+            onChange={(e) => setServiceTypeFilter(e.target.value)}
+            style={{ width: 'auto', minWidth: '140px' }}
+          >
+            <option value="All">All Services</option>
+            <option value="Cable">Cable TV</option>
+            <option value="Internet">Internet</option>
+            <option value="Both">Combo (Both)</option>
+          </select>
+      </div>
+
+      <div className="table-responsive">
         <table className="data-table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Phone</th>
-              <th>Area</th>
-              <th>Service</th>
+              <th>Customer Name</th>
+              <th>Phone Number</th>
+              <th>Location / Area</th>
+              <th>Service Type</th>
               <th>Status</th>
-              <th>Actions</th>
+              <th className="text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {customers.map((cust) => (
+            {filteredCustomers.map((cust) => (
               <tr key={cust.id}>
-                <td>{cust.name}</td>
-                <td>{cust.phone}</td>
-                <td>{cust.area || 'N/A'}</td>
                 <td>
-                  <span className={`status-badge ${cust.service_type === 'Both' ? 'status-active' : 'status-pending'}`}>
+                    <div className="user-cell">
+                        <div className="user-avatar">{cust.name.charAt(0)}</div>
+                        <span>{cust.name}</span>
+                    </div>
+                </td>
+                <td>{cust.phone}</td>
+                <td>{cust.area || '—'}</td>
+                <td>
+                  <span className={`status-badge ${cust.service_type === 'Both' ? 'status-active' : 'status-info'}`}>
                     {cust.service_type}
                   </span>
                 </td>
@@ -89,16 +150,22 @@ const CustomersList = () => {
                   </span>
                 </td>
                 <td>
-                  <div className="action-buttons">
-                    <button className="btn-icon" onClick={() => openEditModal(cust)}>Edit</button>
-                    <button className="btn-icon danger" onClick={() => handleDelete(cust.id)}>Delete</button>
+                  <div className="action-buttons justify-end">
+                    <button className="btn-icon-only" onClick={() => openEditModal(cust)} title="Edit">
+                        <i className="ri-edit-line"></i>
+                    </button>
+                    <button className="btn-icon-only danger" onClick={() => handleDelete(cust.id)} title="Delete">
+                        <i className="ri-delete-bin-line"></i>
+                    </button>
                   </div>
                 </td>
               </tr>
             ))}
-            {customers.length === 0 && (
+            {filteredCustomers.length === 0 && (
               <tr>
-                <td colSpan="5" className="text-center py-4 text-muted">No customers found.</td>
+                <td colSpan="6" className="text-center py-4 text-muted">
+                    No customers found matching your search.
+                </td>
               </tr>
             )}
           </tbody>

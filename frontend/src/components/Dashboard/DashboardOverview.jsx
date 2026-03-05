@@ -41,67 +41,136 @@ const DashboardOverview = () => {
     }
   };
 
-  if (loading) return <div className="loading">Loading stats...</div>;
-  if (error) return <div className="error-message">{error}</div>;
+  if (loading) return (
+    <div className="module-container">
+      <div className="loading-state">
+        <div className="loading-spinner"></div>
+        <p>Synchronizing global network metrics...</p>
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="module-container">
+      <div className="error-alert animate-fade-in">
+        <i className="ri-error-warning-line"></i>
+        <span>{error}</span>
+      </div>
+    </div>
+  );
+
   if (!stats) return null;
 
   return (
     <div className="dashboard-overview">
-      <h1 className="page-title">Dashboard Overview</h1>
+      <div className="module-header" style={{ marginBottom: '2.5rem' }}>
+        <div>
+          <h1 className="page-title">Network Analytics</h1>
+          <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem', fontSize: '1.1rem' }}>
+              Real-time performance metrics and revenue distribution.
+          </p>
+        </div>
+      </div>
       
       <div className="kpi-grid">
         <div className="kpi-card glass-panel">
-          <h3>Monthly Collection</h3>
-          <p className="kpi-value positive">₹ {stats.monthlyCollection?.toLocaleString() || 0}</p>
+          <div className="kpi-icon monthly">
+            <i className="ri-hand-coin-line"></i>
+          </div>
+          <div className="kpi-info">
+            <h3>Monthly Collections</h3>
+            <p className="kpi-value positive">₹ {stats.monthlyCollection?.toLocaleString() || 0}</p>
+          </div>
         </div>
         <div className="kpi-card glass-panel">
-          <h3>Yearly Collection</h3>
-          <p className="kpi-value positive">₹ {stats.yearlyCollection?.toLocaleString() || 0}</p>
+          <div className="kpi-icon yearly">
+            <i className="ri-safe-2-line"></i>
+          </div>
+          <div className="kpi-info">
+            <h3>Annual Revenue</h3>
+            <p className="kpi-value positive">₹ {stats.yearlyCollection?.toLocaleString() || 0}</p>
+          </div>
         </div>
         <div className="kpi-card glass-panel">
-          <h3>Total Payment Due</h3>
-          <p className="kpi-value negative">₹ {stats.totalPaymentDue?.toLocaleString() || 0}</p>
+          <div className="kpi-icon due">
+            <i className="ri-alarm-warning-line"></i>
+          </div>
+          <div className="kpi-info">
+            <h3>Outstanding Dues</h3>
+            <p className="kpi-value negative">₹ {stats.totalPaymentDue?.toLocaleString() || 0}</p>
+          </div>
         </div>
       </div>
 
       <div className="charts-grid">
         <div className="chart-container glass-panel">
-          <h3>Monthly Collection Area (Last 6 Months)</h3>
+          <h3>
+              <i className="ri-bar-chart-groupped-line"></i>
+              Revenue Velocity (Last 6 Months)
+          </h3>
           <div className="chart-wrapper">
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={320}>
               <BarChart data={stats.monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                <XAxis dataKey="month" tick={{fill: '#e2e8f0'}} />
-                <YAxis tick={{fill: '#e2e8f0'}} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', border: 'none', borderRadius: '8px', color: '#fff' }}
+                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
+                <XAxis 
+                    dataKey="month" 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{fill: 'var(--text-muted)', fontSize: 12, fontWeight: 500}} 
+                    dy={10}
                 />
-                <Bar dataKey="uv" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Collection (₹)" />
+                <YAxis 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{fill: 'var(--text-muted)', fontSize: 12, fontWeight: 500}} 
+                />
+                <Tooltip 
+                  cursor={{fill: 'rgba(0,0,0,0.02)'}}
+                  contentStyle={{ 
+                      backgroundColor: 'white', 
+                      border: '1px solid var(--surface-border)', 
+                      borderRadius: '12px', 
+                      boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                      padding: '12px'
+                  }}
+                  itemStyle={{ color: 'var(--primary)', fontWeight: 700 }}
+                  labelStyle={{ color: 'var(--text-muted)', marginBottom: '4px', fontSize: '11px', textTransform: 'uppercase' }}
+                />
+                <Bar dataKey="uv" fill="var(--primary)" radius={[6, 6, 0, 0]} name="Revenue" barSize={32} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         <div className="chart-container glass-panel">
-          <h3>Area-wise User Distribution</h3>
+          <h3>
+              <i className="ri-pie-chart-2-line"></i>
+              Node Distribution by Area
+          </h3>
           <div className="chart-wrapper">
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={320}>
               <PieChart>
                 <Pie
                   data={stats.areaDistribution}
                   cx="50%"
                   cy="50%"
+                  innerRadius={70}
                   outerRadius={100}
-                  fill="#8884d8"
+                  paddingAngle={5}
                   dataKey="value"
-                  label={({name, percent}) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                  label={({name, percent}) => `${name}`}
                 >
                   {stats.areaDistribution?.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
                   ))}
                 </Pie>
                 <Tooltip 
-                  contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', border: 'none', borderRadius: '8px', color: '#fff' }}
+                  contentStyle={{ 
+                      backgroundColor: 'white', 
+                      border: '1px solid var(--surface-border)', 
+                      borderRadius: '12px', 
+                      boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'
+                  }}
                 />
               </PieChart>
             </ResponsiveContainer>

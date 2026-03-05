@@ -54,43 +54,61 @@ const UserForm = ({ user, onClose, onSave }) => {
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content glass-panel animate-fade-in">
+      <div className="modal-content glass-panel animate-slide-up" style={{ background: 'white' }}>
+        <button className="btn-close" onClick={onClose}>
+            <i className="ri-close-line"></i>
+        </button>
         <div className="modal-header">
-          <h3>{user ? 'Edit Staff Member' : 'Add New Staff'}</h3>
-          <button className="btn-close" onClick={onClose}>&times;</button>
+          <h3>{user ? 'Update Staff Member' : 'Register New Personnel'}</h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
+              Define roles and credentials for administrative access.
+          </p>
         </div>
         
-        {error && <div className="error-alert">{error}</div>}
+        {error && <div className="error-alert animate-fade-in">{error}</div>}
 
         <form onSubmit={handleSubmit} className="customer-form">
           <div className="form-grid">
             <div className="input-group">
-              <label>Full Name</label>
-              <input type="text" name="name" className="input-control" value={formData.name} onChange={handleChange} required />
+              <label className="input-label">Full Name</label>
+              <div className="input-with-icon">
+                  <i className="ri-user-line"></i>
+                  <input type="text" name="name" className="input-control" value={formData.name} onChange={handleChange} required placeholder="e.g. John Doe" />
+              </div>
             </div>
             <div className="input-group">
-              <label>Login ID (Username)</label>
-              <input type="text" name="username" className="input-control" value={formData.username} onChange={handleChange} required />
+              <label className="input-label">Login ID (Username)</label>
+              <div className="input-with-icon">
+                  <i className="ri-at-line"></i>
+                  <input type="text" name="username" className="input-control" value={formData.username} onChange={handleChange} required placeholder="system_admin" />
+              </div>
             </div>
             <div className="input-group">
-              <label>{user ? 'New Password (leave blank to keep current)' : 'Password'}</label>
-              <input type="password" name="password" className="input-control" value={formData.password} onChange={handleChange} required={!user} />
+              <label className="input-label">{user ? 'Renew Password' : 'Secure Password'}</label>
+              <div className="input-with-icon">
+                  <i className="ri-lock-password-line"></i>
+                  <input type="password" name="password" className="input-control" value={formData.password} onChange={handleChange} required={!user} placeholder={user ? 'Leave blank to keep current' : '••••••••'} />
+              </div>
             </div>
             <div className="input-group">
-              <label>Role</label>
-              <select name="role" className="input-control" value={formData.role} onChange={handleChange}>
-                <option value="Super Admin">Super Admin</option>
-                <option value="Admin">Admin</option>
-                <option value="Area Manager">Area Manager</option>
-                <option value="Technician">Technician</option>
-              </select>
+              <label className="input-label">Authority Role</label>
+              <div className="input-with-icon">
+                  <i className="ri-shield-user-line"></i>
+                  <select name="role" className="input-control" value={formData.role} onChange={handleChange}>
+                    <option value="Super Admin">Super Admin (Full Access)</option>
+                    <option value="Admin">Standard Admin</option>
+                    <option value="Area Manager">Area Manager (Operations)</option>
+                    <option value="Technician">Field Technician</option>
+                  </select>
+              </div>
             </div>
           </div>
 
           <div className="modal-actions">
-            <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
+            <button type="button" className="btn-secondary" onClick={onClose}>Discard</button>
             <button type="submit" className="btn-primary" disabled={loading}>
-              {loading ? 'Saving...' : 'Save Staff'}
+                <i className={user ? 'ri-save-line' : 'ri-user-follow-line'}></i>
+                {loading ? 'Processing...' : user ? 'Update Credentials' : 'Add to Staff'}
             </button>
           </div>
         </form>
