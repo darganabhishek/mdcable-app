@@ -1,10 +1,7 @@
 {
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
   "framework": "vite",
-  "build": {
-    "env": {
-      "VITE_API_URL": "https://mdcable-app-production.up.railway.app/api"
-    }
-  },
   "rewrites": [
     {
       "source": "/(.*)",
