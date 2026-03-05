@@ -8,6 +8,7 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
     phone: '',
     address: '',
     area: '',
+    area_id: '',
     service_type: 'Cable',
     cable_package_id: '',
     internet_package_id: '',
@@ -15,14 +16,25 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
     status: 'Active'
   });
   const [packages, setPackages] = useState([]);
+  const [areas, setAreas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Fetch available packages for dropdowns
-    axios.get(`${import.meta.env.VITE_API_URL}/packages`).then(res => {
-        setPackages(res.data.filter(p => p.status === 'Active'));
-    }).catch(err => console.error("Failed to load packages", err));
+    // Fetch available packages and areas
+    const fetchData = async () => {
+      try {
+        const [pkgRes, areaRes] = await Promise.all([
+          axios.get(`${import.meta.env.VITE_API_URL}/packages`),
+          axios.get(`${import.meta.env.VITE_API_URL}/areas`)
+        ]);
+        setPackages(pkgRes.data.filter(p => p.status === 'Active'));
+        setAreas(areaRes.data);
+      } catch (err) {
+        console.error("Failed to load dependency data", err);
+      }
+    };
+    fetchData();
 
     if (customer) {
       setFormData({
@@ -30,6 +42,7 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
         phone: customer.phone || '',
         address: customer.address || '',
         area: customer.area || '',
+        area_id: customer.area_id || '',
         service_type: customer.service_type || 'Cable',
         cable_package_id: customer.cable_package_id || '',
         internet_package_id: customer.internet_package_id || '',
@@ -40,7 +53,19 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
   }, [customer]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    // Reset packages if area changes
+    if (name === 'area_id') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+        cable_package_id: '',
+        internet_package_id: ''
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -62,6 +87,23 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
     }
   };
 
+  // Filter packages based on selected area
+  const filteredPackages = packages.filter(p => !formData.area_id || p.area_id === formData.area_id);
+  
+  // Calculate total monthly committed amount
+  const calculateTotal = () => {
+    let total = 0;
+    if (formData.cable_package_id) {
+        const pkg = packages.find(p => p.id === formData.cable_package_id);
+        if (pkg) total += parseFloat(pkg.price);
+    }
+    if (formData.internet_package_id) {
+        const pkg = packages.find(p => p.id === formData.internet_package_id);
+        if (pkg) total += parseFloat(pkg.price);
+    }
+    return total.toFixed(2);
+  };
+
   return (
     <div className="modal-overlay">
       <div className="modal-content glass-panel animate-slide-up">
@@ -71,7 +113,7 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
         <div className="modal-header">
           <h3>{customer ? 'Update Customer Profile' : 'Register New Customer'}</h3>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
-              Ensure all details are accurate for billing and service tracking.
+              Select an area to view available plans and auto-calculated pricing.
           </p>
         </div>
         
@@ -104,7 +146,12 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
               <label className="input-label">Service Area</label>
               <div className="input-with-icon">
                   <i className="ri-community-line"></i>
-                  <input type="text" name="area" className="input-control" value={formData.area} onChange={handleChange} required placeholder="e.g. Model Town" />
+                  <select name="area_id" className="input-control" value={formData.area_id} onChange={handleChange} required>
+                    <option value="">-- Select Service Area --</option>
+                    {areas.map(area => (
+                        <option key={area.id} value={area.id}>{area.name}</option>
+                    ))}
+                  </select>
               </div>
             </div>
             <div className="input-group">
@@ -126,7 +173,7 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
                     <i className="ri-tv-2-line"></i>
                     <select name="cable_package_id" className="input-control" value={formData.cable_package_id} onChange={handleChange}>
                       <option value="">-- Select Cable Package --</option>
-                      {packages.filter(p => p.service_type === 'Cable').map(pkg => (
+                      {filteredPackages.filter(p => p.service_type === 'Cable').map(pkg => (
                         <option key={pkg.id} value={pkg.id}>{pkg.name} (₹{pkg.price})</option>
                       ))}
                     </select>
@@ -141,7 +188,7 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
                     <i className="ri-router-line"></i>
                     <select name="internet_package_id" className="input-control" value={formData.internet_package_id} onChange={handleChange}>
                       <option value="">-- Select Internet Package --</option>
-                      {packages.filter(p => p.service_type === 'Internet').map(pkg => (
+                      {filteredPackages.filter(p => p.service_type === 'Internet').map(pkg => (
                         <option key={pkg.id} value={pkg.id}>{pkg.name} (₹{pkg.price})</option>
                       ))}
                     </select>
@@ -165,6 +212,18 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
                     <option value="Suspended">Suspended / Blocked</option>
                   </select>
               </div>
+            </div>
+          </div>
+
+          <div className="price-estimation glass-panel" style={{ marginTop: '2rem', padding: '1.5rem', border: '1px solid var(--surface-border)', background: 'var(--primary-light)' }}>
+            <div className="flex justify-between items-center">
+                <div>
+                   <h4 style={{ margin: 0, color: 'var(--text-main)' }}>Monthly Commitment</h4>
+                   <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Automated total for selected plans</p>
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)' }}>
+                    ₹{calculateTotal()}
+                </div>
             </div>
           </div>
 

@@ -133,24 +133,32 @@ const PackagesList = () => {
       <div className="table-responsive">
         {Object.entries(groupedPackages).map(([areaName, pkgs]) => (
           (pkgs.length > 0 || areaName !== 'General / All Areas') && (
-            <div key={areaName} className="area-group mb-8">
-              <div className="flex justify-between items-center mb-4 px-4 py-2 glass-panel" style={{ borderRadius: 'var(--radius-md)', background: 'var(--primary-light)' }}>
-                <h4 className="m-0 flex items-center gap-2">
-                  <i className="ri-map-pin-2-fill text-indigo-400"></i>
-                  {areaName}
-                  <span className="text-xs py-1 px-2 rounded-full" style={{ background: 'var(--surface)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-main)', border: '1px solid var(--surface-border)' }}>
-                    {pkgs.length} {pkgs.length === 1 ? 'Plan' : 'Plans'}
-                  </span>
-                </h4>
-                {areaName !== 'General / All Areas' && (
-                   <button 
-                    className="btn-icon-only danger" 
-                    style={{ background: 'transparent', width: '24px', height: '24px' }}
-                    onClick={() => handleDeleteArea(areas.find(a => a.name === areaName)?.id)}
-                   >
-                     <i className="ri-delete-bin-7-line" style={{ fontSize: '0.9rem' }}></i>
-                   </button>
-                )}
+            <div key={areaName} className="area-group mb-12">
+              <div className="area-header-premium">
+                <div className="area-title-group">
+                  <div className="area-icon-wrapper">
+                    <i className="ri-map-pin-2-fill"></i>
+                  </div>
+                  <div className="area-info">
+                    <span className="area-label">Service Area</span>
+                    <span className="area-name">{areaName}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                   <div className="area-badge">
+                     <i className="ri-stack-line"></i>
+                     {pkgs.length} {pkgs.length === 1 ? 'Plan' : 'Plans'}
+                   </div>
+                   {areaName !== 'General / All Areas' && (
+                     <button 
+                      className="btn-icon-only danger" 
+                      style={{ background: 'transparent', width: '32px', height: '32px' }}
+                      onClick={() => handleDeleteArea(areas.find(a => a.name === areaName)?.id)}
+                     >
+                       <i className="ri-delete-bin-7-line"></i>
+                     </button>
+                   )}
+                </div>
               </div>
               
               {pkgs.length > 0 ? (
@@ -209,7 +217,10 @@ const PackagesList = () => {
                   </tbody>
                 </table>
               ) : (
-                <p className="text-center py-4 text-muted" style={{ fontSize: '0.85rem' }}>No plans created for this area yet.</p>
+                <div className="empty-area-state">
+                   <i className="ri-information-line" style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}></i>
+                   No plans created for this area yet.
+                </div>
               )}
             </div>
           )

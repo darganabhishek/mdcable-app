@@ -28,6 +28,10 @@ Customer.belongsTo(Package, { foreignKey: 'internet_package_id', as: 'internet_p
 Area.hasMany(Package, { foreignKey: 'area_id', as: 'packages' });
 Package.belongsTo(Area, { foreignKey: 'area_id', as: 'area' });
 
+// Customer belongs to Area
+Area.hasMany(Customer, { foreignKey: 'area_id', as: 'customers' });
+Customer.belongsTo(Area, { foreignKey: 'area_id', as: 'assigned_area' });
+
 module.exports = {
   sequelize,
   User,

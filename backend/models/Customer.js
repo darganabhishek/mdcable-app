@@ -22,6 +22,10 @@ const Customer = sequelize.define('Customer', {
   area: {
     type: DataTypes.STRING,
   },
+  area_id: {
+    type: DataTypes.UUID,
+    allowNull: true
+  },
   service_type: {
     type: DataTypes.ENUM('Cable', 'Internet', 'Both'),
     allowNull: false,

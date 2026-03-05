@@ -1,4 +1,4 @@
-const { Customer } = require('../models');
+const { Customer, Area, Package } = require('../models');
 
 // @desc    Get all customers
 // @route   GET /api/customers
@@ -6,6 +6,11 @@ const { Customer } = require('../models');
 const getCustomers = async (req, res) => {
   try {
     const customers = await Customer.findAll({
+      include: [
+        { model: Area, as: 'assigned_area' },
+        { model: Package, as: 'cable_package' },
+        { model: Package, as: 'internet_package' }
+      ],
       order: [['createdAt', 'DESC']]
     });
     res.json(customers);
@@ -20,7 +25,13 @@ const getCustomers = async (req, res) => {
 // @access  Private
 const getCustomerById = async (req, res) => {
   try {
-    const customer = await Customer.findByPk(req.params.id);
+    const customer = await Customer.findByPk(req.params.id, {
+      include: [
+        { model: Area, as: 'assigned_area' },
+        { model: Package, as: 'cable_package' },
+        { model: Package, as: 'internet_package' }
+      ]
+    });
     if (!customer) {
       return res.status(404).json({ message: 'Customer not found' });
     }
@@ -36,15 +47,19 @@ const getCustomerById = async (req, res) => {
 // @access  Private (Admin, Area Manager)
 const createCustomer = async (req, res) => {
   try {
-    const { name, phone, address, plan, installation_date, status } = req.body;
+    const { name, phone, address, plan, area_id, installation_date, status, service_type, cable_package_id, internet_package_id } = req.body;
     
     const customer = await Customer.create({
       name,
       phone,
       address,
       plan,
+      area_id,
       installation_date,
-      status
+      status,
+      service_type,
+      cable_package_id,
+      internet_package_id
     });
 
     res.status(201).json(customer);
