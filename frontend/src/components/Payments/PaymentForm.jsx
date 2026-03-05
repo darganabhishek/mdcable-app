@@ -47,7 +47,7 @@ const PaymentForm = ({ onClose, onSave }) => {
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content glass-panel animate-slide-up" style={{ background: 'white' }}>
+      <div className="modal-content glass-panel animate-slide-up">
         <button className="btn-close" onClick={onClose}>
             <i className="ri-close-line"></i>
         </button>

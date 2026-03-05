@@ -59,7 +59,7 @@ const PackageForm = ({ packageData, onClose, onSave }) => {
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content glass-panel animate-slide-up" style={{ maxWidth: '500px', background: 'var(--bg-main)', border: '1px solid var(--surface-border)' }}>
+      <div className="modal-content glass-panel animate-slide-up" style={{ maxWidth: '500px' }}>
         <button className="btn-close" onClick={onClose}>
             <i className="ri-close-line"></i>
         </button>
