@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import '../Customers/CustomerForm.css';
 
 const PackageForm = ({ packageData, onClose, onSave }) => {
   const [formData, setFormData] = useState({

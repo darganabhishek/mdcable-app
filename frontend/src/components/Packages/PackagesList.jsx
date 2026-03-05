@@ -138,8 +138,8 @@ const PackagesList = () => {
                 <h4 className="m-0 flex items-center gap-2">
                   <i className="ri-map-pin-2-fill text-indigo-400"></i>
                   {areaName}
-                  <span className="text-xs py-1 px-2 rounded-full" style={{ background: 'var(--surface)', fontSize: '0.7rem' }}>
-                    {pkgs.length} Plans
+                  <span className="text-xs py-1 px-2 rounded-full" style={{ background: 'var(--surface)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-main)', border: '1px solid var(--surface-border)' }}>
+                    {pkgs.length} {pkgs.length === 1 ? 'Plan' : 'Plans'}
                   </span>
                 </h4>
                 {areaName !== 'General / All Areas' && (
