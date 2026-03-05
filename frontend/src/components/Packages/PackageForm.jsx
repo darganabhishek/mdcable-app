@@ -7,18 +7,31 @@ const PackageForm = ({ packageData, onClose, onSave }) => {
     service_type: 'Cable',
     price: '',
     description: '',
-    status: 'Active'
+    status: 'Active',
+    area_id: ''
   });
+  const [areas, setAreas] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    const fetchAreas = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/areas`);
+        setAreas(res.data);
+      } catch (err) {
+        console.error('Error fetching areas', err);
+      }
+    };
+    fetchAreas();
+
     if (packageData) {
       setFormData({
         name: packageData.name,
         service_type: packageData.service_type,
         price: packageData.price,
         description: packageData.description || '',
-        status: packageData.status
+        status: packageData.status,
+        area_id: packageData.area_id || ''
       });
     }
   }, [packageData]);
@@ -30,10 +43,13 @@ const PackageForm = ({ packageData, onClose, onSave }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const submissionData = { ...formData };
+      if (!submissionData.area_id) delete submissionData.area_id;
+
       if (packageData) {
-        await axios.put(`${import.meta.env.VITE_API_URL}/packages/${packageData.id}`, formData);
+        await axios.put(`${import.meta.env.VITE_API_URL}/packages/${packageData.id}`, submissionData);
       } else {
-        await axios.post(`${import.meta.env.VITE_API_URL}/packages`, formData);
+        await axios.post(`${import.meta.env.VITE_API_URL}/packages`, submissionData);
       }
       onSave();
     } catch (err) {
@@ -43,12 +59,12 @@ const PackageForm = ({ packageData, onClose, onSave }) => {
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content glass-panel animate-slide-up" style={{ maxWidth: '500px', background: 'white' }}>
+      <div className="modal-content glass-panel animate-slide-up" style={{ maxWidth: '500px', background: 'var(--bg-main)', border: '1px solid var(--surface-border)' }}>
         <button className="btn-close" onClick={onClose}>
             <i className="ri-close-line"></i>
         </button>
         <div className="modal-header">
-          <h3>{packageData ? 'Update Service' : 'Create New Service'}</h3>
+          <h3 className="text-gradient">{packageData ? 'Update Service' : 'Create New Service'}</h3>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
               Configure your service package details below.
           </p>
@@ -83,6 +99,19 @@ const PackageForm = ({ packageData, onClose, onSave }) => {
                     <input type="number" step="0.01" name="price" className="input-control" value={formData.price} onChange={handleChange} required placeholder="0.00" />
                 </div>
               </div>
+          </div>
+
+          <div className="input-group">
+            <label className="input-label">Target Area (Subgroup)</label>
+            <div className="input-with-icon">
+                <i className="ri-map-pin-line"></i>
+                <select name="area_id" className="input-control" value={formData.area_id} onChange={handleChange}>
+                    <option value="">General (No Area)</option>
+                    {areas.map(area => (
+                        <option key={area.id} value={area.id}>{area.name}</option>
+                    ))}
+                </select>
+            </div>
           </div>
 
           <div className="input-group">

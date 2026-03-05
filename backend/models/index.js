@@ -4,6 +4,7 @@ const Customer = require('./Customer');
 const Payment = require('./Payment');
 const Renewal = require('./Renewal');
 const Package = require('./Package');
+const Area = require('./Area');
 
 // Define Relationships
 
@@ -23,11 +24,16 @@ Renewal.belongsTo(Customer, { foreignKey: 'customer_id', as: 'customer' });
 Customer.belongsTo(Package, { foreignKey: 'cable_package_id', as: 'cable_package' });
 Customer.belongsTo(Package, { foreignKey: 'internet_package_id', as: 'internet_package' });
 
+// Package belongs to Area
+Area.hasMany(Package, { foreignKey: 'area_id', as: 'packages' });
+Package.belongsTo(Area, { foreignKey: 'area_id', as: 'area' });
+
 module.exports = {
   sequelize,
   User,
   Customer,
   Payment,
   Renewal,
-  Package
+  Package,
+  Area
 };

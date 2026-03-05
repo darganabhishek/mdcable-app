@@ -10,6 +10,7 @@ const renewalRoutes = require('./routes/renewalRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const userRoutes = require('./routes/userRoutes');
 const packageRoutes = require('./routes/packageRoutes');
+const areaRoutes = require('./routes/areaRoutes');
 const seedUsers = require('./seed');
 
 const app = express();
@@ -25,6 +26,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/renewals', renewalRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/packages', packageRoutes);
+app.use('/api/areas', areaRoutes);
 
 const PORT = process.env.PORT || 5000;
 

@@ -26,6 +26,10 @@ const Package = sequelize.define('Package', {
   status: {
     type: DataTypes.ENUM('Active', 'Inactive'),
     defaultValue: 'Active',
+  },
+  area_id: {
+    type: DataTypes.UUID,
+    allowNull: true,
   }
 }, {
   timestamps: true,
