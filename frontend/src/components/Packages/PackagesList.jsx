@@ -143,10 +143,10 @@ const PackagesList = () => {
             </td>
             <td>
               <div className="action-buttons justify-end">
-                <button className="btn-icon-only" onClick={() => openEditModal(pkg)}>
+                <button className="btn-action edit" onClick={() => openEditModal(pkg)} title="Edit Package">
                     <i className="ri-edit-line"></i>
                 </button>
-                <button className="btn-icon-only danger" onClick={() => handleDelete(pkg.id)}>
+                <button className="btn-action delete" onClick={() => handleDelete(pkg.id)} title="Delete Package">
                     <i className="ri-delete-bin-line"></i>
                 </button>
               </div>
@@ -230,9 +230,10 @@ const PackagesList = () => {
                      </div>
                      {areaName !== 'General / All Areas' && (
                        <button 
-                        className="btn-icon-only danger" 
-                        style={{ background: 'transparent', width: '32px', height: '32px' }}
+                        className="btn-action delete" 
+                        style={{ width: '32px', height: '32px' }}
                         onClick={() => handleDeleteArea(areas.find(a => a.name === areaName)?.id)}
+                        title="Delete Area"
                        >
                          <i className="ri-delete-bin-7-line"></i>
                        </button>

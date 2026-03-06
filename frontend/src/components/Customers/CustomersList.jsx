@@ -171,10 +171,10 @@ const CustomersList = () => {
                 </td>
                 <td>
                   <div className="action-buttons justify-end">
-                    <button className="btn-icon-only" onClick={() => openEditModal(cust)} title="Edit">
+                    <button className="btn-action edit" onClick={() => openEditModal(cust)} title="Edit Customer">
                         <i className="ri-edit-line"></i>
                     </button>
-                    <button className="btn-icon-only danger" onClick={() => handleDelete(cust.id)} title="Delete">
+                    <button className="btn-action delete" onClick={() => handleDelete(cust.id)} title="Delete Customer">
                         <i className="ri-delete-bin-line"></i>
                     </button>
                   </div>
