@@ -201,32 +201,44 @@ body {
   right: 0;
   bottom: 0;
   background: rgba(2, 6, 23, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999; /* Ensure it's above everything */
+  z-index: 99999; /* Max z-index */
   padding: 2rem;
   animation: fadeIn 0.3s ease-out;
 }
 
 .modal-content {
   width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
+  max-width: 640px;
+  max-height: 95vh;
   overflow-y: auto;
-  padding: 2.5rem;
+  padding: 3rem;
   border-radius: var(--radius-xl);
   position: relative;
-  background: var(--bg-main);
+  background: var(--bg-main) !important;
   border: 1px solid var(--surface-border);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}
+
+/* Custom Scrollbar for Modal */
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modal-content::-webkit-scrollbar-thumb {
+  background: var(--surface-border);
+  border-radius: 10px;
 }
 
 .modal-header {
-  margin-bottom: 2rem;
-  padding-right: 3rem; /* Space for close button */
+  margin-bottom: 2.5rem;
+  padding-right: 3rem;
 }
 
 .modal-header h3 {

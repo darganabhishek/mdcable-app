@@ -13,7 +13,8 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
     cable_package_id: '',
     internet_package_id: '',
     installation_date: new Date().toISOString().split('T')[0],
-    status: 'Active'
+    status: 'Active',
+    discount: 0
   });
   const [packages, setPackages] = useState([]);
   const [areas, setAreas] = useState([]);
@@ -47,7 +48,8 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
         cable_package_id: customer.cable_package_id || '',
         internet_package_id: customer.internet_package_id || '',
         installation_date: customer.installation_date || '',
-        status: customer.status || 'Active'
+        status: customer.status || 'Active',
+        discount: customer.discount || 0
       });
     }
   }, [customer]);
@@ -74,10 +76,15 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
     setError('');
 
     try {
+      const submissionData = {
+        ...formData,
+        discount: parseFloat(formData.discount) || 0
+      };
+
       if (customer) {
-        await axios.put(`${import.meta.env.VITE_API_URL}/customers/${customer.id}`, formData);
+        await axios.put(`${import.meta.env.VITE_API_URL}/customers/${customer.id}`, submissionData);
       } else {
-        await axios.post(`${import.meta.env.VITE_API_URL}/customers`, formData);
+        await axios.post(`${import.meta.env.VITE_API_URL}/customers`, submissionData);
       }
       onSave(); // Trigger data refresh and close modal
     } catch (err) {
@@ -101,18 +108,20 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
         const pkg = packages.find(p => p.id === formData.internet_package_id);
         if (pkg) total += parseFloat(pkg.price);
     }
-    return total.toFixed(2);
+    
+    const discount = parseFloat(formData.discount) || 0;
+    return Math.max(0, total - discount).toFixed(2);
   };
 
   return (
     <div className="modal-overlay">
       <div className="modal-content glass-panel animate-slide-up">
-        <button className="btn-close" onClick={onClose}>
+        <button className="btn-close" onClick={onClose} title="Close Form">
             <i className="ri-close-line"></i>
         </button>
         <div className="modal-header">
-          <h3>{customer ? 'Update Customer Profile' : 'Register New Customer'}</h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
+          <h3 className="text-gradient">{customer ? 'Update Customer Profile' : 'Register New Customer'}</h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
               Select an area to view available plans and auto-calculated pricing.
           </p>
         </div>
@@ -203,6 +212,13 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
               </div>
             </div>
             <div className="input-group">
+              <label className="input-label">Monthly Discount (₹)</label>
+              <div className="input-with-icon">
+                  <i className="ri-price-tag-3-line"></i>
+                  <input type="number" name="discount" className="input-control" value={formData.discount} onChange={handleChange} placeholder="0" min="0" step="1" />
+              </div>
+            </div>
+            <div className="input-group full-width">
               <label className="input-label">Customer Status</label>
               <div className="input-with-icon">
                   <i className="ri-shield-user-line"></i>

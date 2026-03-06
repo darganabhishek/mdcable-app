@@ -54,6 +54,10 @@ const Customer = sequelize.define('Customer', {
   balance: {
     type: DataTypes.DECIMAL(10, 2),
     defaultValue: 0.00,
+  },
+  discount: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0.00,
   }
 }, {
   timestamps: true,
