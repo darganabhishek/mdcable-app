@@ -126,24 +126,29 @@ const getDashboardStats = async (req, res) => {
     const totalPaymentDue = parseFloat(totalDueSum || 0);
 
     // 3. Area-wise Users Distribution
-    const areaUsersRaw = await Customer.findAll({
-      attributes: [
-        [sequelize.col('assigned_area.name'), 'area_name'],
-        [sequelize.fn('COUNT', sequelize.col('Customer.id')), 'count']
-      ],
-      include: [{
-        model: Area,
-        as: 'assigned_area',
-        attributes: []
-      }],
-      group: ['assigned_area.name'], // Simplified group
-      raw: true
-    });
-    
-    const areaDistribution = areaUsersRaw.map(item => ({
-        name: item.area_name || 'Unassigned',
-        value: parseInt(item.count)
-    })).sort((a,b) => b.value - a.value);
+    let areaDistribution = [];
+    try {
+        const areaUsersRaw = await Customer.findAll({
+          attributes: [
+            [sequelize.col('assigned_area.name'), 'area_name'],
+            [sequelize.fn('COUNT', sequelize.col('Customer.id')), 'count']
+          ],
+          include: [{
+            model: Area,
+            as: 'assigned_area',
+            attributes: []
+          }],
+          group: ['assigned_area.name'], // Simplified group
+          raw: true
+        });
+        
+        areaDistribution = areaUsersRaw.map(item => ({
+            name: item.area_name || 'Unassigned',
+            value: parseInt(item.count)
+        })).sort((a,b) => b.value - a.value);
+    } catch (areaError) {
+        console.warn('Warning: areaDistribution query failed. Returning empty array. Error:', areaError.message);
+    }
 
     // 4. Monthly Collection Graph Data (Last 6 Months)
     const monthlyData = [];
@@ -168,52 +173,67 @@ const getDashboardStats = async (req, res) => {
     }
 
     // 5. Service Mix (Revenue per service type)
-    const serviceMixRaw = await Payment.findAll({
-        attributes: [
-            [sequelize.col('customer.service_type'), 'type'],
-            [sequelize.fn('SUM', sequelize.col('amount')), 'value']
-        ],
-        include: [{ 
-            model: Customer, 
-            as: 'customer', 
-            attributes: [], 
-            required: true 
-        }],
-        where: { payment_date: { [Op.gte]: startOfMonth } },
-        group: [sequelize.col('customer.service_type')],
-        raw: true
-    });
+    let serviceMixRaw = [];
+    try {
+        serviceMixRaw = await Payment.findAll({
+            attributes: [
+                [sequelize.col('customer.service_type'), 'type'],
+                [sequelize.fn('SUM', sequelize.col('amount')), 'value']
+            ],
+            include: [{ 
+                model: Customer, 
+                as: 'customer', 
+                attributes: [], 
+                required: true 
+            }],
+            where: { payment_date: { [Op.gte]: startOfMonth } },
+            group: [sequelize.col('customer.service_type')],
+            raw: true
+        });
+    } catch (smError) {
+        console.warn('Warning: serviceMix query failed. Returning empty array. Error:', smError.message);
+    }
 
     // 6. Top 5 Performing Packages
-    const topPackages = await Customer.findAll({
-        attributes: [
-            [sequelize.col('package.name'), 'name'],
-            [sequelize.fn('COUNT', sequelize.col('Customer.id')), 'value']
-        ],
-        include: [{
-            model: Package,
-            as: 'package',
-            attributes: [],
-            required: true
-        }],
-        where: { status: 'Active' },
-        group: ['package.name'], // Simplified group
-        order: [[sequelize.fn('COUNT', sequelize.col('Customer.id')), 'DESC']],
-        limit: 5,
-        raw: true
-    });
+    let topPackages = [];
+    try {
+        topPackages = await Customer.findAll({
+            attributes: [
+                [sequelize.col('package.name'), 'name'],
+                [sequelize.fn('COUNT', sequelize.col('Customer.id')), 'value']
+            ],
+            include: [{
+                model: Package,
+                as: 'package',
+                attributes: [],
+                required: true
+            }],
+            where: { status: 'Active' },
+            group: ['package.name'], // Simplified group
+            order: [[sequelize.fn('COUNT', sequelize.col('Customer.id')), 'DESC']],
+            limit: 5,
+            raw: true
+        });
+    } catch (tpError) {
+        console.warn('Warning: topPackages query failed. Returning empty array. Error:', tpError.message);
+    }
 
     // 7. Revenue Projection (Expected revenue for next 30 days)
-    const activeCustomers = await Customer.findAll({
-        where: { status: 'Active' },
-        include: [{ model: Package, as: 'package' }]
-    });
-
-    const projectedRevenue = activeCustomers.reduce((acc, cust) => {
-        const pkgPrice = cust.package ? parseFloat(cust.package.price) : 0;
-        const discount = parseFloat(cust.discount) || 0;
-        return acc + Math.max(0, pkgPrice - discount);
-    }, 0);
+    let projectedRevenue = 0;
+    try {
+        const activeCustomers = await Customer.findAll({
+            where: { status: 'Active' },
+            include: [{ model: Package, as: 'package' }]
+        });
+        
+        projectedRevenue = activeCustomers.reduce((acc, cust) => {
+            const pkgPrice = cust.package ? parseFloat(cust.package.price) : 0;
+            const discount = parseFloat(cust.discount) || 0;
+            return acc + Math.max(0, pkgPrice - discount);
+        }, 0);
+    } catch (prError) {
+        console.warn('Warning: projectedRevenue query failed. Using 0. Error:', prError.message);
+    }
 
     res.json({
       monthlyCollection,

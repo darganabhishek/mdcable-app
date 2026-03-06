@@ -93,7 +93,7 @@ const DashboardOverview = () => {
           </div>
         </div>
         <div className="kpi-card glass-panel">
-          <div className="kpi-icon collection">📉</div>
+          <div className="kpi-icon collection">📈</div>
           <div className="kpi-info">
             <h3>Monthly Collection</h3>
             <p className="kpi-value info">₹{stats.monthlyCollection?.toLocaleString() || 0}</p>
