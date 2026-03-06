@@ -113,8 +113,7 @@ const CustomersList = () => {
         <div className="action-buttons">
             {selectedCustomers.length > 0 && (
               <button 
-                  className="btn-action delete" 
-                  style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', padding: '0.4rem 1rem', border: '1px solid rgba(239, 68, 68, 0.2)' }} 
+                  className="btn-bulk-delete" 
                   onClick={handleBulkDelete}
               >
                   <i className="ri-delete-bin-line"></i>
