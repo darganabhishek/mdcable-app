@@ -32,7 +32,7 @@ const BulkImport = ({ onClose, onSave }) => {
         "House No": '11/28',
         "Locality": 'Kidwai Nagar',
         "City": 'Delhi',
-        "Pincode": '208011',
+        "Pincode": '110023',
         "Username": 'rahul_123',
         "Email": 'rahul@example.com',
         "Installation Date": new Date().toISOString().split('T')[0],

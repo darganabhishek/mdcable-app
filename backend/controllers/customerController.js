@@ -209,7 +209,7 @@ const createBulkCustomers = async (req, res) => {
         house_no: cleanString(house_no),
         locality: cleanString(locality),
         city: cleanString(city) || 'Delhi',
-        pincode: cleanString(pincode),
+        pincode: cleanString(pincode) || '110023',
         area_id: area_id,
         package_id: package_id,
         installation_date: installation_date ? new Date(installation_date) : new Date(),

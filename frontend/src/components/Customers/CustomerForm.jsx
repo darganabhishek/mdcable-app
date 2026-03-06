@@ -51,7 +51,7 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
         house_no: customer.house_no || '',
         locality: customer.locality || '',
         city: customer.city || 'Delhi',
-        pincode: customer.pincode || '',
+        pincode: customer.pincode || '110023',
         area: customer.area || '',
         area_id: customer.area_id || '',
         service_type: customer.service_type === 'Both' ? 'Both' : 
