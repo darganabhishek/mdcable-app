@@ -80,18 +80,56 @@ const createBulkCustomers = async (req, res) => {
       return res.status(400).json({ message: 'Invalid data format. Expected a non-empty array.' });
     }
 
-    // Prepare data (set default status if not provided, format dates if needed)
-    const validCustomers = customersArray.map(c => ({
-      name: c.name,
-      phone: c.phone,
-      address: c.address,
-      plan: c.plan || '',
-      installation_date: c.installation_date ? new Date(c.installation_date) : new Date(),
-      status: c.status || 'Active'
-    })).filter(c => c.name && c.phone && c.address);
+    // Helper to find a value by searching for multiple possible key aliases
+    const findValue = (obj, aliases) => {
+      // Create a lowercase map of keys for easier matching
+      const lowerCaseObj = {};
+      Object.keys(obj).forEach(key => {
+        lowerCaseObj[key.toLowerCase().trim()] = obj[key];
+      });
+
+      for (const alias of aliases) {
+        const lowerAlias = alias.toLowerCase();
+        if (lowerCaseObj[lowerAlias] !== undefined && lowerCaseObj[lowerAlias] !== null) {
+          return lowerCaseObj[lowerAlias];
+        }
+      }
+      return null;
+    };
+
+    const nameAliases = ['name', 'full name', 'customer name', 'customer', 'first name', 'naam'];
+    const phoneAliases = ['phone', 'mobile', 'contact', 'phone number', 'mobile number', 'contact number', 'phone_number', 'mobile_no'];
+    const addressAliases = ['address', 'location', 'residence', 'residential address', 'house', 'house no', 'flat', 'street'];
+    const planAliases = ['plan', 'package', 'service', 'subscription'];
+    const dateAliases = ['installation_date', 'date', 'joined', 'created_at', 'installation'];
+
+    // Prepare data with flexible matching
+    const validCustomers = customersArray.map(c => {
+      const name = findValue(c, nameAliases);
+      const phoneRaw = findValue(c, phoneAliases);
+      const address = findValue(c, addressAliases);
+      const plan = findValue(c, planAliases) || '';
+      const installation_date = findValue(c, dateAliases);
+      const status = c.status || 'Active';
+
+      // Clean phone number: remove non-digits
+      const phone = phoneRaw ? String(phoneRaw).replace(/\D/g, '') : null;
+
+      return {
+        name: name ? String(name).trim() : null,
+        phone: phone && phone.length >= 10 ? phone.slice(-10) : phone, // Take last 10 digits if longer
+        address: address ? String(address).trim() : null,
+        plan: String(plan).trim(),
+        installation_date: installation_date ? new Date(installation_date) : new Date(),
+        status: String(status).trim()
+      };
+    }).filter(c => c.name && c.phone && c.address);
 
     if (validCustomers.length === 0) {
-      return res.status(400).json({ message: 'No valid customers found in the uploaded file.' });
+      return res.status(400).json({ 
+        message: 'No valid customers found in the uploaded file.',
+        details: 'Ensure your file has headers like Name, Phone, and Address. The system found 0 rows with all three fields populated.'
+      });
     }
 
     const createdCustomers = await Customer.bulkCreate(validCustomers);
