@@ -429,3 +429,20 @@ input[type="date"].input-control::-webkit-calendar-picker-indicator:hover {
   to { opacity: 1; }
 }
 
+.developer-footer {
+  text-align: center;
+  padding: 1.5rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+  width: 100%;
+  animation: fadeIn 1s ease-in;
+}
+
+.developer-footer strong {
+  color: var(--primary);
+  opacity: 0.9;
+}
+

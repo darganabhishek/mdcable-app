@@ -73,6 +73,9 @@ const Login = () => {
           </button>
         </form>
       </div>
+      <div className="developer-footer">
+        Designed & Developed by <strong>Abhishek Dargan</strong>
+      </div>
     </div>
   );
 };

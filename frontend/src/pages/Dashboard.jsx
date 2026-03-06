@@ -102,6 +102,9 @@ const Dashboard = () => {
                     {activeTab === 'Access Control' && <UsersList />}
                     {activeTab === 'Permissions' && <RolePermissions />}
                 </div>
+                <footer className="developer-footer">
+                    Designed & Developed by <strong>Abhishek Dargan</strong>
+                </footer>
             </main>
         </div>
     );
