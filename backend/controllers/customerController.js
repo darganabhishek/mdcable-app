@@ -47,7 +47,11 @@ const getCustomerById = async (req, res) => {
 // @access  Private (Admin, Area Manager)
 const createCustomer = async (req, res) => {
   try {
-    const { name, phone, address, plan, area_id, installation_date, status, service_type, cable_package_id, internet_package_id } = req.body;
+    const { 
+      name, phone, address, plan, area_id, 
+      installation_date, status, service_type, 
+      cable_package_id, internet_package_id, discount 
+    } = req.body;
     
     const customer = await Customer.create({
       name,
@@ -59,7 +63,8 @@ const createCustomer = async (req, res) => {
       status,
       service_type,
       cable_package_id,
-      internet_package_id
+      internet_package_id,
+      discount: discount || 0
     });
 
     res.status(201).json(customer);
@@ -110,6 +115,7 @@ const createBulkCustomers = async (req, res) => {
       const address = findValue(c, addressAliases);
       const plan = findValue(c, planAliases) || '';
       const installation_date = findValue(c, dateAliases);
+      const discount = findValue(c, ['discount', 'off', 'rebate']) || 0;
       const status = c.status || 'Active';
 
       // Clean phone number: remove non-digits
@@ -121,7 +127,8 @@ const createBulkCustomers = async (req, res) => {
         address: address ? String(address).trim() : null,
         plan: String(plan).trim(),
         installation_date: installation_date ? new Date(installation_date) : new Date(),
-        status: String(status).trim()
+        status: String(status).trim(),
+        discount: parseFloat(discount) || 0
       };
     }).filter(c => c.name && c.phone && c.address);
 
