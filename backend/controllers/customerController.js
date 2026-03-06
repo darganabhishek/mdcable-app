@@ -159,6 +159,16 @@ const createBulkCustomers = async (req, res) => {
     const pincodeAliases = ['pincode', 'pin', 'zip', 'zipcode', 'area_code', 'postal'];
     const usernameAliases = ['username', 'account', 'login', 'user_id', 'cid'];
     const emailAliases = ['email', 'mail', 'email_address'];
+    const serviceTypeAliases = ['service type', 'service_type', 'service', 'type', 'connection'];
+    const areaAliases = ['area', 'subgroup', 'target area', 'zone', 'region'];
+
+    const existingAreas = await Area.findAll();
+    const existingPackages = await Package.findAll();
+    
+    const areaMap = {};
+    existingAreas.forEach(a => areaMap[a.name.toLowerCase().trim()] = a.id);
+    const packageMap = {};
+    existingPackages.forEach(p => packageMap[p.name.toLowerCase().trim()] = p.id);
 
     // Function to generate a random customer ID
     const generateId = () => `MD-${Math.floor(1000 + Math.random() * 9000)}-${Date.now().toString().slice(-4)}`;
@@ -173,10 +183,18 @@ const createBulkCustomers = async (req, res) => {
       const locality = findValue(c, localityAliases);
       const city = findValue(c, cityAliases) || 'Kanpur';
       const pincode = findValue(c, pincodeAliases);
-      const plan = findValue(c, planAliases) || '';
       const installation_date = findValue(c, dateAliases);
       const discount = findValue(c, ['discount', 'off', 'rebate']) || 0;
       const status = findValue(c, ['status', 'state', 'condition']) || 'Active';
+      
+      const serviceTypeRaw = findValue(c, serviceTypeAliases);
+      const service_type = (serviceTypeRaw && String(serviceTypeRaw).toLowerCase().includes('internet')) ? 'Internet' : 'Cable';
+
+      const areaRaw = findValue(c, areaAliases);
+      const area_id = (areaRaw && areaMap[String(areaRaw).toLowerCase().trim()]) ? areaMap[String(areaRaw).toLowerCase().trim()] : null;
+
+      const packageRaw = findValue(c, planAliases);
+      const package_id = (packageRaw && packageMap[String(packageRaw).toLowerCase().trim()]) ? packageMap[String(packageRaw).toLowerCase().trim()] : null;
 
       // Clean phone number: remove non-digits
       const phone = phoneRaw ? String(phoneRaw).replace(/\D/g, '') : null;
@@ -185,16 +203,18 @@ const createBulkCustomers = async (req, res) => {
         customer_id: generateId(),
         username: username ? String(username).trim() : null,
         name: name ? String(name).trim() : null,
-        mobile: phone && phone.length >= 10 ? phone.slice(-10) : (phone || '0000000000'), 
+        mobile: phone ? (phone.length >= 10 ? phone.slice(-10) : phone.padStart(10, '0')) : null, 
         email: email ? String(email).trim() : null,
-        house_no: house_no ? String(house_no).trim() : '-',
-        locality: locality ? String(locality).trim() : 'Bulk Import',
+        house_no: house_no ? String(house_no).trim() : null,
+        locality: locality ? String(locality).trim() : null,
         city: city ? String(city).trim() : 'Kanpur',
         pincode: pincode ? String(pincode).trim() : null,
+        area_id: area_id,
+        package_id: package_id,
         installation_date: installation_date ? new Date(installation_date) : new Date(),
         next_billing_date: new Date(new Date().setMonth(new Date().getMonth() + 1)),
         status: status ? String(status).trim() : 'Active',
-        service_type: 'Cable', // Default for import
+        service_type: service_type,
         discount: parseFloat(discount) || 0
       };
     }).filter(c => c.name && c.mobile);

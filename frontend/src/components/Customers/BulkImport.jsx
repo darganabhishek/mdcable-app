@@ -24,16 +24,20 @@ const BulkImport = ({ onClose, onSave }) => {
   const handleDownloadTemplate = () => {
     const templateData = [
       {
-        username: 'rahul_123',
-        name: 'Rahul Sharma',
-        mobile: '9876543210',
-        email: 'rahul@example.com',
-        house_no: '11/28',
-        locality: 'Kidwai Nagar',
-        city: 'Kanpur',
-        pincode: '208011',
-        installation_date: new Date().toISOString().split('T')[0],
-        status: 'Active'
+        "Customer Name": 'Rahul Sharma',
+        "Mobile Number": '9876543210',
+        "Service Type": 'Cable',
+        "Package": 'Gold Plan',
+        "Area": 'Kidwai Nagar',
+        "House No": '11/28',
+        "Locality": 'Kidwai Nagar',
+        "City": 'Kanpur',
+        "Pincode": '208011',
+        "Username": 'rahul_123',
+        "Email": 'rahul@example.com',
+        "Installation Date": new Date().toISOString().split('T')[0],
+        "Discount": '0',
+        "Status": 'Active'
       }
     ];
 
