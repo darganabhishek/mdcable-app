@@ -127,9 +127,14 @@ const createBulkCustomers = async (req, res) => {
 
     const nameAliases = ['name', 'full name', 'customer name', 'customer', 'first name', 'naam'];
     const phoneAliases = ['phone', 'mobile', 'contact', 'phone number', 'mobile number', 'contact number', 'phone_number', 'mobile_no'];
-    const addressAliases = ['address', 'location', 'residence', 'residential address', 'house', 'house no', 'flat', 'street'];
-    const planAliases = ['plan', 'package', 'service', 'subscription'];
-    const dateAliases = ['installation_date', 'date', 'joined', 'created_at', 'installation'];
+    const planAliases = ['plan', 'package', 'service', 'subscription', 'cable_package', 'internet_package', 'internet_plan'];
+    const dateAliases = ['installation_date', 'date', 'joined', 'created_at', 'installation', 'install_date'];
+    const houseAliases = ['house', 'house no', 'flat', 'house_no', 'flat_no', 'door_no', 'address1'];
+    const localityAliases = ['locality', 'area', 'street', 'neighborhood', 'address2', 'location', 'residence'];
+    const cityAliases = ['city', 'town', 'district', 'location_city'];
+    const pincodeAliases = ['pincode', 'pin', 'zip', 'zipcode', 'area_code', 'postal'];
+    const usernameAliases = ['username', 'account', 'login', 'user_id', 'cid'];
+    const emailAliases = ['email', 'mail', 'email_address'];
 
     // Function to generate a random customer ID
     const generateId = () => `MD-${Math.floor(1000 + Math.random() * 9000)}-${Date.now().toString().slice(-4)}`;
@@ -137,26 +142,34 @@ const createBulkCustomers = async (req, res) => {
     // Prepare data with flexible matching
     const validCustomers = customersArray.map(c => {
       const name = findValue(c, nameAliases);
+      const username = findValue(c, usernameAliases);
       const phoneRaw = findValue(c, phoneAliases);
-      const address = findValue(c, addressAliases);
+      const email = findValue(c, emailAliases);
+      const house_no = findValue(c, houseAliases);
+      const locality = findValue(c, localityAliases);
+      const city = findValue(c, cityAliases) || 'Kanpur';
+      const pincode = findValue(c, pincodeAliases);
       const plan = findValue(c, planAliases) || '';
       const installation_date = findValue(c, dateAliases);
       const discount = findValue(c, ['discount', 'off', 'rebate']) || 0;
-      const status = c.status || 'Active';
+      const status = findValue(c, ['status', 'state', 'condition']) || 'Active';
 
       // Clean phone number: remove non-digits
       const phone = phoneRaw ? String(phoneRaw).replace(/\D/g, '') : null;
 
       return {
         customer_id: generateId(),
+        username: username ? String(username).trim() : null,
         name: name ? String(name).trim() : null,
         mobile: phone && phone.length >= 10 ? phone.slice(-10) : (phone || '0000000000'), 
-        house_no: '-',
-        locality: address ? String(address).trim() : 'Bulk Import',
-        city: 'Kanpur',
+        email: email ? String(email).trim() : null,
+        house_no: house_no ? String(house_no).trim() : '-',
+        locality: locality ? String(locality).trim() : 'Bulk Import',
+        city: city ? String(city).trim() : 'Kanpur',
+        pincode: pincode ? String(pincode).trim() : null,
         installation_date: installation_date ? new Date(installation_date) : new Date(),
         next_billing_date: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-        status: String(status).trim(),
+        status: status ? String(status).trim() : 'Active',
         service_type: 'Cable', // Default for import
         discount: parseFloat(discount) || 0
       };
