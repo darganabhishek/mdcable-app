@@ -89,10 +89,15 @@ const BulkImport = ({ onClose, onSave }) => {
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content glass-panel animate-fade-in bulk-modal">
+      <div className="modal-content glass-panel animate-slide-up bulk-modal">
+        <button className="btn-close" onClick={onClose} disabled={loading}>
+          <i className="ri-close-line"></i>
+        </button>
         <div className="modal-header">
-          <h3>Bulk Import Customers</h3>
-          <button className="btn-close" onClick={onClose} disabled={loading}>&times;</button>
+          <h3 className="text-gradient">Bulk Import Customers</h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+            Upload an Excel or CSV file to import multiple customer records.
+          </p>
         </div>
         
         {error && <div className="error-alert">{error}</div>}

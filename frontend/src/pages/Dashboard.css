@@ -151,7 +151,7 @@
 
 /* Tab Content Transitions */
 .content-area > div {
-  animation: slideUp 0.4s ease-out forwards;
+  animation: fadeIn 0.4s ease-out forwards;
 }
 
 @media (max-width: 1024px) {
