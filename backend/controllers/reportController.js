@@ -87,15 +87,18 @@ const getDashboardStats = async (req, res) => {
     const startOfYear = new Date(today.getFullYear(), 0, 1);
 
     // 1. Collections Metrics
-    const monthlyCollection = await Payment.sum('amount', {
+    const monthlySum = await Payment.sum('amount', {
       where: { payment_date: { [Op.gte]: startOfMonth } }
     });
+    const monthlyCollection = parseFloat(monthlySum || 0);
 
-    const yearlyCollection = await Payment.sum('amount', {
+    const yearlySum = await Payment.sum('amount', {
       where: { payment_date: { [Op.gte]: startOfYear } }
     });
+    const yearlyCollection = parseFloat(yearlySum || 0);
 
-    const totalRevenue = await Payment.sum('amount');
+    const totalRevSum = await Payment.sum('amount');
+    const totalRevenue = parseFloat(totalRevSum || 0);
 
     // 2. Customer Performance & Status
     const totalCustomers = await Customer.count();
@@ -104,17 +107,23 @@ const getDashboardStats = async (req, res) => {
     const suspendedUsers = await Customer.count({ where: { status: 'Suspended' } });
     
     // Renewals Due: Active or Suspended customers whose billing date has passed or is today
-    const renewalsDue = await Customer.count({
-      where: {
-        status: { [Op.ne]: 'Inactive' },
-        next_billing_date: { [Op.lte]: today }
-      }
-    });
+    let renewalsDue = 0;
+    try {
+        renewalsDue = await Customer.count({
+          where: {
+            status: { [Op.ne]: 'Inactive' },
+            next_billing_date: { [Op.lte]: today }
+          }
+        });
+    } catch (renewError) {
+        console.warn('Warning: renewalsDue query failed. Using 0. Error:', renewError.message);
+    }
 
     // 3. Payment Due (Customer Balances)
-    const totalPaymentDue = await Customer.sum('balance', {
+    const totalDueSum = await Customer.sum('balance', {
       where: { balance: { [Op.gt]: 0 } }
     });
+    const totalPaymentDue = parseFloat(totalDueSum || 0);
 
     // 3. Area-wise Users Distribution
     const areaUsersRaw = await Customer.findAll({
@@ -127,7 +136,7 @@ const getDashboardStats = async (req, res) => {
         as: 'assigned_area',
         attributes: []
       }],
-      group: [sequelize.col('assigned_area.name')],
+      group: ['assigned_area.name'], // Simplified group
       raw: true
     });
     
@@ -188,7 +197,7 @@ const getDashboardStats = async (req, res) => {
             required: true
         }],
         where: { status: 'Active' },
-        group: [sequelize.col('package.name')],
+        group: ['package.name'], // Simplified group
         order: [[sequelize.fn('COUNT', sequelize.col('Customer.id')), 'DESC']],
         limit: 5,
         raw: true
@@ -207,26 +216,29 @@ const getDashboardStats = async (req, res) => {
     }, 0);
 
     res.json({
-      monthlyCollection: monthlyCollection || 0,
-      yearlyCollection: yearlyCollection || 0,
-      totalRevenue: totalRevenue || 0,
-      totalCustomers: totalCustomers || 0,
-      activeUsers: activeUsers || 0,
-      inactiveUsers: inactiveUsers || 0,
-      suspendedUsers: suspendedUsers || 0,
-      renewalsDue: renewalsDue || 0,
-      totalPaymentDue: totalPaymentDue || 0,
-      projectedRevenue: projectedRevenue || 0,
+      monthlyCollection,
+      yearlyCollection,
+      totalRevenue,
+      totalCustomers,
+      activeUsers,
+      inactiveUsers,
+      suspendedUsers,
+      renewalsDue,
+      totalPaymentDue,
+      projectedRevenue,
       areaDistribution,
       monthlyData,
       growthData,
-      serviceMix: serviceMixRaw.map(s => ({ name: s.type, value: parseFloat(s.value) })),
-      topPackages: topPackages.map(p => ({ name: p.name, value: parseInt(p.value) }))
+      serviceMix: serviceMixRaw.map(s => ({ name: s.type || 'Standard', value: parseFloat(s.value || 0) })),
+      topPackages: (topPackages || []).map(p => ({ name: p.name || 'N/A', value: parseInt(p.value || 0) }))
     });
 
   } catch (error) {
-    console.error('Error generating dashboard stats:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('CRITICAL: Dashboard Stats Failure:', error);
+    res.status(500).json({ 
+        message: 'Dashboard data engine error: ' + error.message,
+        details: 'This is likely a schema sync issue. Try restarting the server or running a database sync.'
+    });
   }
 };
 
