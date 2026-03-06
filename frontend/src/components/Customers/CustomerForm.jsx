@@ -54,9 +54,11 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
         pincode: customer.pincode || '',
         area: customer.area || '',
         area_id: customer.area_id || '',
-        service_type: customer.service_type || 'Cable',
-        cable_package_id: customer.package_id && customer.service_type === 'Cable' ? customer.package_id : '',
-        internet_package_id: customer.package_id && customer.service_type === 'Internet' ? customer.package_id : '',
+        service_type: customer.service_type === 'Both' ? 'Both' : 
+                      (customer.service_type?.includes('Cable') ? 'Cable' : 
+                       customer.service_type?.includes('Internet') ? 'Internet' : 'Cable'),
+        cable_package_id: customer.package_id && (customer.service_type?.includes('Cable') || customer.service_type === 'Both') ? customer.package_id : '',
+        internet_package_id: customer.package_id && (customer.service_type?.includes('Internet') || customer.service_type === 'Both') ? customer.package_id : '',
         installation_date: customer.installation_date || '',
         status: customer.status || 'Active',
         discount: customer.discount || 0
@@ -112,10 +114,13 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
   };
 
   // Filter packages based on selected area
-  // Logic: Show packages that match the area_id OR global packages (area_id is null/empty)
-  const filteredPackages = packages.filter(p => 
-    !p.area_id || p.area_id === formData.area_id
-  );
+  const filteredPackages = packages.filter(p => {
+    // If user is selecting Cable Only, show all Cable packages (since area is irrelevant/hidden)
+    if (formData.service_type === 'Cable' && p.service_type === 'Cable') return true;
+    
+    // Otherwise, show global packages OR area-specific packages
+    return !p.area_id || p.area_id === formData.area_id;
+  });
   
   // Calculate total monthly committed amount
   const calculateTotal = () => {
@@ -245,8 +250,8 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
                 <label className="input-label">Cable Package</label>
                 <div className="input-with-icon">
                     <i className="ri-tv-2-line"></i>
-                    <select name="cable_package_id" className="input-control" value={formData.cable_package_id} onChange={handleChange}>
-                      <option value="">-- Select Cable Package --</option>
+                    <select name="cable_package_id" className="input-control" value={formData.cable_package_id} onChange={handleChange} style={{ paddingRight: '2rem' }}>
+                      <option value="">-- Choose Cable Plan --</option>
                       {/* Group Cable Packages by Area */}
                       {Object.entries(
                         filteredPackages
