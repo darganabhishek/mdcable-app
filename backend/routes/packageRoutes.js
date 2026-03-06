@@ -11,11 +11,11 @@ const {
 
 router.route('/')
   .get(authenticate, getPackages)
-  .post(authenticate, authorize('Super Admin', 'Admin', 'Area Manager'), createPackage);
+  .post(authorize('packages:create'), createPackage);
 
 router.route('/:id')
   .get(authenticate, getPackageById)
-  .put(authenticate, authorize('Super Admin', 'Admin', 'Area Manager'), updatePackage)
-  .delete(authenticate, authorize('Super Admin'), deletePackage);
+  .put(authorize('packages:edit'), updatePackage)
+  .delete(authorize('packages:delete'), deletePackage);
 
 module.exports = router;

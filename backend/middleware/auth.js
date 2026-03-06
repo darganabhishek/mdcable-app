@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { RolePermission } = require('../models');
 
 const authenticate = (req, res, next) => {
   const token = req.header('Authorization')?.split(' ')[1];
@@ -16,18 +17,48 @@ const authenticate = (req, res, next) => {
   }
 };
 
-const authorize = (roles = []) => {
-  if (typeof roles === 'string') {
-    roles = [roles];
-  }
-
+const authorize = (required = []) => {
   return [
     authenticate,
-    (req, res, next) => {
-      if (roles.length && !roles.includes(req.user.role)) {
-        return res.status(403).json({ message: 'Forbidden. You do not have the required permissions.' });
+    async (req, res, next) => {
+      const userRole = req.user.role;
+
+      // Super Admin bypass
+      if (userRole === 'Super Admin') {
+        return next();
       }
-      next();
+
+      // Handle array of roles (legacy support)
+      if (Array.isArray(required) && required.includes(userRole)) {
+        return next();
+      }
+
+      // Handle single role string (legacy support)
+      if (typeof required === 'string' && ['Admin', 'Technician', 'Area Manager'].includes(required)) {
+        if (required === userRole) return next();
+      }
+
+      // Handle permission string
+      if (typeof required === 'string' && !['Admin', 'Technician', 'Area Manager'].includes(required)) {
+        try {
+          const perm = await RolePermission.findOne({
+            where: {
+              role: userRole,
+              permission: required,
+              enabled: true
+            }
+          });
+
+          if (perm) {
+            return next();
+          }
+        } catch (error) {
+          console.error('Permission check error:', error);
+          return res.status(500).json({ message: 'Internal server error during permission check.' });
+        }
+      }
+
+      return res.status(403).json({ message: 'Forbidden. You do not have the required permissions.' });
     }
   ];
 };

@@ -2,8 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { Area } = require('../models');
 
+const { authenticate, authorize } = require('../middleware/auth');
+
 // Get all areas
-router.get('/', async (req, res) => {
+router.get('/', authorize('areas:view'), async (req, res) => {
   try {
     const areas = await Area.findAll({
       order: [['name', 'ASC']]
@@ -15,9 +17,7 @@ router.get('/', async (req, res) => {
 });
 
 // Create a new area
-router.get('/test', (req, res) => res.send('Area Route Working'));
-
-router.post('/', async (req, res) => {
+router.post('/', authorize('areas:create'), async (req, res) => {
   try {
     const { name } = req.body;
     if (!name) return res.status(400).json({ message: 'Name is required' });
@@ -33,7 +33,7 @@ router.post('/', async (req, res) => {
 });
 
 // Delete an area
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authorize('areas:delete'), async (req, res) => {
   try {
     const area = await Area.findByPk(req.params.id);
     if (!area) return res.status(404).json({ message: 'Area not found' });

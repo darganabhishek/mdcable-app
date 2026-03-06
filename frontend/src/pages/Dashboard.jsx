@@ -5,6 +5,7 @@ import CustomersList from '../components/Customers/CustomersList';
 import PaymentsList from '../components/Payments/PaymentsList';
 import Reports from '../components/Reports/Reports';
 import UsersList from '../components/Users/UsersList';
+import RolePermissions from '../components/Users/RolePermissions';
 import PackagesList from '../components/Packages/PackagesList'; // Added PackagesList import
 import DashboardOverview from '../components/Dashboard/DashboardOverview';
 import './Dashboard.css';
@@ -62,13 +63,22 @@ const Dashboard = () => {
                         <span>Reports</span>
                     </button>
                     {user?.role === 'Super Admin' && (
-                        <button 
-                          className={`nav-item ${activeTab === 'Access Control' ? 'active' : ''}`}
-                          onClick={() => setActiveTab('Access Control')}
-                        >
-                            <i className="ri-shield-user-line"></i>
-                            <span>Access Control</span>
-                        </button>
+                        <>
+                            <button 
+                              className={`nav-item ${activeTab === 'Access Control' ? 'active' : ''}`}
+                              onClick={() => setActiveTab('Access Control')}
+                            >
+                                <i className="ri-shield-user-line"></i>
+                                <span>Access Control</span>
+                            </button>
+                            <button 
+                              className={`nav-item ${activeTab === 'Permissions' ? 'active' : ''}`}
+                              onClick={() => setActiveTab('Permissions')}
+                            >
+                                <i className="ri-lock-password-line"></i>
+                                <span>Role Permissions</span>
+                            </button>
+                        </>
                     )}
                 </nav>
             </aside>
@@ -90,6 +100,7 @@ const Dashboard = () => {
                     {activeTab === 'Payments' && <PaymentsList />}
                     {activeTab === 'Reports' && <Reports />}
                     {activeTab === 'Access Control' && <UsersList />}
+                    {activeTab === 'Permissions' && <RolePermissions />}
                 </div>
             </main>
         </div>

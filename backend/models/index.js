@@ -5,6 +5,7 @@ const Payment = require('./Payment');
 const Renewal = require('./Renewal');
 const Package = require('./Package');
 const Area = require('./Area');
+const RolePermission = require('./RolePermission');
 
 // Define Relationships
 
@@ -39,5 +40,6 @@ module.exports = {
   Payment,
   Renewal,
   Package,
-  Area
+  Area,
+  RolePermission
 };

@@ -12,13 +12,13 @@ const { authenticate, authorize } = require('../middleware/auth');
 
 router.route('/')
   .get(authenticate, getCustomers)
-  .post(authorize(['Super Admin', 'Admin', 'Area Manager']), createCustomer);
+  .post(authorize('customers:create'), createCustomer);
 
-router.post('/bulk', authenticate, authorize(['Super Admin', 'Admin', 'Area Manager']), createBulkCustomers);
+router.post('/bulk', authorize('customers:bulk_import'), createBulkCustomers);
 
 router.route('/:id')
   .get(authenticate, getCustomerById)
-  .put(authorize(['Super Admin', 'Admin', 'Area Manager']), updateCustomer)
-  .delete(authorize('Super Admin'), deleteCustomer);
+  .put(authorize('customers:edit'), updateCustomer)
+  .delete(authorize('customers:delete'), deleteCustomer);
 
 module.exports = router;

@@ -11,7 +11,9 @@ const reportRoutes = require('./routes/reportRoutes');
 const userRoutes = require('./routes/userRoutes');
 const packageRoutes = require('./routes/packageRoutes');
 const areaRoutes = require('./routes/areaRoutes');
+const permissionRoutes = require('./routes/permissionRoutes');
 const seedUsers = require('./seed');
+const seedPermissions = require('./seedPermissions');
 
 const app = express();
 
@@ -27,6 +29,7 @@ app.use('/api/renewals', renewalRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/areas', areaRoutes);
+app.use('/api/permissions', permissionRoutes);
 
 const PORT = process.env.PORT || 5000;
 
@@ -38,6 +41,7 @@ app.get('/', (req, res) => {
 sequelize.sync({ alter: true }).then(async () => {
     console.log('Database synced');
     await seedUsers();
+    await seedPermissions();
     app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT} at 0.0.0.0`));
 }).catch(err => {
     console.error('Database connection failed:', err);

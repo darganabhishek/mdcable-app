@@ -3,8 +3,8 @@ const router = express.Router();
 const { getCollectionReport, getRenewalReport, getDashboardStats } = require('../controllers/reportController');
 const { authenticate, authorize } = require('../middleware/auth');
 
-router.get('/dashboard', authenticate, authorize(['Super Admin', 'Admin', 'Area Manager']), getDashboardStats);
-router.get('/collections', authenticate, authorize(['Super Admin', 'Admin']), getCollectionReport);
-router.get('/renewals', authenticate, authorize(['Super Admin', 'Admin']), getRenewalReport);
+router.get('/dashboard', authorize('reports:view'), getDashboardStats);
+router.get('/collections', authorize('reports:view'), getCollectionReport);
+router.get('/renewals', authorize('reports:view'), getRenewalReport);
 
 module.exports = router;
