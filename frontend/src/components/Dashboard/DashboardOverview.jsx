@@ -203,19 +203,27 @@ const DashboardOverview = () => {
               Popular Packages
           </h3>
           <div className="package-rank-list">
-            {stats.topPackages?.map((pkg, idx) => (
-              <div key={idx} className="rank-item">
-                <span className="rank-badge">{idx + 1}</span>
-                <span className="rank-name">{pkg.name}</span>
-                <span className="rank-count">{pkg.value} users</span>
-                <div className="rank-progress-bg">
-                    <div 
-                        className="rank-progress-fill" 
-                        style={{ width: `${(pkg.value / stats.topPackages[0].value) * 100}%` }}
-                    ></div>
+            {(stats.topPackages && stats.topPackages.length > 0) ? (
+              stats.topPackages.map((pkg, idx) => (
+                <div key={idx} className="rank-item">
+                  <span className="rank-badge">{idx + 1}</span>
+                  <span className="rank-name">{pkg.name}</span>
+                  <span className="rank-count">{pkg.value} users</span>
+                  <div className="rank-progress-bg">
+                      <div 
+                          className="rank-progress-fill" 
+                          style={{ 
+                            width: `${stats.topPackages[0].value > 0 ? (pkg.value / stats.topPackages[0].value) * 100 : 0}%` 
+                          }}
+                      ></div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+                <div className="empty-state-mini">
+                    <p>No active package data available yet.</p>
+                </div>
+            )}
           </div>
         </div>
       </div>

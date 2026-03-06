@@ -1,4 +1,4 @@
-const { Payment, Renewal, Customer, User, Package, sequelize } = require('../models');
+const { Payment, Renewal, Customer, User, Package, Area, sequelize } = require('../models');
 const { Op } = require('sequelize');
 
 // @desc    Get collection reports
@@ -102,14 +102,21 @@ const getDashboardStats = async (req, res) => {
 
     // 3. Area-wise Users Distribution
     const areaUsersRaw = await Customer.findAll({
-      attributes: ['area', [sequelize.fn('COUNT', sequelize.col('id')), 'count']],
-      group: ['area'],
+      attributes: [
+        [sequelize.col('assigned_area.name'), 'area_name'],
+        [sequelize.fn('COUNT', sequelize.col('Customer.id')), 'count']
+      ],
+      include: [{
+        model: Area,
+        as: 'assigned_area',
+        attributes: []
+      }],
+      group: [sequelize.col('assigned_area.name')],
       raw: true
     });
     
-    // Format for charts: Ensure null areas are grouped under "Unassigned"
     const areaDistribution = areaUsersRaw.map(item => ({
-        name: item.area || 'Unassigned',
+        name: item.area_name || 'Unassigned',
         value: parseInt(item.count)
     })).sort((a,b) => b.value - a.value);
 
@@ -136,7 +143,6 @@ const getDashboardStats = async (req, res) => {
     }
 
     // 5. Service Mix (Revenue per service type)
-    // We get this by joining Payment with Customer and grouping by service_type
     const serviceMixRaw = await Payment.findAll({
         attributes: [
             [sequelize.col('customer.service_type'), 'type'],
@@ -173,7 +179,6 @@ const getDashboardStats = async (req, res) => {
     });
 
     // 7. Revenue Projection (Expected revenue for next 30 days)
-    // Formula: Sum(Monthly Price - Discount) for all Active customers
     const activeCustomers = await Customer.findAll({
         where: { status: 'Active' },
         include: [{ model: Package, as: 'package' }]
