@@ -8,8 +8,7 @@ const getCustomers = async (req, res) => {
     const customers = await Customer.findAll({
       include: [
         { model: Area, as: 'assigned_area' },
-        { model: Package, as: 'cable_package' },
-        { model: Package, as: 'internet_package' }
+        { model: Package, as: 'package' }
       ],
       order: [['createdAt', 'DESC']]
     });
@@ -28,8 +27,7 @@ const getCustomerById = async (req, res) => {
     const customer = await Customer.findByPk(req.params.id, {
       include: [
         { model: Area, as: 'assigned_area' },
-        { model: Package, as: 'cable_package' },
-        { model: Package, as: 'internet_package' }
+        { model: Package, as: 'package' }
       ]
     });
     if (!customer) {
@@ -48,29 +46,54 @@ const getCustomerById = async (req, res) => {
 const createCustomer = async (req, res) => {
   try {
     const { 
-      name, phone, address, plan, area_id, 
-      installation_date, status, service_type, 
+      name, mobile, house_no, locality, city, pincode, username, email,
+      area_id, installation_date, status, service_type, 
       cable_package_id, internet_package_id, discount 
     } = req.body;
     
+    // Function to generate a random customer ID
+    const generateId = () => `MD-${Math.floor(1000 + Math.random() * 9000)}-${Date.now().toString().slice(-4)}`;
+
+    if (service_type === 'Both') {
+      // Create two records
+      const cableCustomer = await Customer.create({
+        customer_id: generateId(),
+        username, name, mobile, email, house_no, locality, city, pincode,
+        area_id, installation_date, status,
+        service_type: 'Cable',
+        package_id: cable_package_id,
+        next_billing_date: installation_date ? new Date(new Date(installation_date).setMonth(new Date(installation_date).getMonth() + 1)) : null,
+        discount: parseFloat(discount) / 2 || 0 
+      });
+
+      const internetCustomer = await Customer.create({
+        customer_id: generateId(),
+        username, name, mobile, email, house_no, locality, city, pincode,
+        area_id, installation_date, status,
+        service_type: 'Internet',
+        package_id: internet_package_id,
+        next_billing_date: installation_date ? new Date(new Date(installation_date).setMonth(new Date(installation_date).getMonth() + 1)) : null,
+        discount: parseFloat(discount) / 2 || 0
+      });
+
+      return res.status(201).json({ cable: cableCustomer, internet: internetCustomer });
+    }
+
+    // Single record creation
     const customer = await Customer.create({
-      name,
-      phone,
-      address,
-      plan,
-      area_id,
-      installation_date,
-      status,
+      customer_id: generateId(),
+      name, username, mobile, email, house_no, locality, city, pincode,
+      area_id, installation_date, status,
       service_type,
-      cable_package_id,
-      internet_package_id,
+      package_id: service_type === 'Cable' ? cable_package_id : internet_package_id,
+      next_billing_date: installation_date ? new Date(new Date(installation_date).setMonth(new Date(installation_date).getMonth() + 1)) : null,
       discount: discount || 0
     });
 
     res.status(201).json(customer);
   } catch (error) {
     console.error('Error creating customer:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: error.message || 'Server error' });
   }
 };
 
@@ -108,6 +131,9 @@ const createBulkCustomers = async (req, res) => {
     const planAliases = ['plan', 'package', 'service', 'subscription'];
     const dateAliases = ['installation_date', 'date', 'joined', 'created_at', 'installation'];
 
+    // Function to generate a random customer ID
+    const generateId = () => `MD-${Math.floor(1000 + Math.random() * 9000)}-${Date.now().toString().slice(-4)}`;
+
     // Prepare data with flexible matching
     const validCustomers = customersArray.map(c => {
       const name = findValue(c, nameAliases);
@@ -122,20 +148,24 @@ const createBulkCustomers = async (req, res) => {
       const phone = phoneRaw ? String(phoneRaw).replace(/\D/g, '') : null;
 
       return {
+        customer_id: generateId(),
         name: name ? String(name).trim() : null,
-        phone: phone && phone.length >= 10 ? phone.slice(-10) : phone, // Take last 10 digits if longer
-        address: address ? String(address).trim() : null,
-        plan: String(plan).trim(),
+        mobile: phone && phone.length >= 10 ? phone.slice(-10) : (phone || '0000000000'), 
+        house_no: '-',
+        locality: address ? String(address).trim() : 'Bulk Import',
+        city: 'Kanpur',
         installation_date: installation_date ? new Date(installation_date) : new Date(),
+        next_billing_date: new Date(new Date().setMonth(new Date().getMonth() + 1)),
         status: String(status).trim(),
+        service_type: 'Cable', // Default for import
         discount: parseFloat(discount) || 0
       };
-    }).filter(c => c.name && c.phone && c.address);
+    }).filter(c => c.name && c.mobile);
 
     if (validCustomers.length === 0) {
       return res.status(400).json({ 
         message: 'No valid customers found in the uploaded file.',
-        details: 'Ensure your file has headers like Name, Phone, and Address. The system found 0 rows with all three fields populated.'
+        details: 'Ensure your file has headers like Name, Phone. The system found 0 rows with valid data.'
       });
     }
 

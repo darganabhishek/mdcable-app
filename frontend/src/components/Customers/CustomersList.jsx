@@ -32,8 +32,9 @@ const CustomersList = () => {
   const filteredCustomers = customers.filter(c => {
     const matchesSearch = 
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.phone.includes(searchQuery) ||
-      (c.area && c.area.toLowerCase().includes(searchQuery.toLowerCase()));
+      (c.mobile && c.mobile.includes(searchQuery)) ||
+      (c.customer_id && c.customer_id.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (c.locality && c.locality.toLowerCase().includes(searchQuery.toLowerCase()));
     
     const matchesStatus = statusFilter === 'All' || c.status === statusFilter;
     const matchesService = serviceTypeFilter === 'All' || c.service_type === serviceTypeFilter;
@@ -42,7 +43,7 @@ const CustomersList = () => {
   });
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this customer?')) {
+    if (window.confirm('Are you sure you want to delete this customer record?')) {
       try {
         await axios.delete(`${import.meta.env.VITE_API_URL}/customers/${id}`);
         fetchCustomers();
@@ -85,7 +86,7 @@ const CustomersList = () => {
               <i className="ri-search-line" style={{ position: 'absolute', left: '1rem', color: 'var(--text-muted)' }}></i>
               <input 
                 type="text" 
-                placeholder="Search by name, phone or area..." 
+                placeholder="Search name, ID, mobile or locality..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="search-input"
@@ -112,7 +113,6 @@ const CustomersList = () => {
             <option value="All">All Services</option>
             <option value="Cable">Cable TV</option>
             <option value="Internet">Internet</option>
-            <option value="Both">Combo (Both)</option>
           </select>
       </div>
 
@@ -120,10 +120,11 @@ const CustomersList = () => {
         <table className="data-table">
           <thead>
             <tr>
+              <th>Customer ID</th>
               <th>Customer Name</th>
-              <th>Phone Number</th>
-              <th>Location / Area</th>
-              <th>Service Type</th>
+              <th>Mobile Number</th>
+              <th>Installation Address</th>
+              <th>Service</th>
               <th>Status</th>
               <th className="text-right">Actions</th>
             </tr>
@@ -131,16 +132,21 @@ const CustomersList = () => {
           <tbody>
             {filteredCustomers.map((cust) => (
               <tr key={cust.id}>
+                <td style={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: 'var(--primary)' }}>
+                    {cust.customer_id}
+                </td>
                 <td>
                     <div className="user-cell">
-                        <div className="user-avatar">{cust.name.charAt(0)}</div>
+                        <div className="user-avatar">{cust.name[0]}</div>
                         <span>{cust.name}</span>
                     </div>
                 </td>
-                <td>{cust.phone}</td>
-                <td>{cust.area || '—'}</td>
+                <td>{cust.mobile}</td>
+                <td style={{ maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {cust.house_no}, {cust.locality}, {cust.city}
+                </td>
                 <td>
-                  <span className={`status-badge ${cust.service_type === 'Both' ? 'status-active' : 'status-info'}`}>
+                  <span className={`status-badge status-${cust.service_type === 'Cable' ? 'info' : 'active'}`}>
                     {cust.service_type}
                   </span>
                 </td>

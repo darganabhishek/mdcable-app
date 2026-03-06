@@ -7,45 +7,68 @@ const Customer = sequelize.define('Customer', {
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
   },
+  customer_id: {
+    type: DataTypes.STRING,
+    unique: true
+  },
+  username: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
   name: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  phone: {
+  mobile: {
+    type: DataTypes.STRING(10),
+    allowNull: false,
+    validate: {
+      is: /^\d{10}$/
+    }
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    validate: {
+      isEmail: true
+    }
+  },
+  house_no: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  address: {
-    type: DataTypes.TEXT,
+  locality: {
+    type: DataTypes.STRING,
     allowNull: false,
   },
-  area: {
+  city: {
     type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: 'Kanpur'
+  },
+  pincode: {
+    type: DataTypes.STRING(6),
+    allowNull: true
   },
   area_id: {
     type: DataTypes.UUID,
     allowNull: true
   },
   service_type: {
-    type: DataTypes.ENUM('Cable', 'Internet', 'Both'),
+    type: DataTypes.ENUM('Cable', 'Internet'),
     allowNull: false,
-    defaultValue: 'Cable'
   },
-  cable_package_id: {
+  package_id: {
     type: DataTypes.UUID,
     allowNull: true
-  },
-  internet_package_id: {
-    type: DataTypes.UUID,
-    allowNull: true
-  },
-  plan: {
-    type: DataTypes.STRING,
-    allowNull: true,
   },
   installation_date: {
     type: DataTypes.DATEONLY,
     allowNull: true,
+  },
+  next_billing_date: {
+    type: DataTypes.DATEONLY,
+    allowNull: true
   },
   status: {
     type: DataTypes.ENUM('Active', 'Inactive', 'Suspended'),

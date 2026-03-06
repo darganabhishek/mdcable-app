@@ -22,8 +22,7 @@ Customer.hasMany(Renewal, { foreignKey: 'customer_id', as: 'renewals' });
 Renewal.belongsTo(Customer, { foreignKey: 'customer_id', as: 'customer' });
 
 // Customer belongs to Package
-Customer.belongsTo(Package, { foreignKey: 'cable_package_id', as: 'cable_package' });
-Customer.belongsTo(Package, { foreignKey: 'internet_package_id', as: 'internet_package' });
+Customer.belongsTo(Package, { foreignKey: 'package_id', as: 'package' });
 
 // Package belongs to Area
 Area.hasMany(Package, { foreignKey: 'area_id', as: 'packages' });

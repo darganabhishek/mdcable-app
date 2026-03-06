@@ -4,9 +4,14 @@ import './CustomerForm.css';
 
 const CustomerForm = ({ customer, onClose, onSave }) => {
   const [formData, setFormData] = useState({
+    username: '',
     name: '',
-    phone: '',
-    address: '',
+    mobile: '',
+    email: '',
+    house_no: '',
+    locality: '',
+    city: 'Kanpur',
+    pincode: '',
     area: '',
     area_id: '',
     service_type: 'Cable',
@@ -39,14 +44,19 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
 
     if (customer) {
       setFormData({
+        username: customer.username || '',
         name: customer.name || '',
-        phone: customer.phone || '',
-        address: customer.address || '',
+        mobile: customer.mobile || '',
+        email: customer.email || '',
+        house_no: customer.house_no || '',
+        locality: customer.locality || '',
+        city: customer.city || 'Kanpur',
+        pincode: customer.pincode || '',
         area: customer.area || '',
         area_id: customer.area_id || '',
         service_type: customer.service_type || 'Cable',
-        cable_package_id: customer.cable_package_id || '',
-        internet_package_id: customer.internet_package_id || '',
+        cable_package_id: customer.package_id && customer.service_type === 'Cable' ? customer.package_id : '',
+        internet_package_id: customer.package_id && customer.service_type === 'Internet' ? customer.package_id : '',
         installation_date: customer.installation_date || '',
         status: customer.status || 'Active',
         discount: customer.discount || 0
@@ -131,6 +141,13 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
         <form onSubmit={handleSubmit} className="customer-form">
           <div className="form-grid">
             <div className="input-group">
+              <label className="input-label">Username / Account ID</label>
+              <div className="input-with-icon">
+                  <i className="ri-shield-user-line"></i>
+                  <input type="text" name="username" className="input-control" value={formData.username} onChange={handleChange} placeholder="e.g. rahul_123" />
+              </div>
+            </div>
+            <div className="input-group">
               <label className="input-label">Full Name</label>
               <div className="input-with-icon">
                   <i className="ri-user-smile-line"></i>
@@ -138,19 +155,49 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
               </div>
             </div>
             <div className="input-group">
-              <label className="input-label">Phone Number</label>
+              <label className="input-label">Mobile Number (10 Digits)</label>
               <div className="input-with-icon">
                   <i className="ri-phone-fill"></i>
-                  <input type="text" name="phone" className="input-control" value={formData.phone} onChange={handleChange} required placeholder="10-digit mobile" />
+                  <input type="text" name="mobile" className="input-control" value={formData.mobile} onChange={handleChange} required placeholder="9876543210" maxLength="10" />
               </div>
             </div>
-            <div className="input-group full-width">
-              <label className="input-label">Installation Address</label>
+            <div className="input-group">
+              <label className="input-label">Email Address (Optional)</label>
+              <div className="input-with-icon">
+                  <i className="ri-mail-line"></i>
+                  <input type="email" name="email" className="input-control" value={formData.email} onChange={handleChange} placeholder="rahul@example.com" />
+              </div>
+            </div>
+
+            <div className="input-group">
+              <label className="input-label">House / Flat No.</label>
+              <div className="input-with-icon">
+                  <i className="ri-home-4-line"></i>
+                  <input type="text" name="house_no" className="input-control" value={formData.house_no} onChange={handleChange} required placeholder="e.g. 11/28" />
+              </div>
+            </div>
+            <div className="input-group">
+              <label className="input-label">Locality / Street</label>
               <div className="input-with-icon">
                   <i className="ri-map-pin-2-line"></i>
-                  <textarea name="address" className="input-control" rows="2" value={formData.address} onChange={handleChange} required placeholder="Full street address and landmarks..."></textarea>
+                  <input type="text" name="locality" className="input-control" value={formData.locality} onChange={handleChange} required placeholder="e.g. Kidwai Nagar" />
               </div>
             </div>
+            <div className="input-group">
+              <label className="input-label">City</label>
+              <div className="input-with-icon">
+                  <i className="ri-building-4-line"></i>
+                  <input type="text" name="city" className="input-control" value={formData.city} onChange={handleChange} required placeholder="Kanpur" />
+              </div>
+            </div>
+            <div className="input-group">
+              <label className="input-label">Pincode</label>
+              <div className="input-with-icon">
+                  <i className="ri-compass-3-line"></i>
+                  <input type="text" name="pincode" className="input-control" value={formData.pincode} onChange={handleChange} placeholder="208011" maxLength="6" />
+              </div>
+            </div>
+
             <div className="input-group">
               <label className="input-label">Service Area</label>
               <div className="input-with-icon">
@@ -249,7 +296,7 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
             <div className="input-group full-width">
               <label className="input-label">Customer Status</label>
               <div className="input-with-icon">
-                  <i className="ri-shield-user-line"></i>
+                   <i className="ri-shield-user-line"></i>
                   <select name="status" className="input-control" value={formData.status} onChange={handleChange}>
                     <option value="Active">Active / Working</option>
                     <option value="Inactive">Inactive / Expired</option>

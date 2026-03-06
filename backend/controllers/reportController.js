@@ -22,7 +22,7 @@ const getCollectionReport = async (req, res) => {
     const payments = await Payment.findAll({
       where: whereCondition,
       include: [
-        { model: Customer, as: 'customer', attributes: ['name', 'phone', 'plan'] },
+        { model: Customer, as: 'customer', attributes: ['name', 'mobile', 'customer_id'] },
         { model: User, as: 'collector', attributes: ['name'] }
       ],
       order: [['payment_date', 'DESC']]
@@ -62,7 +62,7 @@ const getRenewalReport = async (req, res) => {
     const renewals = await Renewal.findAll({
       where: whereCondition,
       include: [
-        { model: Customer, as: 'customer', attributes: ['name', 'phone', 'plan'] }
+        { model: Customer, as: 'customer', attributes: ['name', 'mobile', 'customer_id'] }
       ],
       order: [['new_expiry', 'ASC']]
     });
@@ -142,8 +142,38 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
+// @desc    Get upcoming renewals (due in next 15 days)
+// @route   GET /api/reports/upcoming-renewals
+// @access  Private (Admin, Super Admin)
+const getUpcomingRenewals = async (req, res) => {
+  try {
+    const today = new Date();
+    const next15Days = new Date(today);
+    next15Days.setDate(today.getDate() + 15);
+
+    const customers = await Customer.findAll({
+      where: {
+        status: 'Active',
+        next_billing_date: {
+          [Op.lte]: next15Days
+        }
+      },
+      include: [
+        { model: Package, as: 'package' }
+      ],
+      order: [['next_billing_date', 'ASC']]
+    });
+
+    res.json(customers);
+  } catch (error) {
+    console.error('Error fetching upcoming renewals:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   getCollectionReport,
   getRenewalReport,
-  getDashboardStats
+  getDashboardStats,
+  getUpcomingRenewals
 };
