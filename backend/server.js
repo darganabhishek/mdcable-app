@@ -38,8 +38,7 @@ app.get('/', (req, res) => {
 });
 
 // Sync database
-const isDev = process.env.NODE_ENV !== 'production';
-sequelize.sync({ alter: isDev }).then(async () => {
+sequelize.sync({ alter: true }).then(async () => {
     console.log('Database synced');
     await seedUsers();
     await seedPermissions();

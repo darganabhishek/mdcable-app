@@ -21,7 +21,7 @@ const Customer = sequelize.define('Customer', {
   },
   mobile: {
     type: DataTypes.STRING(10),
-    allowNull: false,
+    allowNull: true,
     validate: {
       is: /^\d{10}$/
     }
@@ -39,11 +39,11 @@ const Customer = sequelize.define('Customer', {
   },
   house_no: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
   locality: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
   city: {
     type: DataTypes.STRING,
@@ -60,7 +60,7 @@ const Customer = sequelize.define('Customer', {
   },
   service_type: {
     type: DataTypes.ENUM('Cable', 'Internet'),
-    allowNull: false,
+    allowNull: true,
   },
   package_id: {
     type: DataTypes.UUID,
