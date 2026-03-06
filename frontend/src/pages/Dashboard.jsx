@@ -24,7 +24,7 @@ const Dashboard = () => {
         <div className="dashboard-layout">
             <aside className="sidebar glass-panel">
                 <div className="sidebar-header">
-                    <h2 className="text-gradient">M.D. Cable</h2>
+                    <h2 className="text-gradient">M.D. Cable Networks</h2>
                 </div>
                 <nav className="nav-menu">
                     <button 
