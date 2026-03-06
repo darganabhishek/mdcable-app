@@ -82,6 +82,40 @@ body {
   transform: translateY(0);
 }
 
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-main);
+  border: 1px solid var(--surface-border);
+  padding: 0.8rem 1.6rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  backdrop-filter: blur(8px);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(129, 140, 248, 0.2);
+}
+
+.btn-secondary i {
+  font-size: 1.1rem;
+  transition: var(--transition);
+}
+
+.btn-secondary:hover i {
+  transform: scale(1.1);
+}
+
 /* Modern Inputs */
 .input-group {
   margin-bottom: 1.25rem;
@@ -185,6 +219,12 @@ body {
 /* Alignment & Spacing */
 .text-right { text-align: right; }
 .justify-end { justify-content: flex-end; }
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
 
 .status-info {
   background: rgba(59, 130, 246, 0.08);
