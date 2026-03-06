@@ -13,6 +13,7 @@ const CustomersList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
+  const [selectedCustomers, setSelectedCustomers] = useState([]);
 
   const fetchCustomers = async () => {
     try {
@@ -46,9 +47,36 @@ const CustomersList = () => {
     if (window.confirm('Are you sure you want to delete this customer record?')) {
       try {
         await axios.delete(`${import.meta.env.VITE_API_URL}/customers/${id}`);
+        setSelectedCustomers(prev => prev.filter(item => item !== id));
         fetchCustomers();
       } catch (error) {
         console.error('Failed to delete customer', error);
+      }
+    }
+  };
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedCustomers(filteredCustomers.map(c => c.id));
+    } else {
+      setSelectedCustomers([]);
+    }
+  };
+
+  const handleSelectToggle = (id) => {
+    setSelectedCustomers(prev => 
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkDelete = async () => {
+    if (window.confirm(`Are you sure you want to delete ${selectedCustomers.length} selected customers? This action cannot be undone.`)) {
+      try {
+        await axios.post(`${import.meta.env.VITE_API_URL}/customers/bulk-delete`, { ids: selectedCustomers });
+        setSelectedCustomers([]);
+        fetchCustomers();
+      } catch (error) {
+        console.error('Failed to bulk delete customers', error);
       }
     }
   };
@@ -78,6 +106,16 @@ const CustomersList = () => {
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Manage and monitor your subscriber network.</p>
         </div>
         <div className="action-buttons">
+            {selectedCustomers.length > 0 && (
+              <button 
+                  className="btn-action delete" 
+                  style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', padding: '0.4rem 1rem', border: '1px solid rgba(239, 68, 68, 0.2)' }} 
+                  onClick={handleBulkDelete}
+              >
+                  <i className="ri-delete-bin-line"></i>
+                  Delete Selected ({selectedCustomers.length})
+              </button>
+            )}
             <button className="btn-secondary" onClick={() => setIsBulkModalOpen(true)}>
                 <i className="ri-file-upload-line"></i>
                 Bulk Import
@@ -128,6 +166,14 @@ const CustomersList = () => {
         <table className="data-table">
           <thead>
             <tr>
+              <th style={{ width: '40px' }}>
+                <input 
+                  type="checkbox" 
+                  className="custom-checkbox"
+                  checked={filteredCustomers.length > 0 && selectedCustomers.length === filteredCustomers.length}
+                  onChange={handleSelectAll}
+                />
+              </th>
               <th>Customer ID</th>
               <th>Customer Name</th>
               <th>Mobile Number</th>
@@ -139,7 +185,15 @@ const CustomersList = () => {
           </thead>
           <tbody>
             {filteredCustomers.map((cust) => (
-              <tr key={cust.id}>
+              <tr key={cust.id} className={selectedCustomers.includes(cust.id) ? 'selected-row' : ''}>
+                <td>
+                  <input 
+                    type="checkbox" 
+                    className="custom-checkbox"
+                    checked={selectedCustomers.includes(cust.id)}
+                    onChange={() => handleSelectToggle(cust.id)}
+                  />
+                </td>
                 <td style={{ fontWeight: 800, fontVariantNumeric: 'tabular-nums', color: 'var(--primary)', fontSize: '0.85rem' }}>
                     {cust.customer_id}
                 </td>
@@ -183,7 +237,7 @@ const CustomersList = () => {
             ))}
             {filteredCustomers.length === 0 && (
               <tr>
-                <td colSpan="6" className="text-center py-4 text-muted">
+                <td colSpan="7" className="text-center py-4 text-muted">
                     No customers found matching your search.
                 </td>
               </tr>

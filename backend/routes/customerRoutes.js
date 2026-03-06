@@ -6,7 +6,8 @@ const {
   createCustomer,
   createBulkCustomers,
   updateCustomer,
-  deleteCustomer
+  deleteCustomer,
+  bulkDeleteCustomers
 } = require('../controllers/customerController');
 const { authenticate, authorize } = require('../middleware/auth');
 
@@ -15,6 +16,7 @@ router.route('/')
   .post(authorize('customers:create'), createCustomer);
 
 router.post('/bulk', authorize('customers:bulk_import'), createBulkCustomers);
+router.post('/bulk-delete', authorize('customers:delete'), bulkDeleteCustomers);
 
 router.route('/:id')
   .get(authenticate, getCustomerById)

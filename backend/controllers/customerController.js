@@ -279,11 +279,38 @@ const deleteCustomer = async (req, res) => {
   }
 };
 
+// @desc    Bulk Delete customers
+// @route   POST /api/customers/bulk-delete
+// @access  Private (Super Admin)
+const bulkDeleteCustomers = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: 'Please provide an array of customer IDs.' });
+    }
+
+    const { Op } = require('sequelize');
+    const deletedCount = await Customer.destroy({
+      where: {
+        id: {
+          [Op.in]: ids
+        }
+      }
+    });
+
+    res.json({ message: `Successfully deleted ${deletedCount} customers`, count: deletedCount });
+  } catch (error) {
+    console.error('Error bulk deleting customers:', error);
+    res.status(500).json({ message: 'Server error during bulk delete' });
+  }
+};
+
 module.exports = {
   getCustomers,
   getCustomerById,
   createCustomer,
   createBulkCustomers,
   updateCustomer,
-  deleteCustomer
+  deleteCustomer,
+  bulkDeleteCustomers
 };
