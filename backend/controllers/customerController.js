@@ -1,5 +1,13 @@
 const { Customer, Area, Package } = require('../models');
 
+// Helper to sanitize UUIDs (convert empty strings to null)
+const sanitizeUUID = (id) => {
+  if (!id || id === '' || id === 'null' || id === 'undefined') return null;
+  // Basic UUID format check (8-4-4-4-12)
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(id) ? id : null;
+};
+
 // @desc    Get all customers
 // @route   GET /api/customers
 // @access  Private
@@ -65,9 +73,10 @@ const createCustomer = async (req, res) => {
         name, mobile, 
         email: sanitizedEmail, 
         house_no, locality, city, pincode,
-        area_id, installation_date, status,
+        area_id: sanitizeUUID(area_id), 
+        installation_date, status,
         service_type: 'Cable',
-        package_id: cable_package_id,
+        package_id: sanitizeUUID(cable_package_id),
         next_billing_date: installation_date ? new Date(new Date(installation_date).setMonth(new Date(installation_date).getMonth() + 1)) : null,
         discount: parseFloat(discount) / 2 || 0 
       });
@@ -78,9 +87,10 @@ const createCustomer = async (req, res) => {
         name, mobile, 
         email: sanitizedEmail, 
         house_no, locality, city, pincode,
-        area_id, installation_date, status,
+        area_id: sanitizeUUID(area_id), 
+        installation_date, status,
         service_type: 'Internet',
-        package_id: internet_package_id,
+        package_id: sanitizeUUID(internet_package_id),
         next_billing_date: installation_date ? new Date(new Date(installation_date).setMonth(new Date(installation_date).getMonth() + 1)) : null,
         discount: parseFloat(discount) / 2 || 0
       });
@@ -96,9 +106,10 @@ const createCustomer = async (req, res) => {
       mobile, 
       email: sanitizedEmail, 
       house_no, locality, city, pincode,
-      area_id, installation_date, status,
+      area_id: sanitizeUUID(area_id), 
+      installation_date, status,
       service_type,
-      package_id: service_type === 'Cable' ? cable_package_id : internet_package_id,
+      package_id: sanitizeUUID(service_type === 'Cable' ? cable_package_id : internet_package_id),
       next_billing_date: installation_date ? new Date(new Date(installation_date).setMonth(new Date(installation_date).getMonth() + 1)) : null,
       discount: discount || 0
     });
@@ -214,7 +225,12 @@ const updateCustomer = async (req, res) => {
       return res.status(404).json({ message: 'Customer not found' });
     }
 
-    await customer.update(req.body);
+    const updateData = { ...req.body };
+    // Sanitize UUID fields if they exist in the payload
+    if (updateData.area_id !== undefined) updateData.area_id = sanitizeUUID(updateData.area_id);
+    if (updateData.package_id !== undefined) updateData.package_id = sanitizeUUID(updateData.package_id);
+
+    await customer.update(updateData);
     
     res.json(customer);
   } catch (error) {
