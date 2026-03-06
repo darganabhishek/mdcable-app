@@ -75,6 +75,13 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
         cable_package_id: '',
         internet_package_id: ''
       }));
+    } else if (name === 'service_type') {
+      // If switching to Cable, we might want to clear area_id if that's the business rule
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+        ...(value === 'Cable' ? { area_id: '' } : {})
+      }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -105,7 +112,10 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
   };
 
   // Filter packages based on selected area
-  const filteredPackages = packages.filter(p => !formData.area_id || p.area_id === formData.area_id);
+  // Logic: Show packages that match the area_id OR global packages (area_id is null/empty)
+  const filteredPackages = packages.filter(p => 
+    !p.area_id || p.area_id === formData.area_id
+  );
   
   // Calculate total monthly committed amount
   const calculateTotal = () => {
@@ -198,18 +208,26 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
               </div>
             </div>
 
-            <div className="input-group">
-              <label className="input-label">Service Area</label>
-              <div className="input-with-icon">
-                  <i className="ri-community-line"></i>
-                  <select name="area_id" className="input-control" value={formData.area_id} onChange={handleChange} required>
-                    <option value="">-- Select Service Area --</option>
-                    {areas.map(area => (
-                        <option key={area.id} value={area.id}>{area.name}</option>
-                    ))}
-                  </select>
+            {formData.service_type !== 'Cable' && (
+              <div className="input-group">
+                <label className="input-label">Service Area</label>
+                <div className="input-with-icon">
+                    <i className="ri-community-line"></i>
+                    <select 
+                      name="area_id" 
+                      className="input-control" 
+                      value={formData.area_id} 
+                      onChange={handleChange} 
+                      required={formData.service_type !== 'Cable'}
+                    >
+                      <option value="">-- Select Service Area --</option>
+                      {areas.map(area => (
+                          <option key={area.id} value={area.id}>{area.name}</option>
+                      ))}
+                    </select>
+                </div>
               </div>
-            </div>
+            )}
             <div className="input-group">
               <label className="input-label">Service Access</label>
               <div className="input-with-icon">
