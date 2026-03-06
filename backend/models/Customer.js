@@ -30,7 +30,11 @@ const Customer = sequelize.define('Customer', {
     type: DataTypes.STRING,
     allowNull: true,
     validate: {
-      isEmail: true
+      isEmailIfNotEmpty(value) {
+        if (value && value.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          throw new Error('Must be a valid email address');
+        }
+      }
     }
   },
   house_no: {

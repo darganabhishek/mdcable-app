@@ -50,6 +50,9 @@ const createCustomer = async (req, res) => {
       area_id, installation_date, status, service_type, 
       cable_package_id, internet_package_id, discount 
     } = req.body;
+
+    const sanitizedEmail = (email && email.trim()) ? email.trim() : null;
+    const sanitizedUsername = (username && username.trim()) ? username.trim() : null;
     
     // Function to generate a random customer ID
     const generateId = () => `MD-${Math.floor(1000 + Math.random() * 9000)}-${Date.now().toString().slice(-4)}`;
@@ -58,7 +61,10 @@ const createCustomer = async (req, res) => {
       // Create two records
       const cableCustomer = await Customer.create({
         customer_id: generateId(),
-        username, name, mobile, email, house_no, locality, city, pincode,
+        username: sanitizedUsername, 
+        name, mobile, 
+        email: sanitizedEmail, 
+        house_no, locality, city, pincode,
         area_id, installation_date, status,
         service_type: 'Cable',
         package_id: cable_package_id,
@@ -68,7 +74,10 @@ const createCustomer = async (req, res) => {
 
       const internetCustomer = await Customer.create({
         customer_id: generateId(),
-        username, name, mobile, email, house_no, locality, city, pincode,
+        username: sanitizedUsername, 
+        name, mobile, 
+        email: sanitizedEmail, 
+        house_no, locality, city, pincode,
         area_id, installation_date, status,
         service_type: 'Internet',
         package_id: internet_package_id,
@@ -82,7 +91,11 @@ const createCustomer = async (req, res) => {
     // Single record creation
     const customer = await Customer.create({
       customer_id: generateId(),
-      name, username, mobile, email, house_no, locality, city, pincode,
+      name, 
+      username: sanitizedUsername, 
+      mobile, 
+      email: sanitizedEmail, 
+      house_no, locality, city, pincode,
       area_id, installation_date, status,
       service_type,
       package_id: service_type === 'Cable' ? cable_package_id : internet_package_id,
