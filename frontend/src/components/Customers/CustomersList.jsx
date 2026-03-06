@@ -63,12 +63,20 @@ const CustomersList = () => {
     setIsModalOpen(true);
   };
 
+  const toTitleCase = (str) => {
+    if (!str) return '';
+    return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
   if (loading) return <div className="loading-state">Loading users...</div>;
 
   return (
     <div className="module-container">
       <div className="module-header">
-        <h2>Customer Base</h2>
+        <div>
+          <h2 style={{ marginBottom: '0.25rem' }}>Customer Base</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Manage and monitor your subscriber network.</p>
+        </div>
         <div className="action-buttons">
             <button className="btn-secondary" onClick={() => setIsBulkModalOpen(true)}>
                 <i className="ri-file-upload-line"></i>
@@ -132,18 +140,24 @@ const CustomersList = () => {
           <tbody>
             {filteredCustomers.map((cust) => (
               <tr key={cust.id}>
-                <td style={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: 'var(--primary)' }}>
+                <td style={{ fontWeight: 800, fontVariantNumeric: 'tabular-nums', color: 'var(--primary)', fontSize: '0.85rem' }}>
                     {cust.customer_id}
                 </td>
                 <td>
                     <div className="user-cell">
-                        <div className="user-avatar">{cust.name[0]}</div>
-                        <span>{cust.name}</span>
+                        <div className="user-avatar">{cust.name[0]?.toUpperCase()}</div>
+                        <div className="user-info-stack">
+                            <span className="user-name-text">{toTitleCase(cust.name)}</span>
+                            {cust.username && <span className="user-subtext">@{cust.username}</span>}
+                        </div>
                     </div>
                 </td>
-                <td>{cust.mobile}</td>
-                <td style={{ maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {cust.house_no}, {cust.locality}, {cust.city}
+                <td style={{ letterSpacing: '0.05em', fontWeight: 600 }}>{cust.mobile}</td>
+                <td>
+                    <div className="address-stack">
+                        <span className="address-main">{toTitleCase(`${cust.house_no}, ${cust.locality}`)}</span>
+                        <span className="address-sub">{toTitleCase(cust.city)} {cust.pincode}</span>
+                    </div>
                 </td>
                 <td>
                   <span className={`status-badge status-${cust.service_type === 'Cable' ? 'info' : 'active'}`}>
