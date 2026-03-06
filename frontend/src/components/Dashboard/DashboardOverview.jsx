@@ -11,6 +11,8 @@ import {
   PieChart,
   Pie,
   Cell,
+  AreaChart,
+  Area,
   LineChart,
   Line,
   Legend
@@ -77,30 +79,59 @@ const DashboardOverview = () => {
       
       <div className="kpi-grid">
         <div className="kpi-card glass-panel">
-          <div className="kpi-icon monthly">
-            <i className="ri-hand-coin-line"></i>
-          </div>
+          <div className="kpi-icon customers">👥</div>
           <div className="kpi-info">
-            <h3>Monthly Collections</h3>
-            <p className="kpi-value positive">₹ {stats.monthlyCollection?.toLocaleString() || 0}</p>
+            <h3>Total Customers</h3>
+            <p className="kpi-value">{stats.totalCustomers?.toLocaleString() || 0}</p>
           </div>
         </div>
         <div className="kpi-card glass-panel">
-          <div className="kpi-icon project">
-            <i className="ri-funds-line"></i>
-          </div>
+          <div className="kpi-icon revenue">💰</div>
           <div className="kpi-info">
-            <h3>Projected Revenue (30d)</h3>
-            <p className="kpi-value info">₹ {stats.projectedRevenue?.toLocaleString() || 0}</p>
+            <h3>Total Revenue</h3>
+            <p className="kpi-value positive">₹{stats.totalRevenue?.toLocaleString() || 0}</p>
           </div>
         </div>
         <div className="kpi-card glass-panel">
-          <div className="kpi-icon due">
-            <i className="ri-alarm-warning-line"></i>
-          </div>
+          <div className="kpi-icon collection">📉</div>
           <div className="kpi-info">
-            <h3>Outstanding Dues</h3>
-            <p className="kpi-value negative">₹ {stats.totalPaymentDue?.toLocaleString() || 0}</p>
+            <h3>Monthly Collection</h3>
+            <p className="kpi-value info">₹{stats.monthlyCollection?.toLocaleString() || 0}</p>
+          </div>
+        </div>
+        <div className="kpi-card glass-panel">
+          <div className="kpi-icon due">⏳</div>
+          <div className="kpi-info">
+            <h3>Renewals Due</h3>
+            <p className="kpi-value negative">{stats.renewalsDue || 0}</p>
+          </div>
+        </div>
+        <div className="kpi-card glass-panel">
+          <div className="kpi-icon active">✅</div>
+          <div className="kpi-info">
+            <h3>Active Users</h3>
+            <p className="kpi-value positive">{stats.activeUsers || 0}</p>
+          </div>
+        </div>
+        <div className="kpi-card glass-panel">
+          <div className="kpi-icon inactive">💤</div>
+          <div className="kpi-info">
+            <h3>Inactive Users</h3>
+            <p className="kpi-value">{stats.inactiveUsers || 0}</p>
+          </div>
+        </div>
+        <div className="kpi-card glass-panel">
+          <div className="kpi-icon suspended">🚫</div>
+          <div className="kpi-info">
+            <h3>Suspended</h3>
+            <p className="kpi-value warning">{stats.suspendedUsers || 0}</p>
+          </div>
+        </div>
+        <div className="kpi-card glass-panel">
+          <div className="kpi-icon projected">📑</div>
+          <div className="kpi-info">
+            <h3>Projected (30d)</h3>
+            <p className="kpi-value info">₹{stats.projectedRevenue?.toLocaleString() || 0}</p>
           </div>
         </div>
       </div>
@@ -113,7 +144,13 @@ const DashboardOverview = () => {
           </h3>
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height={320}>
-              <LineChart data={stats.growthData}>
+              <AreaChart data={stats.growthData}>
+                <defs>
+                  <linearGradient id="colorCustomers" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.05} />
                 <XAxis 
                     dataKey="month" 
@@ -135,16 +172,18 @@ const DashboardOverview = () => {
                   }}
                   itemStyle={{ color: '#fff' }}
                 />
-                <Line 
+                <Area 
                     type="monotone" 
                     dataKey="customers" 
                     stroke="var(--primary)" 
-                    strokeWidth={4} 
+                    strokeWidth={4}
+                    fillOpacity={1}
+                    fill="url(#colorCustomers)"
                     dot={{ r: 6, fill: 'var(--primary)', strokeWidth: 2, stroke: '#fff' }}
                     activeDot={{ r: 8, strokeWidth: 0 }}
                     name="New Users"
                 />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
@@ -187,11 +226,24 @@ const DashboardOverview = () => {
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={stats.monthlyData}>
+                  <defs>
+                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.2}/>
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
                   <XAxis dataKey="month" axisLine={false} tickLine={false} />
                   <YAxis axisLine={false} tickLine={false} />
-                  <Tooltip />
-                  <Bar dataKey="uv" fill="var(--primary)" radius={[4, 4, 0, 0]} barSize={24} />
+                  <Tooltip 
+                    contentStyle={{ 
+                        backgroundColor: 'rgba(30, 41, 59, 0.9)', 
+                        border: '1px solid var(--surface-border)', 
+                        borderRadius: '12px',
+                        color: 'white'
+                    }}
+                  />
+                  <Bar dataKey="uv" fill="url(#colorRevenue)" radius={[4, 4, 0, 0]} barSize={24} name="Revenue" />
                 </BarChart>
             </ResponsiveContainer>
           </div>

@@ -15,48 +15,64 @@
 
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.25rem;
 }
 
 .kpi-card {
-  padding: 2.25rem;
+  padding: 1.25rem;
   display: flex;
   align-items: center;
-  gap: 1.75rem;
+  gap: 1rem;
   transition: var(--transition);
   cursor: default;
+  min-height: 100px;
 }
 
 .kpi-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.4);
+  border-color: var(--primary);
 }
 
 .kpi-icon {
-  width: 68px;
-  height: 68px;
-  border-radius: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
+  font-size: 1.4rem;
   flex-shrink: 0;
 }
 
-.kpi-icon.monthly {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--success);
+.kpi-card h3 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
 }
 
-.kpi-icon.project {
-  background: rgba(99, 102, 241, 0.1);
-  color: var(--primary);
+.kpi-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 0;
 }
 
-.kpi-value.info {
-  color: var(--primary);
-}
+.kpi-icon.customers { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
+.kpi-icon.revenue { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+.kpi-icon.collection { background: rgba(56, 189, 248, 0.1); color: var(--info); }
+.kpi-icon.due { background: rgba(251, 113, 133, 0.1); color: var(--danger); }
+.kpi-icon.active { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+.kpi-icon.inactive { background: rgba(148, 163, 184, 0.1); color: var(--text-muted); }
+.kpi-icon.suspended { background: rgba(251, 191, 36, 0.1); color: var(--warning); }
+.kpi-icon.projected { background: rgba(139, 92, 246, 0.1); color: var(--primary-hover); }
+
+.kpi-value.positive { color: var(--success); }
+.kpi-value.negative { color: var(--danger); }
+.kpi-value.warning { color: var(--warning); }
+.kpi-value.info { color: var(--info); }
 
 .charts-grid-top, .charts-grid-bottom {
   display: grid;

@@ -95,7 +95,23 @@ const getDashboardStats = async (req, res) => {
       where: { payment_date: { [Op.gte]: startOfYear } }
     });
 
-    // 2. Payment Due (Customer Balances)
+    const totalRevenue = await Payment.sum('amount');
+
+    // 2. Customer Performance & Status
+    const totalCustomers = await Customer.count();
+    const activeUsers = await Customer.count({ where: { status: 'Active' } });
+    const inactiveUsers = await Customer.count({ where: { status: 'Inactive' } });
+    const suspendedUsers = await Customer.count({ where: { status: 'Suspended' } });
+    
+    // Renewals Due: Active or Suspended customers whose billing date has passed or is today
+    const renewalsDue = await Customer.count({
+      where: {
+        status: { [Op.ne]: 'Inactive' },
+        next_billing_date: { [Op.lte]: today }
+      }
+    });
+
+    // 3. Payment Due (Customer Balances)
     const totalPaymentDue = await Customer.sum('balance', {
       where: { balance: { [Op.gt]: 0 } }
     });
@@ -193,6 +209,12 @@ const getDashboardStats = async (req, res) => {
     res.json({
       monthlyCollection: monthlyCollection || 0,
       yearlyCollection: yearlyCollection || 0,
+      totalRevenue: totalRevenue || 0,
+      totalCustomers: totalCustomers || 0,
+      activeUsers: activeUsers || 0,
+      inactiveUsers: inactiveUsers || 0,
+      suspendedUsers: suspendedUsers || 0,
+      renewalsDue: renewalsDue || 0,
       totalPaymentDue: totalPaymentDue || 0,
       projectedRevenue: projectedRevenue || 0,
       areaDistribution,
