@@ -92,8 +92,13 @@ const CustomersList = () => {
   };
 
   const toTitleCase = (str) => {
-    if (!str) return '';
+    if (!str || str.toLowerCase() === 'null') return '';
     return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
+  const renderAddress = (house_no, locality) => {
+    const parts = [house_no, locality].filter(p => p && p.toLowerCase() !== 'null');
+    return parts.length > 0 ? parts.map(toTitleCase).join(', ') : '-';
   };
 
   if (loading) return <div className="loading-state">Loading users...</div>;
@@ -209,8 +214,8 @@ const CustomersList = () => {
                 <td style={{ letterSpacing: '0.05em', fontWeight: 600 }}>{cust.mobile}</td>
                 <td>
                     <div className="address-stack">
-                        <span className="address-main">{toTitleCase(`${cust.house_no}, ${cust.locality}`)}</span>
-                        <span className="address-sub">{toTitleCase(cust.city)} {cust.pincode}</span>
+                        <span className="address-main">{renderAddress(cust.house_no, cust.locality)}</span>
+                        <span className="address-sub">{toTitleCase(cust.city)}{cust.pincode ? ` ${cust.pincode}` : ''}</span>
                     </div>
                 </td>
                 <td>

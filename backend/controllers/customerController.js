@@ -132,23 +132,7 @@ const createBulkCustomers = async (req, res) => {
       return res.status(400).json({ message: 'Invalid data format. Expected a non-empty array.' });
     }
 
-    // Helper to find a value by searching for multiple possible key aliases
-    const findValue = (obj, aliases) => {
-      // Create a lowercase map of keys for easier matching
-      const lowerCaseObj = {};
-      Object.keys(obj).forEach(key => {
-        lowerCaseObj[key.toLowerCase().trim()] = obj[key];
-      });
-
-      for (const alias of aliases) {
-        const lowerAlias = alias.toLowerCase();
-        if (lowerCaseObj[lowerAlias] !== undefined && lowerCaseObj[lowerAlias] !== null) {
-          return lowerCaseObj[lowerAlias];
-        }
-      }
-      return null;
-    };
-
+    // Removed old findValue
     const nameAliases = ['name', 'full name', 'customer name', 'customer', 'first name', 'naam'];
     const phoneAliases = ['phone', 'mobile', 'contact', 'phone number', 'mobile number', 'contact number', 'phone_number', 'mobile_no'];
     const planAliases = ['plan', 'package', 'service', 'subscription', 'cable_package', 'internet_package', 'internet_plan'];
@@ -165,15 +149,32 @@ const createBulkCustomers = async (req, res) => {
     const existingAreas = await Area.findAll();
     const existingPackages = await Package.findAll();
     
+    // Preparation: Map existing lookups
     const areaMap = {};
     existingAreas.forEach(a => areaMap[a.name.toLowerCase().trim()] = a.id);
     const packageMap = {};
     existingPackages.forEach(p => packageMap[p.name.toLowerCase().trim()] = p.id);
 
-    // Function to generate a random customer ID
+    // Helpers
     const generateId = () => `MD-${Math.floor(1000 + Math.random() * 9000)}-${Date.now().toString().slice(-4)}`;
+    const normalizeStr = str => String(str).toLowerCase().replace(/[^a-z0-9]/g, '');
+    
+    // Flexible matching immune to formatting variations (e.g., "Service Type" vs "Service  Type_")
+    const findValue = (obj, aliases) => {
+      const normalizedAliases = aliases.map(normalizeStr);
+      const key = Object.keys(obj).find(k => normalizedAliases.includes(normalizeStr(k)));
+      return key ? obj[key] : null;
+    };
 
-    // Prepare data with flexible matching
+    // Clean data wrapper immune to literal strings like "Null" passed by some CSV encoders
+    const cleanString = (val) => {
+        if (val === null || val === undefined) return null;
+        const s = String(val).trim();
+        if (s.toLowerCase() === 'null' || s.toLowerCase() === 'undefined' || s === '') return null;
+        return s;
+    };
+
+    // Process rows
     const validCustomers = customersArray.map(c => {
       const name = findValue(c, nameAliases);
       const username = findValue(c, usernameAliases);
@@ -181,11 +182,11 @@ const createBulkCustomers = async (req, res) => {
       const email = findValue(c, emailAliases);
       const house_no = findValue(c, houseAliases);
       const locality = findValue(c, localityAliases);
-      const city = findValue(c, cityAliases) || 'Kanpur';
+      const city = findValue(c, cityAliases);
       const pincode = findValue(c, pincodeAliases);
       const installation_date = findValue(c, dateAliases);
-      const discount = findValue(c, ['discount', 'off', 'rebate']) || 0;
-      const status = findValue(c, ['status', 'state', 'condition']) || 'Active';
+      const discount = findValue(c, ['discount', 'off', 'rebate']);
+      const status = findValue(c, ['status', 'state', 'condition']);
       
       const serviceTypeRaw = findValue(c, serviceTypeAliases);
       const service_type = (serviceTypeRaw && String(serviceTypeRaw).toLowerCase().includes('internet')) ? 'Internet' : 'Cable';
@@ -201,19 +202,19 @@ const createBulkCustomers = async (req, res) => {
 
       return {
         customer_id: generateId(),
-        username: username ? String(username).trim() : null,
-        name: name ? String(name).trim() : null,
+        username: cleanString(username),
+        name: cleanString(name),
         mobile: phone ? (phone.length >= 10 ? phone.slice(-10) : phone.padStart(10, '0')) : null, 
-        email: email ? String(email).trim() : null,
-        house_no: house_no ? String(house_no).trim() : null,
-        locality: locality ? String(locality).trim() : null,
-        city: city ? String(city).trim() : 'Kanpur',
-        pincode: pincode ? String(pincode).trim() : null,
+        email: cleanString(email),
+        house_no: cleanString(house_no),
+        locality: cleanString(locality),
+        city: cleanString(city) || 'Kanpur',
+        pincode: cleanString(pincode),
         area_id: area_id,
         package_id: package_id,
         installation_date: installation_date ? new Date(installation_date) : new Date(),
         next_billing_date: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-        status: status ? String(status).trim() : 'Active',
+        status: cleanString(status) || 'Active',
         service_type: service_type,
         discount: parseFloat(discount) || 0
       };
