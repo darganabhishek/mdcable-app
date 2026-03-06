@@ -50,7 +50,7 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
         email: customer.email || '',
         house_no: customer.house_no || '',
         locality: customer.locality || '',
-        city: customer.city || 'Kanpur',
+        city: customer.city || 'Delhi',
         pincode: customer.pincode || '',
         area: customer.area || '',
         area_id: customer.area_id || '',

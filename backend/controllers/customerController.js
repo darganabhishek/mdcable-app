@@ -208,7 +208,7 @@ const createBulkCustomers = async (req, res) => {
         email: cleanString(email),
         house_no: cleanString(house_no),
         locality: cleanString(locality),
-        city: cleanString(city) || 'Kanpur',
+        city: cleanString(city) || 'Delhi',
         pincode: cleanString(pincode),
         area_id: area_id,
         package_id: package_id,

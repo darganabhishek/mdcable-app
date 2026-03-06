@@ -48,7 +48,7 @@ const Customer = sequelize.define('Customer', {
   city: {
     type: DataTypes.STRING,
     allowNull: false,
-    defaultValue: 'Kanpur'
+    defaultValue: 'Delhi'
   },
   pincode: {
     type: DataTypes.STRING(6),

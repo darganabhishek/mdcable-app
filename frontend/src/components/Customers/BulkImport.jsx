@@ -31,7 +31,7 @@ const BulkImport = ({ onClose, onSave }) => {
         "Area": 'Kidwai Nagar',
         "House No": '11/28',
         "Locality": 'Kidwai Nagar',
-        "City": 'Kanpur',
+        "City": 'Delhi',
         "Pincode": '208011',
         "Username": 'rahul_123',
         "Email": 'rahul@example.com',
