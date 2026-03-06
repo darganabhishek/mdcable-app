@@ -182,8 +182,22 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
                     <i className="ri-tv-2-line"></i>
                     <select name="cable_package_id" className="input-control" value={formData.cable_package_id} onChange={handleChange}>
                       <option value="">-- Select Cable Package --</option>
-                      {filteredPackages.filter(p => p.service_type === 'Cable').map(pkg => (
-                        <option key={pkg.id} value={pkg.id}>{pkg.name} (₹{pkg.price})</option>
+                      {/* Group Cable Packages by Area */}
+                      {Object.entries(
+                        filteredPackages
+                          .filter(p => p.service_type === 'Cable')
+                          .reduce((acc, p) => {
+                            const areaName = p.area?.name || 'General / All Areas';
+                            if (!acc[areaName]) acc[areaName] = [];
+                            acc[areaName].push(p);
+                            return acc;
+                          }, {})
+                      ).map(([areaName, pkgs]) => (
+                        <optgroup key={areaName} label={areaName}>
+                          {pkgs.map(pkg => (
+                            <option key={pkg.id} value={pkg.id}>{pkg.name} (₹{pkg.price})</option>
+                          ))}
+                        </optgroup>
                       ))}
                     </select>
                 </div>
@@ -197,8 +211,22 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
                     <i className="ri-router-line"></i>
                     <select name="internet_package_id" className="input-control" value={formData.internet_package_id} onChange={handleChange}>
                       <option value="">-- Select Internet Package --</option>
-                      {filteredPackages.filter(p => p.service_type === 'Internet').map(pkg => (
-                        <option key={pkg.id} value={pkg.id}>{pkg.name} (₹{pkg.price})</option>
+                      {/* Group Internet Packages by Area */}
+                      {Object.entries(
+                        filteredPackages
+                          .filter(p => p.service_type === 'Internet')
+                          .reduce((acc, p) => {
+                            const areaName = p.area?.name || 'General / All Areas';
+                            if (!acc[areaName]) acc[areaName] = [];
+                            acc[areaName].push(p);
+                            return acc;
+                          }, {})
+                      ).map(([areaName, pkgs]) => (
+                        <optgroup key={areaName} label={areaName}>
+                          {pkgs.map(pkg => (
+                            <option key={pkg.id} value={pkg.id}>{pkg.name} (₹{pkg.price})</option>
+                          ))}
+                        </optgroup>
                       ))}
                     </select>
                 </div>
