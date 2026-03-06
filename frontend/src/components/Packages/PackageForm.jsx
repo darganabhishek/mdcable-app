@@ -45,7 +45,11 @@ const PackageForm = ({ packageData, onClose, onSave }) => {
     e.preventDefault();
     try {
       const submissionData = { ...formData };
-      if (!submissionData.area_id) delete submissionData.area_id;
+      if (submissionData.service_type === 'Cable') {
+        submissionData.area_id = null;
+      } else if (!submissionData.area_id) {
+        delete submissionData.area_id;
+      }
 
       if (packageData) {
         await axios.put(`${import.meta.env.VITE_API_URL}/packages/${packageData.id}`, submissionData);
@@ -102,18 +106,20 @@ const PackageForm = ({ packageData, onClose, onSave }) => {
               </div>
           </div>
 
-          <div className="input-group">
-            <label className="input-label">Target Area (Subgroup)</label>
-            <div className="input-with-icon">
-                <i className="ri-map-pin-line"></i>
-                <select name="area_id" className="input-control" value={formData.area_id} onChange={handleChange}>
-                    <option value="">General (No Area)</option>
-                    {areas.map(area => (
-                        <option key={area.id} value={area.id}>{area.name}</option>
-                    ))}
-                </select>
+          {formData.service_type !== 'Cable' && (
+            <div className="input-group">
+              <label className="input-label">Target Area (Subgroup)</label>
+              <div className="input-with-icon">
+                  <i className="ri-map-pin-line"></i>
+                  <select name="area_id" className="input-control" value={formData.area_id} onChange={handleChange}>
+                      <option value="">General (No Area)</option>
+                      {areas.map(area => (
+                          <option key={area.id} value={area.id}>{area.name}</option>
+                      ))}
+                  </select>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="input-group">
             <label className="input-label">Description & Features</label>

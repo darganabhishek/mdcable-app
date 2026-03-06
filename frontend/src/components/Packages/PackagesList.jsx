@@ -100,6 +100,63 @@ const PackagesList = () => {
 
   if (loading) return <div className="loading-state">Loading inventory...</div>;
 
+  const renderPackageTable = (pkgs) => (
+    <table className="data-table mb-4">
+      <thead>
+        <tr>
+          <th>Service Name</th>
+          <th>Category</th>
+          <th>Monthly Fee</th>
+          <th>Description</th>
+          <th>Status</th>
+          <th className="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {pkgs.map(pkg => (
+          <tr key={pkg.id}>
+            <td>
+                <div className="user-cell">
+                    <div className="user-avatar" style={{ background: pkg.service_type === 'Cable' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: pkg.service_type === 'Cable' ? 'var(--info)' : 'var(--success)' }}>
+                        <i className={pkg.service_type === 'Cable' ? 'ri-tv-2-line' : 'ri-router-line'}></i>
+                    </div>
+                    <strong>{pkg.name}</strong>
+                </div>
+            </td>
+            <td>
+              <span className={`status-badge ${pkg.service_type === 'Cable' ? 'status-info' : 'status-active'}`}>
+                {pkg.service_type}
+              </span>
+            </td>
+            <td>
+                <span style={{ fontWeight: 800 }}>₹{parseFloat(pkg.price).toFixed(2)}</span>
+            </td>
+            <td style={{ maxWidth: '250px' }}>
+                <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                    {pkg.description || 'No features listed.'}
+                </div>
+            </td>
+            <td>
+              <span className={`status-badge ${pkg.status === 'Active' ? 'status-active' : 'status-inactive'}`}>
+                {pkg.status}
+              </span>
+            </td>
+            <td>
+              <div className="action-buttons justify-end">
+                <button className="btn-icon-only" onClick={() => openEditModal(pkg)}>
+                    <i className="ri-edit-line"></i>
+                </button>
+                <button className="btn-icon-only danger" onClick={() => handleDelete(pkg.id)}>
+                    <i className="ri-delete-bin-line"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+
   return (
     <div className="module-container">
       <div className="module-header">
@@ -119,10 +176,12 @@ const PackagesList = () => {
           </div>
         </div>
         <div className="action-buttons">
-          <button className="btn-secondary" onClick={() => setIsAreaModalOpen(true)}>
-              <i className="ri-map-pin-line"></i>
-              Manage Areas
-          </button>
+          {selectedType !== 'Cable' && (
+            <button className="btn-secondary" onClick={() => setIsAreaModalOpen(true)}>
+                <i className="ri-map-pin-line"></i>
+                Manage Areas
+            </button>
+          )}
           <button className="btn-primary" onClick={openAddModal}>
               <i className="ri-add-line"></i>
               New Package
@@ -131,100 +190,65 @@ const PackagesList = () => {
       </div>
 
       <div className="table-responsive">
-        {Object.entries(groupedPackages).map(([areaName, pkgs]) => (
-          (pkgs.length > 0 || areaName !== 'General / All Areas') && (
-            <div key={areaName} className="area-group mb-12">
-              <div className="area-header-premium">
+        {selectedType === 'Cable' ? (
+          <div className="area-group mb-12">
+             <div className="area-header-premium">
                 <div className="area-title-group">
                   <div className="area-icon-wrapper">
-                    <i className="ri-map-pin-2-fill"></i>
+                    <i className="ri-tv-2-fill"></i>
                   </div>
                   <div className="area-info">
-                    <span className="area-label">Service Area</span>
-                    <span className="area-name">{areaName}</span>
+                    <span className="area-label">Service Type</span>
+                    <span className="area-name">All Cable Plans</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                   <div className="area-badge">
-                     <i className="ri-stack-line"></i>
-                     {pkgs.length} {pkgs.length === 1 ? 'Plan' : 'Plans'}
-                   </div>
-                   {areaName !== 'General / All Areas' && (
-                     <button 
-                      className="btn-icon-only danger" 
-                      style={{ background: 'transparent', width: '32px', height: '32px' }}
-                      onClick={() => handleDeleteArea(areas.find(a => a.name === areaName)?.id)}
-                     >
-                       <i className="ri-delete-bin-7-line"></i>
-                     </button>
-                   )}
+                <div className="area-badge">
+                  <i className="ri-stack-line"></i>
+                  {filteredPackages.length} Plans
                 </div>
+             </div>
+             {renderPackageTable(filteredPackages)}
+          </div>
+        ) : (
+          Object.entries(groupedPackages).map(([areaName, pkgs]) => (
+            (pkgs.length > 0 || areaName !== 'General / All Areas') && (
+              <div key={areaName} className="area-group mb-12">
+                <div className="area-header-premium">
+                  <div className="area-title-group">
+                    <div className="area-icon-wrapper">
+                      <i className="ri-map-pin-2-fill"></i>
+                    </div>
+                    <div className="area-info">
+                      <span className="area-label">Service Area</span>
+                      <span className="area-name">{areaName}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                     <div className="area-badge">
+                       <i className="ri-stack-line"></i>
+                       {pkgs.length} {pkgs.length === 1 ? 'Plan' : 'Plans'}
+                     </div>
+                     {areaName !== 'General / All Areas' && (
+                       <button 
+                        className="btn-icon-only danger" 
+                        style={{ background: 'transparent', width: '32px', height: '32px' }}
+                        onClick={() => handleDeleteArea(areas.find(a => a.name === areaName)?.id)}
+                       >
+                         <i className="ri-delete-bin-7-line"></i>
+                       </button>
+                     )}
+                  </div>
+                </div>
+                {pkgs.length > 0 ? renderPackageTable(pkgs) : (
+                  <div className="empty-area-state">
+                     <i className="ri-information-line" style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}></i>
+                     No plans created for this area yet.
+                  </div>
+                )}
               </div>
-              
-              {pkgs.length > 0 ? (
-                <table className="data-table mb-4">
-                  <thead>
-                    <tr>
-                      <th>Service Name</th>
-                      <th>Category</th>
-                      <th>Monthly Fee</th>
-                      <th>Description</th>
-                      <th>Status</th>
-                      <th className="text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pkgs.map(pkg => (
-                      <tr key={pkg.id}>
-                        <td>
-                            <div className="user-cell">
-                                <div className="user-avatar" style={{ background: pkg.service_type === 'Cable' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: pkg.service_type === 'Cable' ? 'var(--info)' : 'var(--success)' }}>
-                                    <i className={pkg.service_type === 'Cable' ? 'ri-tv-2-line' : 'ri-router-line'}></i>
-                                </div>
-                                <strong>{pkg.name}</strong>
-                            </div>
-                        </td>
-                        <td>
-                          <span className={`status-badge ${pkg.service_type === 'Cable' ? 'status-info' : 'status-active'}`}>
-                            {pkg.service_type}
-                          </span>
-                        </td>
-                        <td>
-                            <span style={{ fontWeight: 800 }}>₹{parseFloat(pkg.price).toFixed(2)}</span>
-                        </td>
-                        <td style={{ maxWidth: '250px' }}>
-                            <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                                {pkg.description || 'No features listed.'}
-                            </div>
-                        </td>
-                        <td>
-                          <span className={`status-badge ${pkg.status === 'Active' ? 'status-active' : 'status-inactive'}`}>
-                            {pkg.status}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="action-buttons justify-end">
-                            <button className="btn-icon-only" onClick={() => openEditModal(pkg)}>
-                                <i className="ri-edit-line"></i>
-                            </button>
-                            <button className="btn-icon-only danger" onClick={() => handleDelete(pkg.id)}>
-                                <i className="ri-delete-bin-line"></i>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <div className="empty-area-state">
-                   <i className="ri-information-line" style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}></i>
-                   No plans created for this area yet.
-                </div>
-              )}
-            </div>
-          )
-        ))}
+            )
+          ))
+        )}
       </div>
 
       {isModalOpen && (
