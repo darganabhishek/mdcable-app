@@ -2,17 +2,19 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../Customers/CustomerForm.css'; // Reusing modal CSS
 
-const PaymentForm = ({ onClose, onSave }) => {
+const PaymentForm = ({ onClose, onSave, payment }) => {
   const [customers, setCustomers] = useState([]);
   const [formData, setFormData] = useState({
-    customer_id: '',
-    amount: '',
-    payment_date: new Date().toISOString().split('T')[0],
-    status: 'Completed',
-    remarks: ''
+    customer_id: payment?.customer_id || '',
+    amount: payment?.amount || '',
+    payment_date: payment?.payment_date ? new Date(payment.payment_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    status: payment?.status || 'Completed',
+    remarks: payment?.remarks || ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const isEdit = !!payment;
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -23,8 +25,8 @@ const PaymentForm = ({ onClose, onSave }) => {
         console.error('Failed to load customers for payment form');
       }
     };
-    fetchCustomers();
-  }, []);
+    if (!isEdit) fetchCustomers();
+  }, [isEdit]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -36,7 +38,11 @@ const PaymentForm = ({ onClose, onSave }) => {
     setError('');
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/payments`, formData);
+      if (isEdit) {
+        await axios.put(`${import.meta.env.VITE_API_URL}/payments/${payment.id}`, formData);
+      } else {
+        await axios.post(`${import.meta.env.VITE_API_URL}/payments`, formData);
+      }
       onSave();
     } catch (err) {
       setError(err.response?.data?.message || 'An error occurred');
@@ -52,9 +58,9 @@ const PaymentForm = ({ onClose, onSave }) => {
             <i className="ri-close-line"></i>
         </button>
         <div className="modal-header">
-          <h3>Record New Payment</h3>
+          <h3>{isEdit ? 'Update Transaction' : 'Record New Payment'}</h3>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
-              Select a customer and enter the settlement amount.
+              {isEdit ? `Modifying Transaction ID: ${payment.transaction_id || 'Legacy'}` : 'Select a customer and enter the settlement amount.'}
           </p>
         </div>
         
@@ -66,11 +72,24 @@ const PaymentForm = ({ onClose, onSave }) => {
               <label className="input-label">Select Customer</label>
               <div className="input-with-icon">
                   <i className="ri-user-search-line"></i>
-                  <select name="customer_id" className="input-control" value={formData.customer_id} onChange={handleChange} required>
-                    <option value="" disabled>-- Search & Select Customer --</option>
-                    {customers.map(c => (
-                      <option key={c.id} value={c.id}>{c.name} ({c.phone})</option>
-                    ))}
+                  <select 
+                    name="customer_id" 
+                    className="input-control" 
+                    value={formData.customer_id} 
+                    onChange={handleChange} 
+                    required 
+                    disabled={isEdit}
+                  >
+                    {isEdit ? (
+                      <option value={payment.customer_id}>{payment.customer?.name} ({payment.customer?.phone})</option>
+                    ) : (
+                      <>
+                        <option value="" disabled>-- Search & Select Customer --</option>
+                        {customers.map(c => (
+                          <option key={c.id} value={c.id}>{c.name} ({c.phone})</option>
+                        ))}
+                      </>
+                    )}
                   </select>
               </div>
             </div>
@@ -116,7 +135,7 @@ const PaymentForm = ({ onClose, onSave }) => {
             <button type="button" className="btn-secondary" onClick={onClose}>Discard</button>
             <button type="submit" className="btn-primary" disabled={loading}>
                 <i className="ri-save-3-line"></i>
-                {loading ? 'Processing...' : 'Secure Settlement'}
+                {loading ? 'Processing...' : (isEdit ? 'Update Transaction' : 'Secure Settlement')}
             </button>
           </div>
         </form>

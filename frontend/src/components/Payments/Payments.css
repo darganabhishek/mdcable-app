@@ -39,3 +39,9 @@
 }
 .status-failed::before { background: var(--danger); }
 
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+

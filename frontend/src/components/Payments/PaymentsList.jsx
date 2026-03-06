@@ -10,6 +10,7 @@ const PaymentsList = () => {
   const [statusFilter, setStatusFilter] = useState('All');
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState(null);
 
   const fetchPayments = async () => {
     try {
@@ -19,6 +20,23 @@ const PaymentsList = () => {
       console.error('Failed to fetch payments', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEdit = (payment) => {
+    setSelectedPayment(payment);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to remove this transaction? This will automatically adjust the customer balance.')) {
+      try {
+        await axios.delete(`${import.meta.env.VITE_API_URL}/payments/${id}`);
+        fetchPayments();
+      } catch (error) {
+        console.error('Delete failed', error);
+        alert('Failed to delete transaction.');
+      }
     }
   };
 
@@ -79,10 +97,11 @@ const PaymentsList = () => {
           <thead>
             <tr>
               <th>Payment Date</th>
+              <th>Transaction ID</th>
               <th>Customer Details</th>
               <th>Amount Settled</th>
               <th>Transaction Status</th>
-              <th>Collected By</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -95,6 +114,9 @@ const PaymentsList = () => {
                         </div>
                         <span style={{ fontWeight: 600 }}>{new Date(payment.payment_date).toLocaleDateString()}</span>
                     </div>
+                </td>
+                <td style={{ fontFamily: 'monospace', fontWeight: 600, color: 'var(--primary)' }}>
+                    {payment.transaction_id || 'LEGACY-TRX'}
                 </td>
                 <td>
                     <div className="customer-info">
@@ -109,9 +131,13 @@ const PaymentsList = () => {
                   </span>
                 </td>
                 <td>
-                    <div className="collector-badge">
-                        <i className="ri-user-follow-line"></i>
-                        {payment.collector?.name}
+                    <div className="action-buttons">
+                        <button className="btn-action edit" onClick={() => handleEdit(payment)} title="Edit Transaction">
+                            <i className="ri-edit-line"></i>
+                        </button>
+                        <button className="btn-action delete" onClick={() => handleDelete(payment.id)} title="Delete Transaction">
+                            <i className="ri-delete-bin-line"></i>
+                        </button>
                     </div>
                 </td>
               </tr>
@@ -127,9 +153,14 @@ const PaymentsList = () => {
 
       {isModalOpen && (
         <PaymentForm 
-          onClose={() => setIsModalOpen(false)}
+          payment={selectedPayment}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedPayment(null);
+          }}
           onSave={() => {
             setIsModalOpen(false);
+            setSelectedPayment(null);
             fetchPayments();
           }}
         />

@@ -22,6 +22,11 @@ const Payment = sequelize.define('Payment', {
   remarks: {
      type: DataTypes.TEXT,
      allowNull: true
+  },
+  transaction_id: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true
   }
 }, {
   timestamps: true,
