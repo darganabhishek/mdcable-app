@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import CustomerForm from './CustomerForm';
 import './Customers.css';
 
 const DiscrepancyList = () => {
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [discrepancies, setDiscrepancies] = useState([]);
+    const [selectedCustomers, setSelectedCustomers] = useState([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingCustomer, setEditingCustomer] = useState(null);
 
     const fetchCustomers = async () => {
         try {
@@ -21,27 +25,20 @@ const DiscrepancyList = () => {
 
     const findDiscrepancies = (data) => {
         const dupGroups = [];
-        
-        // Maps to track identities
         const mobileMap = {};
         const nameMap = {};
         const addressMap = {};
 
         data.forEach(cust => {
-            // Check Mobile (Exact 10 digits)
             if (cust.mobile) {
                 if (!mobileMap[cust.mobile]) mobileMap[cust.mobile] = [];
                 mobileMap[cust.mobile].push(cust);
             }
-
-            // Check Name (Case-insensitive)
             const cleanName = cust.name.trim().toLowerCase();
             if (cleanName) {
                 if (!nameMap[cleanName]) nameMap[cleanName] = [];
                 nameMap[cleanName].push(cust);
             }
-
-            // Check Address (House No + Locality)
             const house = (cust.house_no || '').trim().toLowerCase();
             const locality = (cust.locality || '').trim().toLowerCase();
             if (house && locality) {
@@ -51,15 +48,10 @@ const DiscrepancyList = () => {
             }
         });
 
-        // Helper to collect groups
         const addGroups = (map, type) => {
             Object.keys(map).forEach(key => {
                 if (map[key].length > 1) {
-                    dupGroups.push({
-                        type,
-                        key,
-                        members: map[key]
-                    });
+                    dupGroups.push({ type, key, members: map[key] });
                 }
             });
         };
@@ -67,14 +59,47 @@ const DiscrepancyList = () => {
         addGroups(mobileMap, 'Duplicate Mobile');
         addGroups(nameMap, 'Identical Name');
         addGroups(addressMap, 'Same Address');
-
-        // Sort by type then members count
         setDiscrepancies(dupGroups.sort((a, b) => a.type.localeCompare(b.type)));
     };
 
     useEffect(() => {
         fetchCustomers();
     }, []);
+
+    const handleDelete = async (id) => {
+        if (window.confirm('Are you sure you want to delete this customer? It will be removed from the entire system.')) {
+            try {
+                await axios.delete(`${import.meta.env.VITE_API_URL}/customers/${id}`);
+                setSelectedCustomers(prev => prev.filter(item => item !== id));
+                fetchCustomers();
+            } catch (error) {
+                console.error('Failed to delete customer from discrepancy view', error);
+            }
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (window.confirm(`Are you sure you want to delete ${selectedCustomers.length} selected customers? This action is permanent.`)) {
+            try {
+                await axios.post(`${import.meta.env.VITE_API_URL}/customers/bulk-delete`, { ids: selectedCustomers });
+                setSelectedCustomers([]);
+                fetchCustomers();
+            } catch (error) {
+                console.error('Failed to bulk delete customers', error);
+            }
+        }
+    };
+
+    const handleSelectToggle = (id) => {
+        setSelectedCustomers(prev => 
+            prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+        );
+    };
+
+    const openEditModal = (customer) => {
+        setEditingCustomer(customer);
+        setIsModalOpen(true);
+    };
 
     const toTitleCase = (str) => {
         if (!str || str.toLowerCase() === 'null') return '';
@@ -91,6 +116,12 @@ const DiscrepancyList = () => {
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Identifying potential pilferage through duplicate connection detection.</p>
                 </div>
                 <div className="action-buttons">
+                    {selectedCustomers.length > 0 && (
+                        <button className="btn-bulk-delete animate-fade-in" onClick={handleBulkDelete}>
+                            <i className="ri-delete-bin-line"></i>
+                            Delete Selected ({selectedCustomers.length})
+                        </button>
+                    )}
                     <button className="btn-secondary" onClick={fetchCustomers}>
                         <i className="ri-refresh-line"></i>
                         Re-scan Data
@@ -124,7 +155,15 @@ const DiscrepancyList = () => {
                                 <table className="data-table" style={{ background: 'transparent' }}>
                                     <tbody>
                                         {group.members.map(cust => (
-                                            <tr key={cust.id}>
+                                            <tr key={cust.id} className={selectedCustomers.includes(cust.id) ? 'selected-row' : ''}>
+                                                <td style={{ width: '40px' }}>
+                                                    <input 
+                                                        type="checkbox" 
+                                                        className="custom-checkbox"
+                                                        checked={selectedCustomers.includes(cust.id)}
+                                                        onChange={() => handleSelectToggle(cust.id)}
+                                                    />
+                                                </td>
                                                 <td style={{ fontWeight: 800, color: 'var(--primary)', width: '120px' }}>{cust.customer_id}</td>
                                                 <td>
                                                     <div className="user-cell">
@@ -142,9 +181,14 @@ const DiscrepancyList = () => {
                                                     </span>
                                                 </td>
                                                 <td className="text-right">
-                                                    <button className="btn-action edit" title="Investigate Profile">
-                                                        <i className="ri-external-link-line"></i>
-                                                    </button>
+                                                    <div className="action-buttons justify-end">
+                                                        <button className="btn-action edit" onClick={() => openEditModal(cust)} title="Investigate Profile">
+                                                            <i className="ri-external-link-line"></i>
+                                                        </button>
+                                                        <button className="btn-action delete" onClick={() => handleDelete(cust.id)} title="Delete Duplicate">
+                                                            <i className="ri-delete-bin-line"></i>
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -154,6 +198,17 @@ const DiscrepancyList = () => {
                         </div>
                     ))}
                 </div>
+            )}
+
+            {isModalOpen && (
+                <CustomerForm 
+                    customer={editingCustomer}
+                    onClose={() => setIsModalOpen(false)}
+                    onSave={() => {
+                        setIsModalOpen(false);
+                        fetchCustomers();
+                    }}
+                />
             )}
         </div>
     );
