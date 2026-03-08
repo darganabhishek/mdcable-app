@@ -49,6 +49,8 @@ export const exportQRsToPDF = async (customers) => {
     const x = margin + (col * (cardWidth + margin));
     const y = margin + (row * (cardHeight + 10));
 
+    const centerX = x + (cardWidth / 2);
+
     // Generate QR Code as DataURL
     try {
       const qrDataUrl = await QRCode.toDataURL(customer.id, {
@@ -64,24 +66,21 @@ export const exportQRsToPDF = async (customers) => {
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
       const name = toTitleCase(customer.name);
-      const nameWidth = doc.getTextWidth(name);
-      doc.text(name, x + (cardWidth - nameWidth) / 2, y + qrSize + 5);
+      doc.text(name, centerX, y + qrSize + 5, { align: 'center' });
 
       doc.setFontSize(8);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(100, 100, 100);
       
       const idText = `ID: ${customer.customer_id}`;
-      const idWidth = doc.getTextWidth(idText);
-      doc.text(idText, x + (cardWidth - idWidth) / 2, y + qrSize + 9);
+      doc.text(idText, centerX, y + qrSize + 9, { align: 'center' });
 
       const mobileText = `Mob: ${customer.mobile}`;
-      const mobileWidth = doc.getTextWidth(mobileText);
-      doc.text(mobileText, x + (cardWidth - mobileWidth) / 2, y + qrSize + 13);
+      doc.text(mobileText, centerX, y + qrSize + 13, { align: 'center' });
 
       const address = renderAddress(customer.house_no, customer.locality);
       const splitAddress = doc.splitTextToSize(address, cardWidth - 10);
-      doc.text(splitAddress, x + 5, y + qrSize + 17, { align: 'center', maxWidth: cardWidth - 10 });
+      doc.text(splitAddress, centerX, y + qrSize + 17, { align: 'center' });
 
       // Add a light border/frame for the card
       doc.setDrawColor(230, 230, 230);
