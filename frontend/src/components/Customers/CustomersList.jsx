@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { QRCodeSVG } from 'qrcode.react';
 import CustomerForm from './CustomerForm';
 import BulkImport from './BulkImport';
 import { downloadCSV } from '../../utils/exportUtils';
@@ -13,7 +14,9 @@ const CustomersList = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
+  const [qrCustomer, setQrCustomer] = useState(null);
   const [selectedCustomers, setSelectedCustomers] = useState([]);
 
   const fetchCustomers = async () => {
@@ -96,6 +99,11 @@ const CustomersList = () => {
   const openEditModal = (customer) => {
     setEditingCustomer(customer);
     setIsModalOpen(true);
+  };
+
+  const openQRModal = (customer) => {
+    setQrCustomer(customer);
+    setIsQRModalOpen(true);
   };
 
   const toTitleCase = (str) => {
@@ -240,6 +248,9 @@ const CustomersList = () => {
                 </td>
                 <td>
                   <div className="action-buttons justify-end">
+                    <button className="btn-action edit" onClick={() => openQRModal(cust)} title="View QR Code">
+                        <i className="ri-qr-code-line"></i>
+                    </button>
                     <button className="btn-action edit" onClick={() => openEditModal(cust)} title="Edit Customer">
                         <i className="ri-edit-line"></i>
                     </button>
@@ -280,6 +291,42 @@ const CustomersList = () => {
             fetchCustomers();
           }}
         />
+      )}
+
+      {isQRModalOpen && qrCustomer && (
+        <div className="modal-overlay">
+          <div className="modal-content glass-panel animate-slide-up" style={{ maxWidth: '400px', textAlign: 'center' }}>
+            <button className="btn-close" onClick={() => setIsQRModalOpen(false)}>
+                <i className="ri-close-line"></i>
+            </button>
+            <div className="modal-header">
+              <h3 className="text-gradient">Customer ID Card</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Scan this code to record payments instantly.</p>
+            </div>
+            
+            <div style={{ background: 'white', padding: '1.5rem', borderRadius: '1rem', display: 'inline-block', marginTop: '1.5rem', boxShadow: '0 0 20px rgba(0,0,0,0.1)' }}>
+              <QRCodeSVG 
+                value={qrCustomer.id} 
+                size={200}
+                level={"H"}
+                includeMargin={true}
+              />
+            </div>
+
+            <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--surface-border)', paddingTop: '1.5rem' }}>
+                <h4 style={{ margin: 0 }}>{toTitleCase(qrCustomer.name)}</h4>
+                <p style={{ color: 'var(--primary)', fontWeight: 800, margin: '0.25rem 0' }}>{qrCustomer.customer_id}</p>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{qrCustomer.mobile}</p>
+            </div>
+
+            <div className="modal-actions" style={{ justifyContent: 'center' }}>
+                <button className="btn-primary" onClick={() => window.print()}>
+                    <i className="ri-printer-line"></i>
+                    Print ID
+                </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

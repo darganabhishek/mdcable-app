@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 import '../Customers/CustomerForm.css'; // Reusing modal CSS
 
 const PaymentForm = ({ onClose, onSave, payment }) => {
@@ -12,7 +13,9 @@ const PaymentForm = ({ onClose, onSave, payment }) => {
     remarks: payment?.remarks || ''
   });
   const [loading, setLoading] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState('');
+  const scannerRef = useRef(null);
 
   const isEdit = !!payment;
 
@@ -30,6 +33,37 @@ const PaymentForm = ({ onClose, onSave, payment }) => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const startScanner = () => {
+    setIsScanning(true);
+    setError('');
+    
+    // Use a timeout to ensure the container is rendered
+    setTimeout(() => {
+      const scanner = new Html5QrcodeScanner("qr-reader", { 
+        fps: 10, 
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0
+      });
+
+      scanner.render((decodedText) => {
+        setFormData(prev => ({ ...prev, customer_id: decodedText }));
+        setIsScanning(false);
+        scanner.clear();
+      }, (err) => {
+        // Silently ignore scan errors (they happen constantly while looking for a code)
+      });
+      
+      scannerRef.current = scanner;
+    }, 100);
+  };
+
+  const stopScanner = () => {
+    if (scannerRef.current) {
+        scannerRef.current.clear();
+    }
+    setIsScanning(false);
   };
 
   const handleSubmit = async (e) => {
@@ -72,27 +106,50 @@ const PaymentForm = ({ onClose, onSave, payment }) => {
               <label className="input-label">Select Customer</label>
               <div className="input-with-icon">
                   <i className="ri-user-search-line"></i>
-                  <select 
-                    name="customer_id" 
-                    className="input-control" 
-                    value={formData.customer_id} 
-                    onChange={handleChange} 
-                    required 
-                    disabled={isEdit}
-                  >
-                    {isEdit ? (
-                      <option value={payment.customer_id}>{payment.customer?.name} ({payment.customer?.phone})</option>
-                    ) : (
-                      <>
-                        <option value="" disabled>-- Search & Select Customer --</option>
-                        {customers.map(c => (
-                          <option key={c.id} value={c.id}>{c.name} ({c.phone})</option>
-                        ))}
-                      </>
+                  <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+                    <select 
+                        name="customer_id" 
+                        className="input-control" 
+                        value={formData.customer_id} 
+                        onChange={handleChange} 
+                        required 
+                        disabled={isEdit}
+                        style={{ flex: 1 }}
+                    >
+                        {isEdit ? (
+                        <option value={payment.customer_id}>{payment.customer?.name} ({payment.customer?.phone})</option>
+                        ) : (
+                        <>
+                            <option value="" disabled>-- Search & Select Customer --</option>
+                            {customers.map(c => (
+                            <option key={c.id} value={c.id}>{c.name} ({c.phone})</option>
+                            ))}
+                        </>
+                        )}
+                    </select>
+                    {!isEdit && (
+                        <button 
+                            type="button" 
+                            className="btn-secondary" 
+                            onClick={startScanner}
+                            style={{ height: 'auto', padding: '0 1rem' }}
+                            title="Scan Customer QR"
+                        >
+                            <i className="ri-qr-scan-2-line"></i>
+                        </button>
                     )}
-                  </select>
+                  </div>
               </div>
             </div>
+
+            {isScanning && (
+                <div className="input-group full-width animate-fade-in" style={{ textAlign: 'center' }}>
+                    <div id="qr-reader" style={{ width: '100%', maxWidth: '400px', margin: '0 auto', borderRadius: '1rem', overflow: 'hidden' }}></div>
+                    <button type="button" className="btn-secondary mt-2" onClick={stopScanner}>
+                        Cancel Scan
+                    </button>
+                </div>
+            )}
             
             <div className="input-group">
               <label className="input-label">Amount Recieved (₹)</label>
