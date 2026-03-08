@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import CustomerForm from './CustomerForm';
 import BulkImport from './BulkImport';
+import { downloadCSV } from '../../utils/exportUtils';
 import './Customers.css';
 
 const CustomersList = () => {
@@ -81,6 +82,12 @@ const CustomersList = () => {
     }
   };
 
+  const handleExport = () => {
+    const headers = ['customer_id', 'name', 'mobile', 'email', 'house_no', 'locality', 'city', 'pincode', 'service_type', 'status', 'balance'];
+    const fileName = `customers_export_${new Date().toISOString().split('T')[0]}.csv`;
+    downloadCSV(filteredCustomers, headers, fileName);
+  };
+
   const openAddModal = () => {
     setEditingCustomer(null);
     setIsModalOpen(true);
@@ -120,6 +127,10 @@ const CustomersList = () => {
                   Delete Selected ({selectedCustomers.length})
               </button>
             )}
+            <button className="btn-secondary" onClick={handleExport}>
+                <i className="ri-download-line"></i>
+                Export CSV
+            </button>
             <button className="btn-secondary" onClick={() => setIsBulkModalOpen(true)}>
                 <i className="ri-file-upload-line"></i>
                 Bulk Import

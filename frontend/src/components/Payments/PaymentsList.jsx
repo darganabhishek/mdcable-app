@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import PaymentForm from './PaymentForm';
+import { downloadCSV } from '../../utils/exportUtils';
 import '../Customers/Customers.css';
 import './Payments.css';
 
@@ -44,6 +45,12 @@ const PaymentsList = () => {
     fetchPayments();
   }, []);
 
+  const handleExport = () => {
+    const headers = ['payment_date', 'transaction_id', 'amount', 'method', 'status', 'customer.name', 'customer.customer_id'];
+    const fileName = `payments_export_${new Date().toISOString().split('T')[0]}.csv`;
+    downloadCSV(filteredPayments, headers, fileName);
+  };
+
   const filteredPayments = payments.filter(p => {
     const matchesSearch = 
       p.customer?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -60,10 +67,16 @@ const PaymentsList = () => {
     <div className="module-container">
       <div className="module-header">
         <h2>Revenue & Collections</h2>
-        <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
-            <i className="ri-add-line"></i>
-            Record Payment
-        </button>
+        <div className="action-buttons">
+            <button className="btn-secondary" onClick={handleExport}>
+                <i className="ri-download-line"></i>
+                Export CSV
+            </button>
+            <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
+                <i className="ri-add-line"></i>
+                Record Payment
+            </button>
+        </div>
       </div>
 
       <div className="search-bar-container glass-panel" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '1rem', alignItems: 'center', marginBottom: '2rem' }}>

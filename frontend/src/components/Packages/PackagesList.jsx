@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import PackageForm from './PackageForm';
+import { downloadCSV } from '../../utils/exportUtils';
 import '../Customers/Customers.css';
 
 const PackagesList = () => {
@@ -76,6 +77,12 @@ const PackagesList = () => {
         alert('Failed to delete package.');
       }
     }
+  };
+
+  const handleExport = () => {
+    const headers = ['name', 'service_type', 'price', 'description', 'status', 'area.name'];
+    const fileName = `packages_export_${new Date().toISOString().split('T')[0]}.csv`;
+    downloadCSV(filteredPackages, headers, fileName);
   };
 
   const filteredPackages = selectedType === 'All' ? packages : packages.filter(p => p.service_type === selectedType);
@@ -176,6 +183,10 @@ const PackagesList = () => {
           </div>
         </div>
         <div className="action-buttons">
+          <button className="btn-secondary" onClick={handleExport}>
+              <i className="ri-download-line"></i>
+              Export CSV
+          </button>
           {selectedType !== 'Cable' && (
             <button className="btn-secondary" onClick={() => setIsAreaModalOpen(true)}>
                 <i className="ri-map-pin-line"></i>
