@@ -2,8 +2,8 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 const COMPANY_NAME = "M.D. Cable Networks";
-const COMPANY_ADDR = "G-123, Street No. 4, Laxmi Nagar, Delhi - 110092";
-const COMPANY_PHONE = "+91 99999 99999";
+const COMPANY_ADDR = "Shop No. 12, Laxmi Bai Nagar Market, New Delhi-110023";
+const COMPANY_PHONE = "+91 9811900500";
 
 const toTitleCase = (str) => {
     if (!str || str.toLowerCase() === 'null') return '';
