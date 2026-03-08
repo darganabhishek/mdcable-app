@@ -4,6 +4,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import CustomerForm from './CustomerForm';
 import BulkImport from './BulkImport';
 import { downloadCSV } from '../../utils/exportUtils';
+import { exportQRsToPDF } from '../../utils/qrExportUtils';
 import './Customers.css';
 
 const CustomersList = () => {
@@ -86,9 +87,13 @@ const CustomersList = () => {
   };
 
   const handleExport = () => {
-    const headers = ['customer_id', 'name', 'mobile', 'email', 'house_no', 'locality', 'city', 'pincode', 'service_type', 'status', 'balance'];
-    const fileName = `customers_export_${new Date().toISOString().split('T')[0]}.csv`;
-    downloadCSV(filteredCustomers, headers, fileName);
+    const headers = ['customer_id', 'username', 'name', 'mobile', 'email', 'house_no', 'locality', 'city', 'pincode', 'service_type', 'status', 'created_at'];
+    downloadCSV(filteredCustomers, headers, `customers_export_${new Date().getTime()}.csv`);
+  };
+
+  const handleBulkQRExport = () => {
+    const selectedData = customers.filter(c => selectedCustomers.includes(c.id));
+    exportQRsToPDF(selectedData);
   };
 
   const openAddModal = () => {
@@ -127,13 +132,20 @@ const CustomersList = () => {
         </div>
         <div className="action-buttons">
             {selectedCustomers.length > 0 && (
-              <button 
-                  className="btn-bulk-delete" 
-                  onClick={handleBulkDelete}
-              >
-                  <i className="ri-delete-bin-line"></i>
-                  Delete Selected ({selectedCustomers.length})
-              </button>
+              <>
+                <button className="btn-secondary animate-fade-in" onClick={handleBulkQRExport} style={{ marginRight: '0.5rem' }}>
+                    <i className="ri-qr-code-line"></i>
+                    Export {selectedCustomers.length} QR Cards
+                </button>
+                <button 
+                    className="btn-bulk-delete" 
+                    onClick={handleBulkDelete}
+                    style={{ marginRight: '0.5rem' }}
+                >
+                    <i className="ri-delete-bin-line"></i>
+                    Delete Selected ({selectedCustomers.length})
+                </button>
+              </>
             )}
             <button className="btn-secondary" onClick={handleExport}>
                 <i className="ri-download-line"></i>
