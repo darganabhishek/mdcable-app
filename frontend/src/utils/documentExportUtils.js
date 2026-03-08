@@ -1,5 +1,5 @@
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const COMPANY_NAME = "M.D. Cable Networks";
 const COMPANY_ADDR = "G-123, Street No. 4, Laxmi Nagar, Delhi - 110092";
@@ -36,137 +36,150 @@ const drawFooter = (doc) => {
 };
 
 export const generateInvoice = (customer, autoDownload = true) => {
-    const doc = new jsPDF();
-    
-    drawHeader(doc, "Invoice / Bill");
-    
-    // Bill Details
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text("Bill To:", 15, 55);
-    doc.setFont('helvetica', 'normal');
-    doc.text(toTitleCase(customer.name), 15, 62);
-    doc.text(`ID: ${customer.customer_id}`, 15, 68);
-    doc.text(`${customer.house_no}, ${customer.locality}`, 15, 74);
-    doc.text(`${customer.city}, ${customer.pincode || ''}`, 15, 80);
-    doc.text(`Mobile: ${customer.mobile}`, 15, 86);
+    try {
+        const doc = new jsPDF();
+        
+        drawHeader(doc, "Invoice / Bill");
+        
+        // Bill Details
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Bill To:", 15, 55);
+        doc.setFont('helvetica', 'normal');
+        doc.text(toTitleCase(customer.name), 15, 62);
+        doc.text(`ID: ${customer.customer_id}`, 15, 68);
+        doc.text(`${customer.house_no}, ${customer.locality}`, 15, 74);
+        doc.text(`${customer.city}, ${customer.pincode || ''}`, 15, 80);
+        doc.text(`Mobile: ${customer.mobile}`, 15, 86);
 
-    doc.setFont('helvetica', 'bold');
-    doc.text("Invoice Details:", 130, 55);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Invoice No: INV-${Date.now().toString().slice(-6)}`, 130, 62);
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, 130, 68);
-    doc.text(`Service: ${customer.service_type}`, 130, 74);
-    doc.text(`Billing Period: ${new Date().toLocaleString('default', { month: 'long' })} ${new Date().getFullYear()}`, 130, 80);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Invoice Details:", 130, 55);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Invoice No: INV-${Date.now().toString().slice(-6)}`, 130, 62);
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 130, 68);
+        doc.text(`Service: ${customer.service_type}`, 130, 74);
+        doc.text(`Billing Period: ${new Date().toLocaleString('default', { month: 'long' })} ${new Date().getFullYear()}`, 130, 80);
 
-    // Table
-    const tableData = [
-        [
-            customer.service_type + " Subscription",
-            customer.package?.name || "Standard Plan",
-            "1 Month",
-            `INR ${customer.package?.price || 0}`
-        ]
-    ];
+        // Table
+        const tableData = [
+            [
+                customer.service_type + " Subscription",
+                customer.package?.name || "Standard Plan",
+                "1 Month",
+                `INR ${customer.package?.price || 0}`
+            ]
+        ];
 
-    if (customer.discount > 0) {
-        tableData.push(["Discount", "Applied Special Discount", "", `-INR ${customer.discount}`]);
+        if (customer.discount > 0) {
+            tableData.push(["Discount", "Applied Special Discount", "", `-INR ${customer.discount}`]);
+        }
+
+        autoTable(doc, {
+            startY: 100,
+            head: [['Description', 'Plan', 'Duration', 'Amount']],
+            body: tableData,
+            theme: 'grid',
+            headStyles: { fillStyle: 'F', fillColor: [33, 37, 41], textColor: [255, 255, 255] },
+            styles: { fontSize: 10 },
+            columnStyles: { 3: { halign: 'right' } }
+        });
+
+        const finalY = doc.lastAutoTable.finalY + 10;
+        const total = (customer.package?.price || 0) - (customer.discount || 0);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(14);
+        doc.text(`Total Amount: INR ${total.toFixed(2)}`, 195, finalY, { align: 'right' });
+
+        drawFooter(doc);
+
+        if (autoDownload) {
+            doc.save(`Invoice_${customer.customer_id}.pdf`);
+        }
+        return doc;
+    } catch (error) {
+        console.error("Error generating invoice:", error);
     }
-
-    doc.autoTable({
-        startY: 100,
-        head: [['Description', 'Plan', 'Duration', 'Amount']],
-        body: tableData,
-        theme: 'grid',
-        headStyles: { fillStyle: 'F', fillColor: [33, 37, 41], textColor: [255, 255, 255] },
-        styles: { fontSize: 10 },
-        columnStyles: { 3: { halign: 'right' } }
-    });
-
-    const finalY = doc.lastAutoTable.finalY + 10;
-    const total = (customer.package?.price || 0) - (customer.discount || 0);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
-    doc.text(`Total Amount: INR ${total.toFixed(2)}`, 195, finalY, { align: 'right' });
-
-    drawFooter(doc);
-
-    if (autoDownload) {
-        doc.save(`Invoice_${customer.customer_id}.pdf`);
-    }
-    return doc;
 };
 
 export const generateReceipt = (customer, payment = null, autoDownload = true) => {
-    const doc = new jsPDF();
-    
-    drawHeader(doc, "Payment Receipt");
-    
-    // Receipt Details
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text("Received From:", 15, 55);
-    doc.setFont('helvetica', 'normal');
-    doc.text(toTitleCase(customer.name), 15, 62);
-    doc.text(`ID: ${customer.customer_id}`, 15, 68);
-    doc.text(`Mobile: ${customer.mobile}`, 15, 74);
+    try {
+        const doc = new jsPDF();
+        
+        drawHeader(doc, "Payment Receipt");
+        
+        // Receipt Details
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Received From:", 15, 55);
+        doc.setFont('helvetica', 'normal');
+        doc.text(toTitleCase(customer.name), 15, 62);
+        doc.text(`ID: ${customer.customer_id}`, 15, 68);
+        doc.text(`Mobile: ${customer.mobile}`, 15, 74);
 
-    doc.setFont('helvetica', 'bold');
-    doc.text("Receipt Details:", 130, 55);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Receipt No: RCT-${Date.now().toString().slice(-6)}`, 130, 62);
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, 130, 68);
-    doc.text(`Status: COMPLETED`, 130, 74);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Receipt Details:", 130, 55);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Receipt No: RCT-${Date.now().toString().slice(-6)}`, 130, 62);
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 130, 68);
+        doc.text(`Status: COMPLETED`, 130, 74);
 
-    const amount = payment?.amount || (customer.package?.price || 0) - (customer.discount || 0);
+        const amount = payment?.amount || (customer.package?.price || 0) - (customer.discount || 0);
 
-    doc.autoTable({
-        startY: 90,
-        head: [['Payment For', 'Transaction ID', 'Mode', 'Amount Paid']],
-        body: [[
-            customer.service_type + " Subscription",
-            payment?.transaction_id || "N/A",
-            "Cash / Online",
-            `INR ${amount.toFixed(2)}`
-        ]],
-        theme: 'grid',
-        headStyles: { fillStyle: 'F', fillColor: [33, 37, 41], textColor: [255, 255, 255] },
-        styles: { fontSize: 10 },
-        columnStyles: { 3: { halign: 'right' } }
-    });
+        autoTable(doc, {
+            startY: 90,
+            head: [['Payment For', 'Transaction ID', 'Mode', 'Amount Paid']],
+            body: [[
+                customer.service_type + " Subscription",
+                payment?.transaction_id || "N/A",
+                "Cash / Online",
+                `INR ${amount.toFixed(2)}`
+            ]],
+            theme: 'grid',
+            headStyles: { fillStyle: 'F', fillColor: [33, 37, 41], textColor: [255, 255, 255] },
+            styles: { fontSize: 10 },
+            columnStyles: { 3: { halign: 'right' } }
+        });
 
-    const finalY = doc.lastAutoTable.finalY + 15;
-    
-    doc.setFillColor(248, 249, 250);
-    doc.rect(120, finalY - 5, 75, 25, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(16);
-    doc.text(`PAID: INR ${amount.toFixed(2)}`, 195, finalY + 12, { align: 'right' });
+        const finalY = doc.lastAutoTable.finalY + 15;
+        
+        doc.setFillColor(248, 249, 250);
+        doc.rect(120, finalY - 5, 75, 25, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(16);
+        doc.text(`PAID: INR ${amount.toFixed(2)}`, 195, finalY + 12, { align: 'right' });
 
-    drawFooter(doc);
+        drawFooter(doc);
 
-    if (autoDownload) {
-        doc.save(`Receipt_${customer.customer_id}.pdf`);
+        if (autoDownload) {
+            doc.save(`Receipt_${customer.customer_id}.pdf`);
+        }
+        return doc;
+    } catch (error) {
+        console.error("Error generating receipt:", error);
     }
-    return doc;
 };
 
 export const bulkGenerateDocuments = (customers, type = 'invoice') => {
-    const doc = new jsPDF();
-    
-    customers.forEach((customer, index) => {
-        if (index > 0) doc.addPage();
+    console.log(`Bulk generating ${customers.length} ${type}s`);
+    try {
+        const doc = new jsPDF();
         
-        if (type === 'invoice') {
-            // Internal call to draw logic without saving
-            drawInvoiceOnPage(doc, customer);
-        } else {
-            drawReceiptOnPage(doc, customer);
-        }
-    });
+        customers.forEach((customer, index) => {
+            if (index > 0) doc.addPage();
+            
+            if (type === 'invoice') {
+                drawInvoiceOnPage(doc, customer);
+            } else {
+                drawReceiptOnPage(doc, customer);
+            }
+        });
 
-    doc.save(`Bulk_${type}s_${new Date().getTime()}.pdf`);
+        doc.save(`Bulk_${type}s_${new Date().getTime()}.pdf`);
+        console.log("Bulk generation complete");
+    } catch (error) {
+        console.error("Bulk generation error:", error);
+    }
 };
 
 // Internal helpers to draw on existing doc
@@ -190,7 +203,7 @@ const drawInvoiceOnPage = (doc, customer) => {
     const price = customer.package?.price || 0;
     const total = price - (customer.discount || 0);
 
-    doc.autoTable({
+    autoTable(doc, {
         startY: 100,
         head: [['Description', 'Plan', 'Amount']],
         body: [[
@@ -226,7 +239,7 @@ const drawReceiptOnPage = (doc, customer) => {
 
     const amount = (customer.package?.price || 0) - (customer.discount || 0);
 
-    doc.autoTable({
+    autoTable(doc, {
         startY: 90,
         head: [['Description', 'Status', 'Amount Paid']],
         body: [[
