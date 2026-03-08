@@ -145,7 +145,11 @@
   align-items: center;
   margin-bottom: 2rem;
   padding: 1.5rem 2.5rem;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.12) 0%,
+    rgba(15, 23, 42, 0.6) 100%
+  );
   border-radius: var(--radius-xl);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -157,7 +161,11 @@
 
 .area-header-premium:hover {
   transform: translateY(-2px);
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(15, 23, 42, 0.7) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.18) 0%,
+    rgba(15, 23, 42, 0.7) 100%
+  );
   box-shadow: 0 15px 40px -12px rgba(99, 102, 241, 0.2);
 }
 
@@ -183,9 +191,15 @@
 }
 
 @keyframes areaIconPulse {
-  0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
 }
 
 .area-info {
@@ -208,7 +222,9 @@
   font-weight: 950;
   color: #fff;
   letter-spacing: -0.03em;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.3), 0 0 20px rgba(99, 102, 241, 0.3);
+  text-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(99, 102, 241, 0.3);
 }
 
 .btn-action.delete {
@@ -283,3 +299,58 @@
   opacity: 0.3;
 }
 
+.bulk-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.4rem 0.6rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.bulk-actions-group .btn-secondary {
+  border: none;
+  background: transparent;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.bulk-actions-group .btn-secondary:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: none;
+}
+
+.bulk-actions-group i {
+  font-size: 1rem;
+  color: var(--primary);
+}
+
+.btn-action.edit i.ri-file-list-3-line {
+  color: #fbbf24; /* Invoice amber */
+}
+
+.btn-action.edit i.ri-bill-line {
+  color: #10b981; /* Receipt emerald */
+}
+
+.btn-action.edit:hover i.ri-file-list-3-line,
+.btn-action.edit:hover i.ri-bill-line {
+  filter: drop-shadow(0 0 5px currentColor);
+}
