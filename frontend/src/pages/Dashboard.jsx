@@ -56,13 +56,15 @@ const Dashboard = () => {
                         <i className="ri-bank-card-line"></i>
                         <span>Payments</span>
                     </button>
-                    <button 
-                      className={`nav-item ${activeTab === 'Reports' ? 'active' : ''}`}
-                      onClick={() => setActiveTab('Reports')}
-                    >
-                        <i className="ri-bar-chart-box-line"></i>
-                        <span>Reports</span>
-                    </button>
+                    {user?.role !== 'Technician' && (
+                        <button 
+                          className={`nav-item ${activeTab === 'Reports' ? 'active' : ''}`}
+                          onClick={() => setActiveTab('Reports')}
+                        >
+                            <i className="ri-bar-chart-box-line"></i>
+                            <span>Reports</span>
+                        </button>
+                    )}
                     <button 
                       className={`nav-item ${activeTab === 'Discrepancy' ? 'active' : ''}`}
                       onClick={() => setActiveTab('Discrepancy')}
@@ -106,7 +108,7 @@ const Dashboard = () => {
                     {activeTab === 'Customers' && <CustomersList />}
                     {activeTab === 'Packages' && <PackagesList />}
                     {activeTab === 'Payments' && <PaymentsList />}
-                    {activeTab === 'Reports' && <Reports />}
+                    {user?.role !== 'Technician' && activeTab === 'Reports' && <Reports />}
                     {activeTab === 'Discrepancy' && <DiscrepancyList />}
                     {activeTab === 'Access Control' && <UsersList />}
                     {activeTab === 'Permissions' && <RolePermissions />}
