@@ -80,77 +80,112 @@ const DashboardOverview = ({ setActiveTab, setInitialAction }) => {
         </div>
       </div>
       
-      <div className="kpi-grid">
-        <div className="kpi-card glass-panel" onClick={() => setActiveTab('Customers')}>
-          <div className="kpi-icon customers">👥</div>
-          <div className="kpi-info">
-            <h3>Total Customers</h3>
-            <p className="kpi-value">{stats.totalCustomers?.toLocaleString() || 0}</p>
-          </div>
-        </div>
-        
-        {!isTechnician && (
-          <div className="kpi-card glass-panel" onClick={() => setActiveTab('Payments')}>
-            <div className="kpi-icon revenue">💰</div>
-            <div className="kpi-info">
-              <h3>Total Revenue</h3>
-              <p className="kpi-value positive">₹{stats.totalRevenue?.toLocaleString() || 0}</p>
+      <div className="section-group">
+        <h2 className="section-title">Network Metrics</h2>
+        <div className="kpi-grid dashboard-metrics-grid">
+          <div className="action-card metric-card" onClick={() => setActiveTab('Customers')}>
+            <div className="action-icon customers">👥</div>
+            <div className="metric-info">
+              <span>Total Customers</span>
+              <p className="metric-value">{stats.totalCustomers?.toLocaleString() || 0}</p>
             </div>
           </div>
-        )}
+          
+          {!isTechnician && (
+            <div className="action-card metric-card" onClick={() => setActiveTab('Payments')}>
+              <div className="action-icon revenue">💰</div>
+              <div className="metric-info">
+                <span>Total Revenue</span>
+                <p className="metric-value positive">₹{stats.totalRevenue?.toLocaleString() || 0}</p>
+              </div>
+            </div>
+          )}
 
-        {!isTechnician && (
-          <div className="kpi-card glass-panel" onClick={() => setActiveTab('Payments')}>
-            <div className="kpi-icon collection">📈</div>
-            <div className="kpi-info">
-              <h3>Monthly Collection</h3>
-              <p className="kpi-value info">₹{stats.monthlyCollection?.toLocaleString() || 0}</p>
+          {!isTechnician && (
+            <div className="action-card metric-card" onClick={() => setActiveTab('Payments')}>
+              <div className="action-icon collection">📈</div>
+              <div className="metric-info">
+                <span>Monthly Collection</span>
+                <p className="metric-value info">₹{stats.monthlyCollection?.toLocaleString() || 0}</p>
+              </div>
+            </div>
+          )}
+
+          <div className={`action-card metric-card ${stats.renewalsDue > 0 ? 'clickable-metric' : ''}`} onClick={() => stats.renewalsDue > 0 && setShowRenewalsModal(true)}>
+            <div className="action-icon due">⏳</div>
+            <div className="metric-info">
+              <span>Renewals Due</span>
+              <p className="metric-value negative">{stats.renewalsDue || 0}</p>
+            </div>
+            {stats.renewalsDue > 0 && <div className="metric-tap-hint">Tap to view</div>}
+          </div>
+
+          <div className="action-card metric-card" onClick={() => setActiveTab('Customers')}>
+            <div className="action-icon active">✅</div>
+            <div className="metric-info">
+              <span>Active Users</span>
+              <p className="metric-value positive">{stats.activeUsers || 0}</p>
             </div>
           </div>
-        )}
 
-        <div className={`kpi-card glass-panel ${stats.renewalsDue > 0 ? 'clickable-kpi' : ''}`} onClick={() => stats.renewalsDue > 0 && setShowRenewalsModal(true)}>
-          <div className="kpi-icon due">⏳</div>
-          <div className="kpi-info">
-            <h3>Renewals Due</h3>
-            <p className="kpi-value negative">{stats.renewalsDue || 0}</p>
-          </div>
-          {stats.renewalsDue > 0 && <div className="kpi-tap-hint">Tap to view list</div>}
-        </div>
-        <div className="kpi-card glass-panel" onClick={() => setActiveTab('Customers')}>
-          <div className="kpi-icon active">✅</div>
-          <div className="kpi-info">
-            <h3>Active Users</h3>
-            <p className="kpi-value positive">{stats.activeUsers || 0}</p>
-          </div>
-        </div>
-        <div className="kpi-card glass-panel" onClick={() => setActiveTab('Customers')}>
-          <div className="kpi-icon inactive">💤</div>
-          <div className="kpi-info">
-            <h3>Inactive Users</h3>
-            <p className="kpi-value">{stats.inactiveUsers || 0}</p>
-          </div>
-        </div>
-        <div className="kpi-card glass-panel" onClick={() => setActiveTab('Customers')}>
-          <div className="kpi-icon suspended">🚫</div>
-          <div className="kpi-info">
-            <h3>Suspended</h3>
-            <p className="kpi-value warning">{stats.suspendedUsers || 0}</p>
-          </div>
-        </div>
-
-        {!isTechnician && (
-          <div className="kpi-card glass-panel" onClick={() => setActiveTab('Payments')}>
-            <div className="kpi-icon projected">📑</div>
-            <div className="kpi-info">
-              <h3>Projected (30d)</h3>
-              <p className="kpi-value info">₹{stats.projectedRevenue?.toLocaleString() || 0}</p>
+          <div className="action-card metric-card" onClick={() => setActiveTab('Customers')}>
+            <div className="action-icon inactive">💤</div>
+            <div className="metric-info">
+              <span>Inactive Users</span>
+              <p className="metric-value">{stats.inactiveUsers || 0}</p>
             </div>
           </div>
-        )}
+
+          <div className="action-card metric-card" onClick={() => setActiveTab('Customers')}>
+            <div className="action-icon suspended">🚫</div>
+            <div className="metric-info">
+              <span>Suspended Users</span>
+              <p className="metric-value warning">{stats.suspendedUsers || 0}</p>
+            </div>
+          </div>
+
+          {!isTechnician && (
+            <div className="action-card metric-card" onClick={() => setActiveTab('Payments')}>
+              <div className="action-icon projected">📑</div>
+              <div className="metric-info">
+                <span>Projected (30d)</span>
+                <p className="metric-value info">₹{stats.projectedRevenue?.toLocaleString() || 0}</p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="charts-grid-top">
+      <div className="section-group">
+        <h2 className="section-title">Quick Operations</h2>
+        <div className="quick-actions-grid">
+          <div className="action-card" onClick={() => handleAction('Customers', 'add')}>
+            <div className="action-icon" style={{color: 'var(--primary)'}}>👤</div>
+            <span>Add Customer</span>
+          </div>
+          <div className="action-card" onClick={() => setShowRenewalsModal(true)}>
+            <div className="action-icon" style={{color: 'var(--negative)'}}>♻️</div>
+            <span>Renew Plans</span>
+          </div>
+          <div className="action-card" onClick={() => setActiveTab('Payments')}>
+            <div className="action-icon" style={{color: 'var(--success)'}}>💳</div>
+            <span>Record Payment</span>
+          </div>
+          {!isTechnician ? (
+            <div className="action-card" onClick={() => setActiveTab('Reports')}>
+              <div className="action-icon" style={{color: 'var(--info)'}}>📊</div>
+              <span>View Reports</span>
+            </div>
+          ) : (
+            <div className="action-card" onClick={() => setActiveTab('Discrepancy')}>
+              <div className="action-icon" style={{color: 'var(--warning)'}}>🔍</div>
+              <span>Search Discrepancy</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="charts-grid-top-restructured">
         <div className="chart-container glass-panel">
           <h3>
               <i className="ri-calendar-todo-line"></i>
@@ -168,40 +203,6 @@ const DashboardOverview = ({ setActiveTab, setInitialAction }) => {
               ) : (
                 <div className="empty-state-mini">
                   <p>No collections due for the upcoming days.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="chart-container glass-panel">
-          <h3>
-              <i className="ri-flashlight-line"></i>
-              Quick Operations
-          </h3>
-          <div className="chart-wrapper">
-            <div className="quick-actions-grid">
-              <div className="action-card" onClick={() => handleAction('Customers', 'add')}>
-                <div className="action-icon" style={{color: 'var(--primary)'}}>👤</div>
-                <span>Add Customer</span>
-              </div>
-              <div className="action-card" onClick={() => setShowRenewalsModal(true)}>
-                <div className="action-icon" style={{color: 'var(--negative)'}}>♻️</div>
-                <span>Renew Plans</span>
-              </div>
-              <div className="action-card" onClick={() => setActiveTab('Payments')}>
-                <div className="action-icon" style={{color: 'var(--success)'}}>💳</div>
-                <span>Record Payment</span>
-              </div>
-              {!isTechnician ? (
-                <div className="action-card" onClick={() => setActiveTab('Reports')}>
-                  <div className="action-icon" style={{color: 'var(--info)'}}>📊</div>
-                  <span>View Reports</span>
-                </div>
-              ) : (
-                <div className="action-card" onClick={() => setActiveTab('Discrepancy')}>
-                  <div className="action-icon" style={{color: 'var(--warning)'}}>🔍</div>
-                  <span>Search Discrepancy</span>
                 </div>
               )}
             </div>
