@@ -204,7 +204,7 @@ const DashboardOverview = () => {
           </div>
         </div>
 
-        {!isTechnician ? (
+        {!isTechnician && (
           <div className="chart-container glass-panel">
             <h3>
                 <i className="ri-pie-chart-2-line"></i>
@@ -232,30 +232,30 @@ const DashboardOverview = () => {
               </ResponsiveContainer>
             </div>
           </div>
-        ) : (
-          <div className="chart-container glass-panel">
-            <h3>
-                <i className="ri-calendar-todo-line"></i>
-                Daily Collection Dues
-            </h3>
-            <div className="chart-wrapper">
-              <div className="collection-dues-list" style={{ maxHeight: '280px', overflowY: 'auto' }}>
-                {stats.dailyDues && stats.dailyDues.length > 0 ? (
-                  stats.dailyDues.map((due, idx) => (
-                    <div key={idx} className="due-item" style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', borderBottom: '1px solid var(--surface-border)' }}>
-                      <span style={{ fontWeight: 600 }}>{due.date}</span>
-                      <span className="text-negative" style={{ fontWeight: 700 }}>₹{due.amount.toLocaleString()}</span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="empty-state-mini">
-                    <p>No collections due for the upcoming days.</p>
+        )}
+
+        <div className="chart-container glass-panel">
+          <h3>
+              <i className="ri-calendar-todo-line"></i>
+              Daily Collection Dues
+          </h3>
+          <div className="chart-wrapper">
+            <div className="collection-dues-list" style={{ maxHeight: '280px', overflowY: 'auto' }}>
+              {stats.dailyDues && stats.dailyDues.length > 0 ? (
+                stats.dailyDues.map((due, idx) => (
+                  <div key={idx} className="due-item" style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', borderBottom: '1px solid var(--surface-border)' }}>
+                    <span style={{ fontWeight: 600 }}>{due.date}</span>
+                    <span className="text-negative" style={{ fontWeight: 700 }}>₹{due.amount.toLocaleString()}</span>
                   </div>
-                )}
-              </div>
+                ))
+              ) : (
+                <div className="empty-state-mini">
+                  <p>No collections due for the upcoming days.</p>
+                </div>
+              )}
             </div>
           </div>
-        )}
+        </div>
       </div>
 
       {!isTechnician && (

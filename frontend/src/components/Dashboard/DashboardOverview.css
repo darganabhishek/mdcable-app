@@ -81,7 +81,13 @@
 }
 
 .charts-grid-top {
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+@media (min-width: 1400px) {
+  .charts-grid-top {
+    grid-template-columns: 2fr 1fr 1fr;
+  }
 }
 
 .charts-grid-bottom {
