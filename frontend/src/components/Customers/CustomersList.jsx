@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { QRCodeSVG } from 'qrcode.react';
+import { AuthContext } from '../../context/AuthContext';
 import CustomerForm from './CustomerForm';
 import BulkImport from './BulkImport';
 import { downloadCSV } from '../../utils/exportUtils';
@@ -20,6 +21,8 @@ const CustomersList = () => {
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [qrCustomer, setQrCustomer] = useState(null);
   const [selectedCustomers, setSelectedCustomers] = useState([]);
+  const { user } = useContext(AuthContext);
+  const isTechnician = user?.role === 'Technician';
 
   const fetchCustomers = async () => {
     try {
@@ -50,6 +53,7 @@ const CustomersList = () => {
   });
 
   const handleDelete = async (id) => {
+    if (isTechnician) return;
     if (window.confirm('Are you sure you want to delete this customer record?')) {
       try {
         await axios.delete(`${import.meta.env.VITE_API_URL}/customers/${id}`);
@@ -76,6 +80,7 @@ const CustomersList = () => {
   };
 
   const handleBulkDelete = async () => {
+    if (isTechnician) return;
     if (window.confirm(`Are you sure you want to delete ${selectedCustomers.length} selected customers? This action cannot be undone.`)) {
       try {
         await axios.post(`${import.meta.env.VITE_API_URL}/customers/bulk-delete`, { ids: selectedCustomers });
@@ -84,6 +89,15 @@ const CustomersList = () => {
       } catch (error) {
         console.error('Failed to bulk delete customers', error);
       }
+    }
+  };
+
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      await axios.put(`${import.meta.env.VITE_API_URL}/customers/${id}`, { status: newStatus });
+      fetchCustomers();
+    } catch (error) {
+      console.error('Failed to update status', error);
     }
   };
 
@@ -132,6 +146,17 @@ const CustomersList = () => {
     return parts.length > 0 ? parts.map(toTitleCase).join(', ') : '-';
   };
 
+  const getPaymentStatus = (custList) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const balance = parseFloat(custList.balance) || 0;
+    const nextDate = custList.next_billing_date ? new Date(custList.next_billing_date) : null;
+    
+    if (balance > 0) return { label: 'Due', class: 'negative' };
+    if (nextDate && nextDate <= today) return { label: 'Renewal Due', class: 'warning' };
+    return { label: 'Paid', class: 'active' };
+  };
+
   if (loading) return <div className="loading-state">Loading users...</div>;
 
   return (
@@ -157,10 +182,12 @@ const CustomersList = () => {
                         <i className="ri-qr-code-line"></i>
                         QR Cards
                     </button>
-                    <button className="btn-bulk-delete" onClick={handleBulkDelete}>
-                        <i className="ri-delete-bin-line"></i>
-                        Delete ({selectedCustomers.length})
-                    </button>
+                    {!isTechnician && (
+                      <button className="btn-bulk-delete" onClick={handleBulkDelete}>
+                          <i className="ri-delete-bin-line"></i>
+                          Delete ({selectedCustomers.length})
+                      </button>
+                    )}
                 </div>
               </>
             )}
@@ -232,11 +259,14 @@ const CustomersList = () => {
               <th>Installation Address</th>
               <th>Service</th>
               <th>Status</th>
+              <th>Payment</th>
               <th className="text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredCustomers.map((cust) => (
+            {filteredCustomers.map((cust) => {
+              const paymentStatus = getPaymentStatus(cust);
+              return (
               <tr key={cust.id} className={selectedCustomers.includes(cust.id) ? 'selected-row' : ''}>
                 <td>
                   <input 
@@ -276,6 +306,11 @@ const CustomersList = () => {
                   </span>
                 </td>
                 <td>
+                  <span className={`status-badge status-${paymentStatus.class}`}>
+                    {paymentStatus.label}
+                  </span>
+                </td>
+                <td>
                   <div className="action-buttons justify-end">
                     <button className="btn-action edit" onClick={() => generateInvoice(cust)} title="Generate Invoice">
                         <i className="ri-file-list-3-line"></i>
@@ -286,19 +321,31 @@ const CustomersList = () => {
                     <button className="btn-action edit" onClick={() => openQRModal(cust)} title="View QR Code">
                         <i className="ri-qr-code-line"></i>
                     </button>
+                    {isTechnician && cust.status === 'Active' && (
+                       <button className="btn-action edit" onClick={() => handleStatusChange(cust.id, 'Inactive')} title="Deactivate Customer">
+                          <i className="ri-user-unfollow-line"></i>
+                       </button>
+                    )}
+                    {isTechnician && cust.status !== 'Active' && (
+                       <button className="btn-action edit" onClick={() => handleStatusChange(cust.id, 'Active')} title="Renew/Activate Customer">
+                          <i className="ri-refresh-line"></i>
+                       </button>
+                    )}
                     <button className="btn-action edit" onClick={() => openEditModal(cust)} title="Edit Customer">
                         <i className="ri-edit-line"></i>
                     </button>
-                    <button className="btn-action delete" onClick={() => handleDelete(cust.id)} title="Delete Customer">
-                        <i className="ri-delete-bin-line"></i>
-                    </button>
+                    {!isTechnician && (
+                      <button className="btn-action delete" onClick={() => handleDelete(cust.id)} title="Delete Customer">
+                          <i className="ri-delete-bin-line"></i>
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
-            ))}
+            )})}
             {filteredCustomers.length === 0 && (
               <tr>
-                <td colSpan="8" className="text-center py-4 text-muted">
+                <td colSpan="9" className="text-center py-4 text-muted">
                     No customers found matching your search.
                 </td>
               </tr>

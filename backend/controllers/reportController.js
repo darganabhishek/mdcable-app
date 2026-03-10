@@ -235,6 +235,37 @@ const getDashboardStats = async (req, res) => {
         console.warn('Warning: projectedRevenue query failed. Using 0. Error:', prError.message);
     }
 
+    // 8. Daily Collection Dues (Next 7 days)
+    const dailyDues = [];
+    try {
+        for (let i = 0; i < 7; i++) {
+            const date = new Date();
+            date.setDate(today.getDate() + i);
+            const dateString = date.toISOString().split('T')[0];
+
+            const customersDue = await Customer.findAll({
+                where: {
+                    status: { [Op.ne]: 'Inactive' },
+                    next_billing_date: dateString
+                },
+                include: [{ model: Package, as: 'package' }]
+            });
+
+            const amountDue = customersDue.reduce((acc, cust) => {
+                const pkgPrice = cust.package ? parseFloat(cust.package.price) : 0;
+                const discount = parseFloat(cust.discount) || 0;
+                return acc + Math.max(0, pkgPrice - discount);
+            }, 0);
+
+            dailyDues.push({
+                date: date.toLocaleDateString('default', { weekday: 'short', day: 'numeric', month: 'short' }),
+                amount: amountDue
+            });
+        }
+    } catch (dueError) {
+        console.warn('Warning: dailyDues calculation failed:', dueError.message);
+    }
+
     res.json({
       monthlyCollection,
       yearlyCollection,
@@ -249,6 +280,7 @@ const getDashboardStats = async (req, res) => {
       areaDistribution,
       monthlyData,
       growthData,
+      dailyDues,
       serviceMix: serviceMixRaw.map(s => ({ name: s.type || 'Standard', value: parseFloat(s.value || 0) })),
       topPackages: (topPackages || []).map(p => ({ name: p.name || 'N/A', value: parseInt(p.value || 0) }))
     });

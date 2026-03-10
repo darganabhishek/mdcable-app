@@ -33,7 +33,7 @@ const seedPermissions = async () => {
              if (!permission.endsWith('delete')) enabled = true;
           }
         } else if (role === 'Technician') {
-          if (permission === 'customers:view' || permission === 'payments:create' || permission === 'renewals:create' || permission === 'packages:view') {
+          if (permission === 'customers:view' || permission === 'customers:edit' || permission === 'reports:view' || permission === 'payments:create' || permission === 'renewals:create' || permission === 'packages:view') {
             enabled = true;
           }
         }
