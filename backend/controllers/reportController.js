@@ -239,6 +239,55 @@ const getDashboardStats = async (req, res) => {
     } catch (prError) {
         console.warn('Warning: projectedRevenue query failed. Using 0. Error:', prError.message);
     }
+    // 10. Area Distribution (Customer counts)
+    let areaAnalytics = [];
+    try {
+        const areaCounts = await Customer.findAll({
+            attributes: [
+                [sequelize.col('assigned_area.name'), 'area_name'],
+                [sequelize.fn('COUNT', sequelize.col('Customer.id')), 'count']
+            ],
+            include: [{
+                model: Area,
+                as: 'assigned_area',
+                attributes: []
+            }],
+            group: ['assigned_area.name'],
+            raw: true
+        });
+        areaAnalytics = areaCounts.map(item => ({
+            name: item.area_name || 'Unassigned',
+            value: parseInt(item.count || 0)
+        })).sort((a,b) => b.value - a.value);
+    } catch (areaError) {
+        console.warn('Warning: areaAnalytics query failed:', areaError.message);
+    }
+
+    // 11. Recent Customers
+    let recentCustomers = [];
+    try {
+        recentCustomers = await Customer.findAll({
+            limit: 5,
+            order: [['createdAt', 'DESC']],
+            include: [{ model: Package, as: 'package', attributes: ['name'] }],
+            attributes: ['id', 'customer_id', 'name', 'status', 'createdAt']
+        });
+    } catch (recentCustError) {
+        console.warn('Warning: recentCustomers query failed:', recentCustError.message);
+    }
+
+    // 12. Recent Payments
+    let recentPayments = [];
+    try {
+        recentPayments = await Payment.findAll({
+            limit: 5,
+            order: [['payment_date', 'DESC'], ['createdAt', 'DESC']],
+            include: [{ model: Customer, as: 'customer', attributes: ['name', 'customer_id'] }],
+            attributes: ['id', 'amount', 'payment_date', 'payment_method']
+        });
+    } catch (recentPayError) {
+        console.warn('Warning: recentPayments query failed:', recentPayError.message);
+    }
 
     // 8. Daily Collection Dues (Next 7 days)
     const dailyDues = [];
@@ -313,7 +362,9 @@ const getDashboardStats = async (req, res) => {
       renewalsDueList,
       totalPaymentDue,
       projectedRevenue,
-      areaDistribution,
+      areaAnalytics,
+      recentCustomers,
+      recentPayments,
       monthlyData,
       growthData,
       dailyDues,
