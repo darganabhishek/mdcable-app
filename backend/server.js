@@ -17,27 +17,18 @@ const seedPermissions = require('./seedPermissions');
 
 const app = express();
 
-// Custom CORS Middleware with Logging
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  console.log(`Incoming request from origin: ${origin}`);
-  
-  const allowedOrigins = ['https://mdcable-app.vercel.app', 'http://localhost:5173', 'http://localhost:3000'];
-  if (allowedOrigins.includes(origin) || !origin) {
-    res.setHeader('Access-Control-Allow-Origin', origin || '*');
-  }
-  
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  
-  // Handle Preflight
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  next();
-});
+console.log('M.D. Cable Networks API - Deployment Version: 2026-03-11-0310');
 
+// CORS Configuration
+const corsOptions = {
+  origin: ['https://mdcable-app.vercel.app', 'http://localhost:5173', 'http://localhost:3000'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Routes will be mounted here
