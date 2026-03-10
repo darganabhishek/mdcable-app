@@ -35,6 +35,8 @@ const DashboardOverview = () => {
     fetchStats();
   }, []);
 
+  const [showRenewalsModal, setShowRenewalsModal] = useState(false);
+
   const fetchStats = async () => {
     try {
       const response = await axios.get(`${API_URL}/reports/dashboard`, {
@@ -109,12 +111,13 @@ const DashboardOverview = () => {
           </div>
         )}
 
-        <div className="kpi-card glass-panel">
+        <div className={`kpi-card glass-panel ${stats.renewalsDue > 0 ? 'clickable-kpi' : ''}`} onClick={() => stats.renewalsDue > 0 && setShowRenewalsModal(true)}>
           <div className="kpi-icon due">⏳</div>
           <div className="kpi-info">
             <h3>Renewals Due</h3>
             <p className="kpi-value negative">{stats.renewalsDue || 0}</p>
           </div>
+          {stats.renewalsDue > 0 && <div className="kpi-tap-hint">Tap to view list</div>}
         </div>
         <div className="kpi-card glass-panel">
           <div className="kpi-icon active">✅</div>
@@ -315,6 +318,54 @@ const DashboardOverview = () => {
                       <p>No active package data available yet.</p>
                   </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showRenewalsModal && (
+        <div className="modal-overlay">
+          <div className="modal-content glass-panel animate-slide-up" style={{ maxWidth: '700px' }}>
+            <button className="btn-close" onClick={() => setShowRenewalsModal(false)}>
+                <i className="ri-close-line"></i>
+            </button>
+            <div className="modal-header">
+              <h3 className="text-gradient">Customers Requiring Renewal</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>List of active/suspended users whose billing date has passed.</p>
+            </div>
+            
+            <div className="table-responsive" style={{ marginTop: '1.5rem', maxHeight: '400px', overflowY: 'auto' }}>
+                <table className="data-table">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Mobile</th>
+                            <th>Package</th>
+                            <th className="text-right">Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {stats.renewalsDueList?.map(cust => (
+                            <tr key={cust.id}>
+                                <td>
+                                    <div style={{ fontWeight: 600 }}>{cust.name}</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--primary)' }}>{cust.customer_id}</div>
+                                </td>
+                                <td style={{ fontFamily: 'monospace' }}>{cust.mobile}</td>
+                                <td>{cust.package?.name || 'Standard'}</td>
+                                <td className="text-right" style={{ color: parseFloat(cust.balance) > 0 ? 'var(--negative)' : 'inherit', fontWeight: 700 }}>
+                                    ₹{parseFloat(cust.balance).toLocaleString()}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            <div className="modal-actions" style={{ justifyContent: 'center' }}>
+                <button className="btn-primary" onClick={() => setShowRenewalsModal(false)}>
+                    Close List
+                </button>
             </div>
           </div>
         </div>

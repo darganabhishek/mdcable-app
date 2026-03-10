@@ -108,13 +108,18 @@ const getDashboardStats = async (req, res) => {
     
     // Renewals Due: Active or Suspended customers whose billing date has passed or is today
     let renewalsDue = 0;
+    let renewalsDueList = [];
     try {
-        renewalsDue = await Customer.count({
+        const dueCustomers = await Customer.findAll({
           where: {
             status: { [Op.ne]: 'Inactive' },
             next_billing_date: { [Op.lte]: today }
-          }
+          },
+          include: [{ model: Package, as: 'package', attributes: ['name', 'price'] }],
+          attributes: ['id', 'customer_id', 'name', 'mobile', 'balance', 'next_billing_date']
         });
+        renewalsDue = dueCustomers.length;
+        renewalsDueList = dueCustomers;
     } catch (renewError) {
         console.warn('Warning: renewalsDue query failed. Using 0. Error:', renewError.message);
     }
@@ -275,6 +280,7 @@ const getDashboardStats = async (req, res) => {
       inactiveUsers,
       suspendedUsers,
       renewalsDue,
+      renewalsDueList,
       totalPaymentDue,
       projectedRevenue,
       areaDistribution,
