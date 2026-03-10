@@ -9,20 +9,21 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
   AreaChart,
   Area,
   LineChart,
-  Line,
-  Legend
+  Line
 } from 'recharts';
 import './DashboardOverview.css';
 
 const API_URL = import.meta.env.VITE_API_URL || `${import.meta.env.VITE_API_URL}`;
-
-const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
 const DashboardOverview = () => {
   const [stats, setStats] = useState(null);
@@ -204,35 +205,6 @@ const DashboardOverview = () => {
           </div>
         </div>
 
-        {!isTechnician && (
-          <div className="chart-container glass-panel">
-            <h3>
-                <i className="ri-pie-chart-2-line"></i>
-                Service Revenue Mix
-            </h3>
-            <div className="chart-wrapper">
-              <ResponsiveContainer width="100%" height={280}>
-                <PieChart>
-                  <Pie
-                    data={stats.serviceMix}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={90}
-                    paddingAngle={8}
-                    dataKey="value"
-                  >
-                    {stats.serviceMix?.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend layout="horizontal" verticalAlign="bottom" align="center" />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        )}
 
         <div className="chart-container glass-panel">
           <h3>
