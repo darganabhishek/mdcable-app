@@ -182,118 +182,117 @@ const DashboardOverview = () => {
           </div>
         </div>
 
-        {isTechnician && (
-          <div className="chart-container glass-panel">
-            <h3>
-                <i className="ri-flashlight-line"></i>
-                Quick Operations
-            </h3>
-            <div className="chart-wrapper">
-              <div className="quick-actions-grid">
-                <div className="action-card" onClick={() => window.location.href='/customers'}>
-                  <div className="action-icon" style={{color: 'var(--primary)'}}>👤</div>
-                  <span>Add Customer</span>
+        <div className="chart-container glass-panel">
+          <h3>
+              <i className="ri-flashlight-line"></i>
+              Quick Operations
+          </h3>
+          <div className="chart-wrapper">
+            <div className="quick-actions-grid">
+              <div className="action-card" onClick={() => window.location.href='/customers'}>
+                <div className="action-icon" style={{color: 'var(--primary)'}}>👤</div>
+                <span>Add Customer</span>
+              </div>
+              <div className="action-card" onClick={() => setShowRenewalsModal(true)}>
+                <div className="action-icon" style={{color: 'var(--negative)'}}>♻️</div>
+                <span>Renew Plans</span>
+              </div>
+              <div className="action-card" onClick={() => window.location.href='/payments'}>
+                <div className="action-icon" style={{color: 'var(--success)'}}>💳</div>
+                <span>Record Payment</span>
+              </div>
+              {!isTechnician ? (
+                <div className="action-card" onClick={() => window.location.href='/reports'}>
+                  <div className="action-icon" style={{color: 'var(--info)'}}>📊</div>
+                  <span>View Reports</span>
                 </div>
-                <div className="action-card" onClick={() => setShowRenewalsModal(true)}>
-                  <div className="action-icon" style={{color: 'var(--negative)'}}>♻️</div>
-                  <span>Renew Plans</span>
-                </div>
-                <div className="action-card" onClick={() => window.location.href='/payments'}>
-                  <div className="action-icon" style={{color: 'var(--success)'}}>💳</div>
-                  <span>Record Payment</span>
-                </div>
+              ) : (
                 <div className="action-card" onClick={() => window.location.href='/discrepancy'}>
                   <div className="action-icon" style={{color: 'var(--warning)'}}>🔍</div>
                   <span>Search Discrepancy</span>
                 </div>
-              </div>
+              )}
             </div>
           </div>
-        )}
+        </div>
 
-        {isTechnician && (
-          <div className="chart-container glass-panel">
-            <h3>
-                <i className="ri-history-line"></i>
-                Recent Customers
-            </h3>
-            <div className="chart-wrapper">
-              <div className="activity-list">
-                {stats.recentCustomers?.map(cust => (
-                  <div key={cust.id} className="activity-item">
-                    <div className="activity-main">
-                      <span className="activity-title">{cust.name}</span>
-                      <span className="activity-sub">{cust.customer_id} • {cust.package?.name}</span>
-                    </div>
-                    <div className="activity-meta">
-                      <span className={`status-badge ${cust.status.toLowerCase()}`}>{cust.status}</span>
-                    </div>
+        <div className="chart-container glass-panel">
+          <h3>
+              <i className="ri-history-line"></i>
+              Recent Customers
+          </h3>
+          <div className="chart-wrapper">
+            <div className="activity-list">
+              {stats.recentCustomers?.map(cust => (
+                <div key={cust.id} className="activity-item">
+                  <div className="activity-main">
+                    <span className="activity-title">{cust.name}</span>
+                    <span className="activity-sub">{cust.customer_id} • {cust.package?.name}</span>
                   </div>
-                ))}
-              </div>
+                  <div className="activity-meta">
+                    <span className={`status-badge ${cust.status.toLowerCase()}`}>{cust.status}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        )}
+        </div>
       </div>
 
-      <div className="charts-grid-bottom" style={isTechnician ? { marginTop: '2.5rem' } : {}}>
-        {isTechnician && (
-          <div className="chart-container glass-panel">
-            <h3>
-                <i className="ri-map-pin-2-line"></i>
-                Customer Distribution by Area
-            </h3>
-            <div className="chart-wrapper">
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={stats.areaAnalytics} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.1} />
-                  <XAxis type="number" hide />
-                  <YAxis 
-                    dataKey="name" 
-                    type="category" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    width={120}
-                    tick={{fill: 'var(--text-muted)', fontSize: 12}}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                        backgroundColor: 'rgba(30, 41, 59, 0.9)', 
-                        border: '1px solid var(--surface-border)', 
-                        borderRadius: '12px',
-                        color: 'white'
-                    }}
-                  />
-                  <Bar dataKey="value" fill="var(--primary)" radius={[0, 4, 4, 0]} barSize={20} name="Customers" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+      <div className="charts-grid-bottom" style={{ marginTop: '2.5rem' }}>
+        <div className="chart-container glass-panel">
+          <h3>
+              <i className="ri-map-pin-2-line"></i>
+              Customer Distribution by Area
+          </h3>
+          <div className="chart-wrapper">
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={stats.areaAnalytics} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.1} />
+                <XAxis type="number" hide />
+                <YAxis 
+                  dataKey="name" 
+                  type="category" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  width={120}
+                  tick={{fill: 'var(--text-muted)', fontSize: 12}}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                      backgroundColor: 'rgba(30, 41, 59, 0.9)', 
+                      border: '1px solid var(--surface-border)', 
+                      borderRadius: '12px',
+                      color: 'white'
+                  }}
+                />
+                <Bar dataKey="value" fill="var(--primary)" radius={[0, 4, 4, 0]} barSize={20} name="Customers" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
-        )}
+        </div>
 
-        {isTechnician && (
-          <div className="chart-container glass-panel">
-            <h3>
-                <i className="ri-bank-card-line"></i>
-                Latest Collections
-            </h3>
-            <div className="chart-wrapper">
-              <div className="activity-list">
-                {stats.recentPayments?.map(pay => (
-                  <div key={pay.id} className="activity-item">
-                    <div className="activity-main">
-                      <span className="activity-title">₹{pay.amount.toLocaleString()}</span>
-                      <span className="activity-sub">{pay.customer?.name} • {pay.payment_method}</span>
-                    </div>
-                    <div className="activity-meta">
-                      <span className="activity-sub">{new Date(pay.payment_date).toLocaleDateString()}</span>
-                    </div>
+        <div className="chart-container glass-panel">
+          <h3>
+              <i className="ri-bank-card-line"></i>
+              Latest Collections
+          </h3>
+          <div className="chart-wrapper">
+            <div className="activity-list">
+              {stats.recentPayments?.map(pay => (
+                <div key={pay.id} className="activity-item">
+                  <div className="activity-main">
+                    <span className="activity-title">₹{pay.amount.toLocaleString()}</span>
+                    <span className="activity-sub">{pay.customer?.name} • {pay.payment_method}</span>
                   </div>
-                ))}
-              </div>
+                  <div className="activity-meta">
+                    <span className="activity-sub">{new Date(pay.payment_date).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        )}
+        </div>
       </div>
 
       {!isTechnician && (
