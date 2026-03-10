@@ -15,14 +15,27 @@ const permissionRoutes = require('./routes/permissionRoutes');
 const seedUsers = require('./seed');
 const seedPermissions = require('./seedPermissions');
 
-const app = express();
+// Custom CORS Middleware with Logging
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  console.log(`Incoming request from origin: ${origin}`);
+  
+  const allowedOrigins = ['https://mdcable-app.vercel.app', 'http://localhost:5173', 'http://localhost:3000'];
+  if (allowedOrigins.includes(origin) || !origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle Preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  next();
+});
 
-app.use(cors({
-  origin: ['https://mdcable-app.vercel.app', 'http://localhost:5173', 'http://localhost:3000'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}));
 app.use(express.json());
 
 // Routes will be mounted here
