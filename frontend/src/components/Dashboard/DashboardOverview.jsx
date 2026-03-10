@@ -16,8 +16,13 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  AreaChart,
-  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
   LineChart,
   Line
 } from 'recharts';
@@ -154,56 +159,6 @@ const DashboardOverview = () => {
       </div>
 
       <div className="charts-grid-top">
-        <div className="chart-container glass-panel main-chart">
-          <h3>
-              <i className="ri-line-chart-line"></i>
-              New Customer Acquisition Trend
-          </h3>
-          <div className="chart-wrapper">
-            <ResponsiveContainer width="100%" height={320}>
-              <AreaChart data={stats.growthData}>
-                <defs>
-                  <linearGradient id="colorCustomers" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.05} />
-                <XAxis 
-                    dataKey="month" 
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{fill: 'var(--text-muted)', fontSize: 12}} 
-                />
-                <YAxis 
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{fill: 'var(--text-muted)', fontSize: 12}} 
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                      backgroundColor: 'rgba(30, 41, 59, 0.9)', 
-                      border: '1px solid var(--surface-border)', 
-                      borderRadius: '12px',
-                      color: 'white'
-                  }}
-                  itemStyle={{ color: '#fff' }}
-                />
-                <Area 
-                    type="monotone" 
-                    dataKey="customers" 
-                    stroke="var(--primary)" 
-                    strokeWidth={4}
-                    fillOpacity={1}
-                    fill="url(#colorCustomers)"
-                    dot={{ r: 6, fill: 'var(--primary)', strokeWidth: 2, stroke: '#fff' }}
-                    activeDot={{ r: 8, strokeWidth: 0 }}
-                    name="New Users"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
 
 
         <div className="chart-container glass-panel">
