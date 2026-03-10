@@ -15,6 +15,8 @@ const permissionRoutes = require('./routes/permissionRoutes');
 const seedUsers = require('./seed');
 const seedPermissions = require('./seedPermissions');
 
+const app = express();
+
 // Custom CORS Middleware with Logging
 app.use((req, res, next) => {
   const origin = req.headers.origin;
