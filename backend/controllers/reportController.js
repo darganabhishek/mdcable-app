@@ -271,6 +271,36 @@ const getDashboardStats = async (req, res) => {
         console.warn('Warning: dailyDues calculation failed:', dueError.message);
     }
 
+    // 9. Revenue per Area (based on payments this month)
+    let revenuePerArea = [];
+    try {
+        const revPerAreaRaw = await Payment.findAll({
+            attributes: [
+                [sequelize.col('customer->assigned_area.name'), 'area_name'],
+                [sequelize.fn('SUM', sequelize.col('amount')), 'revenue']
+            ],
+            include: [{
+                model: Customer,
+                as: 'customer',
+                attributes: [],
+                include: [{
+                    model: Area,
+                    as: 'assigned_area',
+                    attributes: []
+                }]
+            }],
+            where: { payment_date: { [Op.gte]: startOfMonth } },
+            group: ['customer->assigned_area.name'],
+            raw: true
+        });
+        revenuePerArea = revPerAreaRaw.map(item => ({
+            name: item.area_name || 'Unassigned',
+            value: parseFloat(item.revenue || 0)
+        })).sort((a,b) => b.value - a.value);
+    } catch (revAreaError) {
+        console.warn('Warning: revenuePerArea query failed:', revAreaError.message);
+    }
+
     res.json({
       monthlyCollection,
       yearlyCollection,
@@ -287,6 +317,7 @@ const getDashboardStats = async (req, res) => {
       monthlyData,
       growthData,
       dailyDues,
+      revenuePerArea,
       serviceMix: serviceMixRaw.map(s => ({ name: s.type || 'Standard', value: parseFloat(s.value || 0) })),
       topPackages: (topPackages || []).map(p => ({ name: p.name || 'N/A', value: parseInt(p.value || 0) }))
     });

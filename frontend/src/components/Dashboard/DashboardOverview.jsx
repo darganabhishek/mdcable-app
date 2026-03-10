@@ -320,6 +320,39 @@ const DashboardOverview = () => {
               )}
             </div>
           </div>
+
+          <div className="chart-container glass-panel">
+            <h3>
+                <i className="ri-map-pin-2-line"></i>
+                Revenue per Area
+            </h3>
+            <div className="chart-wrapper">
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={stats.revenuePerArea} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.1} />
+                  <XAxis type="number" hide />
+                  <YAxis 
+                    dataKey="name" 
+                    type="category" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    width={100}
+                    tick={{fill: 'var(--text-muted)', fontSize: 12}}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                        backgroundColor: 'rgba(30, 41, 59, 0.9)', 
+                        border: '1px solid var(--surface-border)', 
+                        borderRadius: '12px',
+                        color: 'white'
+                    }}
+                    formatter={(value) => `₹${value.toLocaleString()}`}
+                  />
+                  <Bar dataKey="value" fill="var(--info)" radius={[0, 4, 4, 0]} barSize={20} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
       )}
 
