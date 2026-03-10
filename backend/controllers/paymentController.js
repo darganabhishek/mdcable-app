@@ -71,20 +71,26 @@ const createPayment = async (req, res) => {
       const discount = parseFloat(customer.discount) || 0;
       const monthlyRate = Math.max(0, pkgPrice - discount);
 
-      // 1. Update financial balance
-      customer.balance = (parseFloat(customer.balance || 0) - numericAmount).toFixed(2);
+      // Balance convention: positive balance = credit the customer has paid ahead.
+      // Add incoming payment to existing balance pool.
+      let newBalance = parseFloat(customer.balance || 0) + numericAmount;
 
-      // 2. Extend billing date
+      // Exhaustion loop — advance next_billing_date for every full month of credit
       if (monthlyRate > 0) {
-        const currentNextBilling = customer.next_billing_date ? new Date(customer.next_billing_date) : new Date();
-        const monthsPaid = Math.floor(numericAmount / monthlyRate);
-        
-        if (monthsPaid > 0) {
-          currentNextBilling.setMonth(currentNextBilling.getMonth() + monthsPaid);
-          customer.next_billing_date = currentNextBilling;
+        let billingDate = customer.next_billing_date
+          ? new Date(customer.next_billing_date)
+          : new Date();
+
+        while (newBalance >= monthlyRate) {
+          newBalance -= monthlyRate;
+          billingDate = new Date(billingDate);
+          billingDate.setMonth(billingDate.getMonth() + 1);
         }
+
+        customer.next_billing_date = billingDate;
       }
-      
+
+      customer.balance = newBalance.toFixed(2);
       await customer.save();
     }
 

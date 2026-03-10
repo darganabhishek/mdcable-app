@@ -54,10 +54,12 @@ const getCustomerById = async (req, res) => {
 const createCustomer = async (req, res) => {
   try {
     const { 
-      name, mobile, house_no, locality, city, pincode, username, email,
+      name, mobile, house_no, locality, username, email,
       area_id, installation_date, status, service_type, 
       cable_package_id, internet_package_id, discount 
     } = req.body;
+    const city    = req.body.city    || 'Delhi';
+    const pincode = req.body.pincode || '110023';
 
     const sanitizedEmail = (email && email.trim()) ? email.trim() : null;
     const sanitizedUsername = (username && username.trim()) ? username.trim() : null;
@@ -306,6 +308,46 @@ const bulkDeleteCustomers = async (req, res) => {
   }
 };
 
+// @desc    Get customers with renewals due (billing date past OR no advance credit)
+// @route   GET /api/customers/renewals-due
+// @access  Private
+const getRenewalsDue = async (req, res) => {
+  try {
+    const { Op } = require('sequelize');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const customers = await Customer.findAll({
+      where: {
+        status: { [Op.ne]: 'Inactive' },
+        next_billing_date: { [Op.lte]: today }
+      },
+      include: [
+        { model: Area, as: 'assigned_area', attributes: ['name'] },
+        { model: Package, as: 'package', attributes: ['name', 'price'] }
+      ],
+      order: [['next_billing_date', 'ASC']]
+    });
+
+    // Annotate each record with amount_due
+    const annotated = customers.map(c => {
+      const raw = c.toJSON();
+      const pkgPrice = parseFloat(raw.package?.price || 0);
+      const discount = parseFloat(raw.discount || 0);
+      const monthlyRate = Math.max(0, pkgPrice - discount);
+      const balance = parseFloat(raw.balance || 0);
+      // amount_due = what they still need to pay for this cycle
+      raw.amount_due = Math.max(0, monthlyRate - balance);
+      return raw;
+    });
+
+    res.json(annotated);
+  } catch (error) {
+    console.error('Error fetching renewals due:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   getCustomers,
   getCustomerById,
@@ -313,5 +355,6 @@ module.exports = {
   createBulkCustomers,
   updateCustomer,
   deleteCustomer,
-  bulkDeleteCustomers
+  bulkDeleteCustomers,
+  getRenewalsDue
 };

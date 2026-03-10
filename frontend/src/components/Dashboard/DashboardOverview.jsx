@@ -111,7 +111,8 @@ const DashboardOverview = ({ setActiveTab, setInitialAction }) => {
             </div>
           )}
 
-          <div className={`action-card metric-card ${stats.renewalsDue > 0 ? 'clickable-metric' : ''}`} onClick={() => stats.renewalsDue > 0 && setShowRenewalsModal(true)}>
+          <div className={`action-card metric-card ${stats.renewalsDue > 0 ? 'clickable-metric' : ''}`}
+               onClick={() => stats.renewalsDue > 0 && handleAction('Customers', 'renewals')}>
             <div className="action-icon due">⏳</div>
             <div className="metric-info">
               <span>Renewals Due</span>
