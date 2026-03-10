@@ -9,7 +9,7 @@ import { exportQRsToPDF } from '../../utils/qrExportUtils';
 import { generateInvoice, generateReceipt, bulkGenerateDocuments } from '../../utils/documentExportUtils';
 import './Customers.css';
 
-const CustomersList = () => {
+const CustomersList = ({ initialAction, onActionComplete }) => {
   const [customers, setCustomers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -38,6 +38,13 @@ const CustomersList = () => {
   useEffect(() => {
     fetchCustomers();
   }, []);
+
+  useEffect(() => {
+    if (initialAction === 'add') {
+      openAddModal();
+      if (onActionComplete) onActionComplete();
+    }
+  }, [initialAction]);
 
   const filteredCustomers = customers.filter(c => {
     const matchesSearch = 

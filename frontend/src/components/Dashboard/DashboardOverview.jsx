@@ -17,7 +17,7 @@ import './DashboardOverview.css';
 
 const API_URL = import.meta.env.VITE_API_URL || `${import.meta.env.VITE_API_URL}`;
 
-const DashboardOverview = () => {
+const DashboardOverview = ({ setActiveTab, setInitialAction }) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -42,6 +42,11 @@ const DashboardOverview = () => {
       setError('Failed to load dashboard statistics.');
       setLoading(false);
     }
+  };
+
+  const handleAction = (tab, action = null) => {
+    if (action) setInitialAction(action);
+    setActiveTab(tab);
   };
 
   if (loading) return (
@@ -76,7 +81,7 @@ const DashboardOverview = () => {
       </div>
       
       <div className="kpi-grid">
-        <div className="kpi-card glass-panel">
+        <div className="kpi-card glass-panel" onClick={() => setActiveTab('Customers')}>
           <div className="kpi-icon customers">👥</div>
           <div className="kpi-info">
             <h3>Total Customers</h3>
@@ -85,7 +90,7 @@ const DashboardOverview = () => {
         </div>
         
         {!isTechnician && (
-          <div className="kpi-card glass-panel">
+          <div className="kpi-card glass-panel" onClick={() => setActiveTab('Payments')}>
             <div className="kpi-icon revenue">💰</div>
             <div className="kpi-info">
               <h3>Total Revenue</h3>
@@ -95,7 +100,7 @@ const DashboardOverview = () => {
         )}
 
         {!isTechnician && (
-          <div className="kpi-card glass-panel">
+          <div className="kpi-card glass-panel" onClick={() => setActiveTab('Payments')}>
             <div className="kpi-icon collection">📈</div>
             <div className="kpi-info">
               <h3>Monthly Collection</h3>
@@ -112,21 +117,21 @@ const DashboardOverview = () => {
           </div>
           {stats.renewalsDue > 0 && <div className="kpi-tap-hint">Tap to view list</div>}
         </div>
-        <div className="kpi-card glass-panel">
+        <div className="kpi-card glass-panel" onClick={() => setActiveTab('Customers')}>
           <div className="kpi-icon active">✅</div>
           <div className="kpi-info">
             <h3>Active Users</h3>
             <p className="kpi-value positive">{stats.activeUsers || 0}</p>
           </div>
         </div>
-        <div className="kpi-card glass-panel">
+        <div className="kpi-card glass-panel" onClick={() => setActiveTab('Customers')}>
           <div className="kpi-icon inactive">💤</div>
           <div className="kpi-info">
             <h3>Inactive Users</h3>
             <p className="kpi-value">{stats.inactiveUsers || 0}</p>
           </div>
         </div>
-        <div className="kpi-card glass-panel">
+        <div className="kpi-card glass-panel" onClick={() => setActiveTab('Customers')}>
           <div className="kpi-icon suspended">🚫</div>
           <div className="kpi-info">
             <h3>Suspended</h3>
@@ -135,7 +140,7 @@ const DashboardOverview = () => {
         </div>
 
         {!isTechnician && (
-          <div className="kpi-card glass-panel">
+          <div className="kpi-card glass-panel" onClick={() => setActiveTab('Payments')}>
             <div className="kpi-icon projected">📑</div>
             <div className="kpi-info">
               <h3>Projected (30d)</h3>
@@ -176,7 +181,7 @@ const DashboardOverview = () => {
           </h3>
           <div className="chart-wrapper">
             <div className="quick-actions-grid">
-              <div className="action-card" onClick={() => window.location.href='/customers'}>
+              <div className="action-card" onClick={() => handleAction('Customers', 'add')}>
                 <div className="action-icon" style={{color: 'var(--primary)'}}>👤</div>
                 <span>Add Customer</span>
               </div>
@@ -184,17 +189,17 @@ const DashboardOverview = () => {
                 <div className="action-icon" style={{color: 'var(--negative)'}}>♻️</div>
                 <span>Renew Plans</span>
               </div>
-              <div className="action-card" onClick={() => window.location.href='/payments'}>
+              <div className="action-card" onClick={() => setActiveTab('Payments')}>
                 <div className="action-icon" style={{color: 'var(--success)'}}>💳</div>
                 <span>Record Payment</span>
               </div>
               {!isTechnician ? (
-                <div className="action-card" onClick={() => window.location.href='/reports'}>
+                <div className="action-card" onClick={() => setActiveTab('Reports')}>
                   <div className="action-icon" style={{color: 'var(--info)'}}>📊</div>
                   <span>View Reports</span>
                 </div>
               ) : (
-                <div className="action-card" onClick={() => window.location.href='/discrepancy'}>
+                <div className="action-card" onClick={() => setActiveTab('Discrepancy')}>
                   <div className="action-icon" style={{color: 'var(--warning)'}}>🔍</div>
                   <span>Search Discrepancy</span>
                 </div>

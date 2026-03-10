@@ -15,6 +15,7 @@ const Dashboard = () => {
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('Overview');
+    const [initialAction, setInitialAction] = useState(null);
 
     const handleLogout = () => {
         logout();
@@ -104,8 +105,18 @@ const Dashboard = () => {
                     </button>
                 </header>
                 <div className="content-area">
-                    {activeTab === 'Overview' && <DashboardOverview />}
-                    {activeTab === 'Customers' && <CustomersList />}
+                    {activeTab === 'Overview' && (
+                        <DashboardOverview 
+                            setActiveTab={setActiveTab} 
+                            setInitialAction={setInitialAction} 
+                        />
+                    )}
+                    {activeTab === 'Customers' && (
+                        <CustomersList 
+                            initialAction={initialAction} 
+                            onActionComplete={() => setInitialAction(null)} 
+                        />
+                    )}
                     {activeTab === 'Packages' && <PackagesList />}
                     {activeTab === 'Payments' && <PaymentsList />}
                     {user?.role !== 'Technician' && activeTab === 'Reports' && <Reports />}
