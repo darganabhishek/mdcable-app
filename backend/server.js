@@ -42,6 +42,20 @@ app.use('/api/packages', packageRoutes);
 app.use('/api/areas', areaRoutes);
 app.use('/api/permissions', permissionRoutes);
 
+const PORT = process.env.PORT || 5000;
+
+app.get('/', (req, res) => {
+    res.send('M.D. Cable Networks API is running');
+});
+
+app.get('/health', (req, res) => {
+    res.json({ 
+        status: 'UP', 
+        version: '2026-03-11-0330-STABLE',
+        timestamp: new Date().toISOString()
+    });
+});
+
 console.log('--- Production System Initializing ---');
 console.log('Target Port:', PORT);
 
@@ -52,34 +66,21 @@ const startServer = async () => {
         await sequelize.authenticate();
         console.log('✅ Database connection established.');
 
-        // In production, avoid 'alter: true' as it can hang or cause data loss.
-        // We sync without mutators for high availability.
+        // In production, sync but avoid 'alter: true' for high availability
         if (process.env.NODE_ENV !== 'production') {
             await sequelize.sync({ alter: true });
-            console.log('✅ Development schema synced (alter: true)');
         } else {
-            // Logically we should use migrations, but for rapid recovery:
             await sequelize.sync(); 
-            console.log('✅ Production schema check complete (no-alter)');
         }
 
         await seedUsers();
         await seedPermissions();
 
         app.listen(PORT, '0.0.0.0', () => {
-            console.log(`
-            =========================================
-            🚀 SERVER READY: http://0.0.0.0:${PORT}
-            HEALTH CHECK: /health
-            VERSION: 2026-03-11-0315-RESILIENT
-            =========================================
-            `);
+            console.log(`🚀 SERVER READY ON PORT ${PORT}`);
         });
     } catch (err) {
-        console.error('❌ CRITICAL SYSTEM CRASH ON STARTUP:');
-        console.error(err);
-        // Do not exit if it's just a sync error, but log it.
-        // However, for Railway, exiting 1 will trigger a restart.
+        console.error('❌ CRITICAL STARTUP ERROR:', err);
         process.exit(1);
     }
 };
