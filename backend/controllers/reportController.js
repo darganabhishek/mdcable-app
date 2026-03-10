@@ -300,7 +300,7 @@ const getDashboardStats = async (req, res) => {
     }, 0);
 
     // Final Object Construction
-    res.json({
+    const response = {
         monthlyCollection: parseFloat(monthlySum || 0),
         yearlyCollection: parseFloat(yearlySum || 0),
         totalRevenue: parseFloat(totalRevSum || 0),
@@ -312,21 +312,42 @@ const getDashboardStats = async (req, res) => {
         renewalsDueList: renewalsData,
         totalPaymentDue: parseFloat(totalDueSum || 0),
         projectedRevenue,
-        areaAnalytics: areaAnalyticsRaw.map(item => ({ name: item.area_name || 'Unassigned', value: parseInt(item.count || 0) })),
-        areaDistribution: areaDistRaw.map(item => ({ name: item.area_name || 'Unassigned', value: parseInt(item.count) })),
+        areaAnalytics: areaAnalyticsRaw.map(item => ({ 
+            name: item.area_name || item['assigned_area.name'] || 'Unassigned', 
+            value: parseInt(item.count || item.value || 0) 
+        })),
+        areaDistribution: areaDistRaw.map(item => ({ 
+            name: item.area_name || item['assigned_area.name'] || 'Unassigned', 
+            value: parseInt(item.count || item.value || 0) 
+        })),
         recentCustomers,
         recentPayments,
         monthlyData,
         growthData,
         dailyDues,
-        revenuePerArea: revPerAreaRaw.map(item => ({ name: item.area_name || 'Unassigned', value: parseFloat(item.revenue || 0) })).sort((a,b) => b.value - a.value),
-        serviceMix: serviceMixRaw.map(s => ({ name: s.type || 'Standard', value: parseFloat(s.value || 0) })),
-        topPackages: topPackagesRaw.map(p => ({ name: p.name || 'N/A', value: parseInt(p.value || 0) }))
-    });
+        revenuePerArea: revPerAreaRaw.map(item => ({ 
+            name: item.area_name || item['customer.assigned_area.name'] || 'Unassigned', 
+            value: parseFloat(item.revenue || item.value || 0) 
+        })).sort((a,b) => b.value - a.value),
+        serviceMix: serviceMixRaw.map(s => ({ 
+            name: s.type || s['customer.service_type'] || 'Standard', 
+            value: parseFloat(s.value || 0) 
+        })),
+        topPackages: topPackagesRaw.map(p => ({ 
+            name: p.name || p['package.name'] || 'N/A', 
+            value: parseInt(p.value || 0) 
+        }))
+    };
+
+    console.log('DEBUG: Dashboard data processed successfully');
+    res.json(response);
 
   } catch (error) {
-    console.error('CRITICAL: Dashboard Stats Failure:', error);
-    res.status(500).json({ message: 'Dashboard engine timeout or failure: ' + error.message });
+    console.error('CRITICAL: Dashboard Stats Logic Error:', error);
+    res.status(500).json({ 
+        message: 'Dashboard engine failure: ' + error.message,
+        stack: error.stack 
+    });
   }
 };
 
