@@ -44,16 +44,31 @@ app.use('/api/permissions', permissionRoutes);
 
 const PORT = process.env.PORT || 5000;
 
-app.get('/', (req, res) => {
-    res.send('M.D. Cable Networks API is running');
+app.get('/health', (req, res) => {
+    res.json({ 
+        status: 'UP', 
+        version: '2026-03-11-0310-RECOVERY',
+        timestamp: new Date().toISOString()
+    });
 });
 
+console.log('Attempting to sync database...');
+
 // Sync database
-sequelize.sync({ alter: true }).then(async () => {
-    console.log('Database synced');
-    await seedUsers();
-    await seedPermissions();
-    app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT} at 0.0.0.0`));
-}).catch(err => {
-    console.error('Database connection failed:', err);
-});
+sequelize.authenticate()
+    .then(() => {
+        console.log('Database connection stable.');
+        return sequelize.sync({ alter: true });
+    })
+    .then(async () => {
+        console.log('Database schema synchronized.');
+        await seedUsers();
+        await seedPermissions();
+        app.listen(PORT, '0.0.0.0', () => {
+            console.log(`🚀 Server fully operational on port ${PORT}`);
+        });
+    })
+    .catch(err => {
+        console.error('❌ CRITICAL ENGINE FAILURE:', err);
+        process.exit(1); // Force container restart on failure
+    });
