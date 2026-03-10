@@ -42,33 +42,46 @@ app.use('/api/packages', packageRoutes);
 app.use('/api/areas', areaRoutes);
 app.use('/api/permissions', permissionRoutes);
 
-const PORT = process.env.PORT || 5000;
+console.log('--- Production System Initializing ---');
+console.log('Target Port:', PORT);
 
-app.get('/health', (req, res) => {
-    res.json({ 
-        status: 'UP', 
-        version: '2026-03-11-0310-RECOVERY',
-        timestamp: new Date().toISOString()
-    });
-});
+// Resilient Production Startup
+const startServer = async () => {
+    try {
+        console.log('Connecting to database...');
+        await sequelize.authenticate();
+        console.log('✅ Database connection established.');
 
-console.log('Attempting to sync database...');
+        // In production, avoid 'alter: true' as it can hang or cause data loss.
+        // We sync without mutators for high availability.
+        if (process.env.NODE_ENV !== 'production') {
+            await sequelize.sync({ alter: true });
+            console.log('✅ Development schema synced (alter: true)');
+        } else {
+            // Logically we should use migrations, but for rapid recovery:
+            await sequelize.sync(); 
+            console.log('✅ Production schema check complete (no-alter)');
+        }
 
-// Sync database
-sequelize.authenticate()
-    .then(() => {
-        console.log('Database connection stable.');
-        return sequelize.sync({ alter: true });
-    })
-    .then(async () => {
-        console.log('Database schema synchronized.');
         await seedUsers();
         await seedPermissions();
+
         app.listen(PORT, '0.0.0.0', () => {
-            console.log(`🚀 Server fully operational on port ${PORT}`);
+            console.log(`
+            =========================================
+            🚀 SERVER READY: http://0.0.0.0:${PORT}
+            HEALTH CHECK: /health
+            VERSION: 2026-03-11-0315-RESILIENT
+            =========================================
+            `);
         });
-    })
-    .catch(err => {
-        console.error('❌ CRITICAL ENGINE FAILURE:', err);
-        process.exit(1); // Force container restart on failure
-    });
+    } catch (err) {
+        console.error('❌ CRITICAL SYSTEM CRASH ON STARTUP:');
+        console.error(err);
+        // Do not exit if it's just a sync error, but log it.
+        // However, for Railway, exiting 1 will trigger a restart.
+        process.exit(1);
+    }
+};
+
+startServer();
