@@ -33,6 +33,7 @@ const Reports = () => {
   };
 
   useEffect(() => {
+    setData(null);
     fetchReport();
   }, [reportType]);
 
@@ -225,7 +226,7 @@ const Reports = () => {
                                 </td>
                             </tr>
                         ))}
-                        {reportType === 'staff' && data?.map((item, idx) => (
+                        {reportType === 'staff' && Array.isArray(data) && data.map((item, idx) => (
                           <tr key={idx}>
                               <td>
                                   <div className="user-cell">
