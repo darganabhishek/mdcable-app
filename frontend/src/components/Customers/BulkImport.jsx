@@ -29,12 +29,8 @@ const BulkImport = ({ onClose, onSave }) => {
         "Service Type": 'Cable',
         "Package": 'Gold Plan',
         "Area": 'Kidwai Nagar',
-        "House No": '11/28',
-        "Locality": 'Kidwai Nagar',
-        "City": 'Delhi',
-        "Pincode": '110023',
+        "Address": '11/28, Kidwai Nagar, Delhi 110023',
         "Username": 'rahul_123',
-        "Email": 'rahul@example.com',
         "Installation Date": new Date().toISOString().split('T')[0],
         "Discount": '0',
         "Status": 'Active'

@@ -16,11 +16,7 @@ const ALL_COLUMNS = [
   { key: 'name',        label: 'Name',         default: true },
   { key: 'username',    label: 'Username',     default: false },
   { key: 'mobile',      label: 'Mobile',        default: true },
-  { key: 'email',       label: 'Email',        default: false },
-  { key: 'house_no',    label: 'House No.',    default: false },
-  { key: 'locality',    label: 'Locality',      default: true },
-  { key: 'city',        label: 'City',         default: false },
-  { key: 'pincode',     label: 'Pincode',      default: false },
+  { key: 'address',     label: 'Address',       default: true },
   { key: 'area',        label: 'Area',         default: false },
   { key: 'service',     label: 'Service',       default: true },
   { key: 'package',     label: 'Package',       default: true },
@@ -307,10 +303,11 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
           </button>
           {showColumns && (
             <div style={{
-              position:'absolute', right:0, top:'110%', zIndex:100,
+              position:'absolute', right:0, top:'110%', zIndex:1000,
               background:'var(--surface)', border:'1px solid var(--surface-border)',
-              borderRadius:'0.75rem', padding:'1rem', minWidth:'180px',
-              boxShadow:'0 8px 32px rgba(0,0,0,0.3)'
+              borderRadius:'0.75rem', padding:'1rem', minWidth:'200px',
+              boxShadow:'0 10px 40px rgba(0,0,0,0.5)',
+              maxHeight: '400px', overflowY: 'auto'
             }}>
               {ALL_COLUMNS.map(col => (
                 <label key={col.key} style={{ display:'flex', alignItems:'center', gap:'0.5rem', padding:'0.3rem 0', cursor:'pointer', fontSize:'0.85rem' }}>
@@ -342,11 +339,7 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
               {visibleCols.name        && <th>Name</th>}
               {visibleCols.username    && <th>Username</th>}
               {visibleCols.mobile      && <th>Mobile</th>}
-              {visibleCols.email       && <th>Email</th>}
-              {visibleCols.house_no    && <th>House No.</th>}
-              {visibleCols.locality    && <th>Locality</th>}
-              {visibleCols.city        && <th>City</th>}
-              {visibleCols.pincode     && <th>Pincode</th>}
+              {visibleCols.address     && <th>Address</th>}
               {visibleCols.area        && <th>Area</th>}
               {visibleCols.service     && <th>Service</th>}
               {visibleCols.package     && <th>Package</th>}
@@ -387,15 +380,16 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                   )}
                   {visibleCols.username && <td style={{ fontSize:'0.85rem', color:'var(--text-muted)' }}>{cust.username || '—'}</td>}
                   {visibleCols.mobile  && <td style={{ letterSpacing:'0.05em', fontWeight:600 }}>{cust.mobile}</td>}
-                  {visibleCols.email && <td style={{ fontSize:'0.85rem' }}>{cust.email || '—'}</td>}
-                  {visibleCols.house_no && <td style={{ fontSize:'0.85rem' }}>{toTitleCase(cust.house_no) || '—'}</td>}
-                  {visibleCols.locality && (
-                    <td style={{ fontSize:'0.85rem', fontWeight:500 }}>
-                      {toTitleCase(cust.locality) || cust.assigned_area?.name || '—'}
+                  {visibleCols.address && (
+                    <td style={{ fontSize:'0.85rem' }}>
+                      <div className="address-stack">
+                        <span className="address-main">{renderAddress(cust.house_no, cust.locality)}</span>
+                        {(cust.city || cust.pincode) && (
+                          <span className="address-sub">{toTitleCase(cust.city)}{cust.pincode ? ` ${cust.pincode}` : ''}</span>
+                        )}
+                      </div>
                     </td>
                   )}
-                  {visibleCols.city && <td style={{ fontSize:'0.85rem' }}>{toTitleCase(cust.city) || '—'}</td>}
-                  {visibleCols.pincode && <td style={{ fontSize:'0.85rem' }}>{cust.pincode || '—'}</td>}
                   {visibleCols.area && <td style={{ fontSize:'0.85rem' }}>{cust.assigned_area?.name || '—'}</td>}
                   {visibleCols.service && (
                     <td>

@@ -139,7 +139,7 @@ const createBulkCustomers = async (req, res) => {
     const phoneAliases = ['phone', 'mobile', 'contact', 'phone number', 'mobile number', 'contact number', 'phone_number', 'mobile_no'];
     const planAliases = ['plan', 'package', 'service', 'subscription', 'cable_package', 'internet_package', 'internet_plan'];
     const dateAliases = ['installation_date', 'date', 'joined', 'created_at', 'installation', 'install_date'];
-    const houseAliases = ['house', 'house no', 'flat', 'house_no', 'flat_no', 'door_no', 'address1'];
+    const houseAliases = ['house', 'house no', 'flat', 'house_no', 'flat_no', 'door_no', 'address', 'customer address'];
     const localityAliases = ['locality', 'area', 'street', 'neighborhood', 'address2', 'location', 'residence'];
     const cityAliases = ['city', 'town', 'district', 'location_city'];
     const pincodeAliases = ['pincode', 'pin', 'zip', 'zipcode', 'area_code', 'postal'];
