@@ -394,12 +394,12 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                           borderRadius:'0.75rem', padding:'0.5rem', display:'flex', gap:'0.5rem',
                           boxShadow:'0 15px 40px rgba(0,0,0,0.8)', whiteSpace:'nowrap'
                         }}>
-                          <button className="btn-action" onClick={() => generateInvoice(cust)} title="Invoice"><i className="ri-file-list-3-line"/></button>
-                          <button className="btn-action" onClick={() => generateReceipt(cust)} title="Receipt"><i className="ri-bill-line"/></button>
-                          <button className="btn-action" onClick={() => openQRModal(cust)} title="QR Code"><i className="ri-qr-code-line"/></button>
-                          <button className="btn-action edit" onClick={() => openEditModal(cust)} title="Edit"><i className="ri-edit-line"/></button>
+                          <button className="btn-action" onClick={() => generateInvoice(cust)} title="Invoice" style={{ color: 'var(--primary)' }}><i className="ri-file-list-3-line"/></button>
+                          <button className="btn-action" onClick={() => generateReceipt(cust)} title="Receipt" style={{ color: 'var(--success)' }}><i className="ri-bill-line"/></button>
+                          <button className="btn-action" onClick={() => openQRModal(cust)} title="QR Code" style={{ color: 'var(--info)' }}><i className="ri-qr-code-line"/></button>
+                          <button className="btn-action edit" onClick={() => openEditModal(cust)} title="Edit" style={{ color: 'var(--warning)' }}><i className="ri-edit-line"/></button>
                           {!isTechnician && (
-                            <button className="btn-action delete" onClick={() => handleDelete(cust.id)} title="Delete"><i className="ri-delete-bin-line"/></button>
+                            <button className="btn-action delete" onClick={() => handleDelete(cust.id)} title="Delete" style={{ color: 'var(--danger)' }}><i className="ri-delete-bin-line"/></button>
                           )}
                         </div>
                       )}
