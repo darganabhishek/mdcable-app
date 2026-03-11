@@ -18,7 +18,6 @@ const ALL_COLUMNS = [
   { key: 'address',     label: 'Address',       default: true },
   { key: 'billing',     label: 'Next billing cycle', default: true },
   { key: 'balance',     label: 'Balance',       default: true },
-  { key: 'actions',     label: 'Actions',       default: true },
   { key: 'service',     label: 'Service',       default: true },
 ];
 
@@ -63,6 +62,7 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
   const [editingCustomer,   setEditingCustomer]   = useState(null);
   const [qrCustomer,        setQrCustomer]        = useState(null);
   const [selectedCustomers, setSelectedCustomers] = useState([]);
+  const [activeActionsId,   setActiveActionsId]   = useState(null);
   const colRef = useRef(null);
   const { user } = useContext(AuthContext);
   const isTechnician = user?.role === 'Technician';
@@ -209,6 +209,15 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
     downloadCSV(filteredCustomers, headers, `customers_${Date.now()}.csv`);
   };
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (colRef.current && !colRef.current.contains(e.target)) setShowColumns(false);
+      if (activeActionsId && !e.target.closest('.id-action-cell')) setActiveActionsId(null);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [activeActionsId]);
+
   const openAddModal = () => { setEditingCustomer(null); setIsModalOpen(true); };
   const openEditModal = (c) => { setEditingCustomer(c); setIsModalOpen(true); };
   const toggleCol = (key) => {
@@ -353,7 +362,6 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
               {visibleCols.address     && <th>Address</th>}
               {visibleCols.billing     && <th>Next billing cycle</th>}
               {visibleCols.balance     && <th>Balance</th>}
-              {visibleCols.actions     && <th className="text-right">Actions</th>}
               {visibleCols.service     && <th>Service</th>}
             </tr>
           </thead>
@@ -369,7 +377,33 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                     />
                   </td>
                   {visibleCols.customer_id && (
-                    <td style={{ fontWeight:800, color:'var(--primary)', fontSize:'0.85rem' }}>{cust.customer_id}</td>
+                    <td className="id-action-cell" style={{ position:'relative' }}>
+                      <span 
+                        onClick={() => setActiveActionsId(activeActionsId === cust.id ? null : cust.id)}
+                        style={{ 
+                          fontWeight:800, color:'var(--primary)', fontSize:'0.85rem', 
+                          cursor:'pointer', textDecoration:'underline', textUnderlineOffset:'2px' 
+                        }}
+                      >
+                        {cust.customer_id}
+                      </span>
+                      {activeActionsId === cust.id && (
+                        <div className="glass-panel" style={{
+                          position:'absolute', left:'100%', top:0, zIndex:2147483647,
+                          marginLeft:'10px', background:'#020617', border:'1px solid var(--surface-border)',
+                          borderRadius:'0.75rem', padding:'0.5rem', display:'flex', gap:'0.5rem',
+                          boxShadow:'0 15px 40px rgba(0,0,0,0.8)', whiteSpace:'nowrap'
+                        }}>
+                          <button className="btn-action" onClick={() => generateInvoice(cust)} title="Invoice"><i className="ri-file-list-3-line"/></button>
+                          <button className="btn-action" onClick={() => generateReceipt(cust)} title="Receipt"><i className="ri-bill-line"/></button>
+                          <button className="btn-action" onClick={() => openQRModal(cust)} title="QR Code"><i className="ri-qr-code-line"/></button>
+                          <button className="btn-action edit" onClick={() => openEditModal(cust)} title="Edit"><i className="ri-edit-line"/></button>
+                          {!isTechnician && (
+                            <button className="btn-action delete" onClick={() => handleDelete(cust.id)} title="Delete"><i className="ri-delete-bin-line"/></button>
+                          )}
+                        </div>
+                      )}
+                    </td>
                   )}
                   {visibleCols.name && (
                     <td>
@@ -404,19 +438,6 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                       color: parseFloat(cust.balance) >= 0 ? 'var(--success)' : 'var(--danger)' 
                     }}>
                       ₹{parseFloat(cust.balance || 0).toFixed(0)}
-                    </td>
-                  )}
-                  {visibleCols.actions && (
-                    <td>
-                      <div className="action-buttons justify-end">
-                        <button className="btn-action edit" onClick={() => generateInvoice(cust)} title="Invoice"><i className="ri-file-list-3-line"/></button>
-                        <button className="btn-action edit" onClick={() => generateReceipt(cust)} title="Receipt"><i className="ri-bill-line"/></button>
-                        <button className="btn-action edit" onClick={() => openQRModal(cust)} title="QR Code"><i className="ri-qr-code-line"/></button>
-                        <button className="btn-action edit" onClick={() => openEditModal(cust)} title="Edit"><i className="ri-edit-line"/></button>
-                        {!isTechnician && (
-                          <button className="btn-action delete" onClick={() => handleDelete(cust.id)} title="Delete"><i className="ri-delete-bin-line"/></button>
-                        )}
-                      </div>
                     </td>
                   )}
                   {visibleCols.service && (
