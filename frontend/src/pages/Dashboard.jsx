@@ -7,7 +7,6 @@ import Reports from '../components/Reports/Reports';
 import UsersList from '../components/Users/UsersList';
 import RolePermissions from '../components/Users/RolePermissions';
 import PackagesList from '../components/Packages/PackagesList'; // Added PackagesList import
-import DiscrepancyList from '../components/Customers/DiscrepancyList';
 import DashboardOverview from '../components/Dashboard/DashboardOverview';
 import Maintenance from '../components/Users/Maintenance';
 import './Dashboard.css';
@@ -67,13 +66,6 @@ const Dashboard = () => {
                             <span>Reports</span>
                         </button>
                     )}
-                    <button 
-                      className={`nav-item ${activeTab === 'Discrepancy' ? 'active' : ''}`}
-                      onClick={() => setActiveTab('Discrepancy')}
-                    >
-                        <i className="ri-search-eye-line"></i>
-                        <span>Discrepancy Search</span>
-                    </button>
                     {user?.role === 'Super Admin' && (
                         <>
                             <button 
@@ -128,7 +120,6 @@ const Dashboard = () => {
                     {activeTab === 'Packages' && <PackagesList />}
                     {activeTab === 'Payments' && <PaymentsList />}
                     {user?.role !== 'Technician' && activeTab === 'Reports' && <Reports />}
-                    {activeTab === 'Discrepancy' && <DiscrepancyList />}
                     {activeTab === 'Access Control' && <UsersList />}
                     {activeTab === 'Permissions' && <RolePermissions />}
                     {activeTab === 'Maintenance' && <Maintenance />}

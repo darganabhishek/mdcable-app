@@ -187,12 +187,7 @@ const DashboardOverview = ({ setActiveTab, setInitialAction }) => {
               <div className="action-icon" style={{color: 'var(--info)'}}>📊</div>
               <span>View Reports</span>
             </div>
-          ) : (
-            <div className="action-card" onClick={() => setActiveTab('Discrepancy')}>
-              <div className="action-icon" style={{color: 'var(--warning)'}}>🔍</div>
-              <span>Search Discrepancy</span>
-            </div>
-          )}
+          ) : null}
         </div>
       </div>
 
