@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import axios from 'axios';
+import { AuthContext } from '../../context/AuthContext';
 import PaymentForm from './PaymentForm';
 import { downloadCSV } from '../../utils/exportUtils';
 import '../Customers/Customers.css';
@@ -42,6 +43,8 @@ const PaymentsList = () => {
   const [isModalOpen,    setIsModalOpen]    = useState(false);
   const [selectedPayment,setSelectedPayment]= useState(null);
   const colRef = useRef(null);
+  const { user } = useContext(AuthContext);
+  const isTechnician = user?.role === 'Technician';
 
   const fetchPayments = async () => {
     try {
@@ -104,7 +107,8 @@ const PaymentsList = () => {
   const handleEdit = (p) => { setSelectedPayment(p); setIsModalOpen(true); };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Remove this transaction? Customer balance will be adjusted.')) {
+    if (isTechnician) return;
+    if (window.confirm('Remove this transaction? Customer balance and billing cycle will be adjusted.')) {
       try {
         await axios.delete(`${import.meta.env.VITE_API_URL}/payments/${id}`);
         fetchPayments();
@@ -267,7 +271,9 @@ const PaymentsList = () => {
                   <td>
                     <div className="action-buttons">
                       <button className="btn-action edit"   onClick={() => handleEdit(payment)}      title="Edit"><i className="ri-edit-line"/></button>
-                      <button className="btn-action delete" onClick={() => handleDelete(payment.id)} title="Delete"><i className="ri-delete-bin-line"/></button>
+                      {!isTechnician && (
+                        <button className="btn-action delete" onClick={() => handleDelete(payment.id)} title="Delete"><i className="ri-delete-bin-line"/></button>
+                      )}
                     </div>
                   </td>
                 )}

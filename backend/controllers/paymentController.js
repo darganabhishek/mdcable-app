@@ -149,15 +149,47 @@ const deletePayment = async (req, res) => {
     const payment = await Payment.findByPk(req.params.id);
     if (!payment) return res.status(404).json({ message: 'Transaction not found' });
 
-    const customer = await Customer.findByPk(payment.customer_id);
+    const customer = await Customer.findByPk(payment.customer_id, {
+      include: [{ model: Package, as: 'package' }]
+    });
+
     if (customer && payment.status === 'Completed') {
-      // Reverse impact on balance
-      customer.balance = (parseFloat(customer.balance) + parseFloat(payment.amount)).toFixed(2);
-      await customer.save();
+      // 1. First, remove the payment from the database so it's not counted in the sync
+      await payment.destroy();
+
+      // 2. Perform a robust recalculat-and-sync for this customer (Logic mirrored from adminController)
+      const payments = await Payment.findAll({
+        where: { customer_id: customer.id, status: 'Completed' }
+      });
+
+      let baseDate = customer.installation_date ? new Date(customer.installation_date) : new Date(customer.createdAt);
+      if (new Date(baseDate).getFullYear() === 1970) baseDate = new Date(customer.createdAt);
+      
+      let nextBillingDate = new Date(new Date(baseDate).setMonth(new Date(baseDate).getMonth() + 1));
+      
+      const totalPaid = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+      const pkgPrice = customer.package ? parseFloat(customer.package.price) : 0;
+      const discount = parseFloat(customer.discount) || 0;
+      const monthlyRate = Math.max(0, pkgPrice - discount);
+
+      let currentBalance = totalPaid;
+      if (monthlyRate > 0) {
+        while (currentBalance >= monthlyRate) {
+          currentBalance -= monthlyRate;
+          nextBillingDate = new Date(nextBillingDate.setMonth(nextBillingDate.getMonth() + 1));
+        }
+      }
+
+      await customer.update({
+        next_billing_date: nextBillingDate,
+        balance: currentBalance.toFixed(2)
+      });
+
+      return res.json({ message: 'Transaction removed and customer cycle reverted' });
     }
 
     await payment.destroy();
-    res.json({ message: 'Transaction removed and balance adjusted' });
+    res.json({ message: 'Transaction removed' });
   } catch (error) {
     console.error('Error deleting payment:', error);
     res.status(500).json({ message: 'Server error' });

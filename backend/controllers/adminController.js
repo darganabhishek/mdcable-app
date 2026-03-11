@@ -73,6 +73,18 @@ const syncBillingDates = async (req, res) => {
   }
 };
 
+const syncPermissions = async (req, res) => {
+  try {
+    const seedPermissions = require('../seedPermissions');
+    await seedPermissions();
+    res.json({ message: 'Permissions successfully synchronized and repaired.' });
+  } catch (error) {
+    console.error('Seed Error:', error);
+    res.status(500).json({ message: 'Server error during permission synchronization.' });
+  }
+};
+
 module.exports = {
-  syncBillingDates
+  syncBillingDates,
+  syncPermissions
 };

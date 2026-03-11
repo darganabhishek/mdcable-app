@@ -28,6 +28,28 @@ const Maintenance = () => {
         }
     };
 
+    const handleSyncPermissions = async () => {
+        if (!window.confirm('This will update all role permissions to the latest system requirements. Proceed?')) {
+            return;
+        }
+
+        setLoading(true);
+        setMessage({ type: 'info', text: 'Updating permissions...' });
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/admin/sync-permissions`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setMessage({ type: 'success', text: res.data.message });
+        } catch (error) {
+            console.error('Permission sync failed', error);
+            setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to update permissions.' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="module-container">
             <div className="module-header">
@@ -75,6 +97,29 @@ const Maintenance = () => {
                         <span>{message.text}</span>
                     </div>
                 )}
+            </div>
+
+            <div className="glass-panel" style={{ padding: '2rem', marginTop: '1.5rem', maxWidth: '800px' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem' }}>
+                    <div style={{ fontSize: '2.5rem', background: 'rgba(245, 158, 11, 0.1)', padding: '1rem', borderRadius: '12px', color: 'var(--warning)' }}>
+                        <i className="ri-shield-keyhole-line"></i>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <h3 style={{ marginBottom: '0.5rem' }}>Repair System Permissions</h3>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: '1.6' }}>
+                            Restores and updates all role-based permissions to the default system configuration. 
+                            Use this if some users (like Admins) are missing specific action buttons or access.
+                        </p>
+                        <button 
+                            className="btn-secondary" 
+                            style={{ marginTop: '1.5rem' }} 
+                            onClick={handleSyncPermissions}
+                            disabled={loading}
+                        >
+                            {loading ? 'Processing...' : 'Sync & Repair Permissions'}
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div className="glass-panel" style={{ padding: '2rem', marginTop: '1.5rem', maxWidth: '800px', opacity: 0.7 }}>

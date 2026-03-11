@@ -8,7 +8,7 @@ const permissions = [
   // Area Permissions
   'areas:view', 'areas:create', 'areas:delete',
   // Payment Permissions
-  'payments:view', 'payments:create',
+  'payments:view', 'payments:create', 'payments:edit', 'payments:delete',
   // Renewal Permissions
   'renewals:view', 'renewals:create',
   // Report Permissions
