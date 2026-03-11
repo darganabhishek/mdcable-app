@@ -228,11 +228,23 @@ const createBulkCustomers = async (req, res) => {
         pincode: cleanString(pincode) || '110023',
         area_id: area_id,
         package_id: package_id,
-        installation_date: parseDate(installation_date) || new Date(),
+        installation_date: parseDate(installation_date) || (() => {
+          // Staggering logic: Distribute across 1-28 using the counter or a dummy hash
+          const stagger = (validCustomers?.length || 0) % 28;
+          const d = new Date();
+          d.setDate(1 + stagger);
+          return d;
+        })(),
         next_billing_date: parseDate(billingDateRaw) || 
                           (parseDate(installation_date) ? 
                             new Date(new Date(parseDate(installation_date)).setMonth(new Date(parseDate(installation_date)).getMonth() + 1)) : 
-                            new Date(new Date().setMonth(new Date().getMonth() + 1))),
+                            (() => {
+                              const stagger = (validCustomers?.length || 0) % 28;
+                              const d = new Date();
+                              d.setDate(1 + stagger);
+                              d.setMonth(d.getMonth() + 1);
+                              return d;
+                            })()),
         status: cleanString(status) || 'Active',
         service_type: service_type,
         discount: parseFloat(discount) || 0

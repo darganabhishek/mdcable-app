@@ -22,16 +22,25 @@ const syncBillingDates = async (req, res) => {
     };
 
     for (const customer of customers) {
-      // 1. Reset billing date based on installation_date or createdAt
-      let baseDate = parseDate(customer.installation_date) || new Date(customer.createdAt);
-      let nextBillingDate = new Date(new Date(baseDate).setMonth(new Date(baseDate).getMonth() + 1));
+      // 1. Establish a base installation date
+      let baseDate = parseDate(customer.installation_date);
+      
+      if (!baseDate) {
+        // Fallback: If installation date is missing, use createdAt
+        // To avoid "Same for all" when bulk imported, we use the ID to "stagger" the base day
+        const createdAt = new Date(customer.createdAt);
+        const staggerDays = parseInt(customer.id.replace(/-/g, '').slice(-2), 16) % 28;
+        baseDate = new Date(createdAt);
+        baseDate.setDate(1 + staggerDays); // Distribute across the month (1-28)
+      }
+
+      // Initial next billing date is the same day of the following month
+      let nextBillingDate = new Date(baseDate);
+      nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
 
       // 2. Calculate impact of all completed payments
       const payments = await Payment.findAll({
-        where: {
-          customer_id: customer.id,
-          status: 'Completed'
-        }
+        where: { customer_id: customer.id, status: 'Completed' }
       });
 
       const totalPaid = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
@@ -42,23 +51,16 @@ const syncBillingDates = async (req, res) => {
       let currentBalance = totalPaid;
       
       if (monthlyRate > 0) {
-        // Simple logic: Each full monthlyRate in totalPaid advances the billing date
+        // Advance the billing date for every full month of credit
         while (currentBalance >= monthlyRate) {
           currentBalance -= monthlyRate;
-          nextBillingDate = new Date(nextBillingDate.setMonth(nextBillingDate.getMonth() + 1));
+          nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
         }
-
-        // Catch-up logic: If nextBillingDate is still more than 2 months in the past (likely stale migration data) 
-        // and no payments were found, we might want to bring it closer to today.
-        // But the user said "according to past payments", so we respect totalPaid.
-        // However, if installation was 2024 and totalPaid is 0, they are overdue from Feb 2024.
       }
 
       // 3. Update customer record
-      const finalInstallationDate = parseDate(customer.installation_date) || new Date(customer.createdAt);
-      
       await customer.update({
-        installation_date: finalInstallationDate,
+        installation_date: baseDate,
         next_billing_date: nextBillingDate,
         balance: currentBalance.toFixed(2)
       });
