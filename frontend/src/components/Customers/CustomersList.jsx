@@ -303,11 +303,12 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
           </button>
           {showColumns && (
             <div style={{
-              position:'absolute', right:0, top:'110%', zIndex:1000,
-              background:'#020617', border:'1px solid var(--surface-border)',
-              borderRadius:'0.75rem', padding:'1rem', minWidth:'200px',
-              boxShadow:'0 15px 50px rgba(0,0,0,0.8)',
-              maxHeight: '400px', overflowY: 'auto'
+              position:'absolute', right:0, top:'110%', zIndex:2147483647,
+              backgroundColor:'#020617', border:'1px solid var(--surface-border)',
+              borderRadius:'0.75rem', padding:'1rem', minWidth:'220px',
+              boxShadow:'0 20px 60px rgba(0,0,0,0.9)',
+              maxHeight: '400px', overflowY: 'auto',
+              opacity: 1, pointerEvents: 'auto'
             }}>
               {ALL_COLUMNS.map(col => (
                 <label key={col.key} style={{ display:'flex', alignItems:'center', gap:'0.5rem', padding:'0.3rem 0', cursor:'pointer', fontSize:'0.85rem' }}>
