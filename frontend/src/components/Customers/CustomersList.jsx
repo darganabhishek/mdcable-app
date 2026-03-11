@@ -304,9 +304,9 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
           {showColumns && (
             <div style={{
               position:'absolute', right:0, top:'110%', zIndex:1000,
-              background:'var(--surface)', border:'1px solid var(--surface-border)',
+              background:'#020617', border:'1px solid var(--surface-border)',
               borderRadius:'0.75rem', padding:'1rem', minWidth:'200px',
-              boxShadow:'0 10px 40px rgba(0,0,0,0.5)',
+              boxShadow:'0 15px 50px rgba(0,0,0,0.8)',
               maxHeight: '400px', overflowY: 'auto'
             }}>
               {ALL_COLUMNS.map(col => (
