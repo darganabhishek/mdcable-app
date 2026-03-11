@@ -14,11 +14,20 @@ const STATUS_TABS = ['All', 'Active', 'Inactive', 'Suspended', 'Renewals Due'];
 const ALL_COLUMNS = [
   { key: 'customer_id', label: 'Customer ID', default: true },
   { key: 'name',        label: 'Name',         default: true },
+  { key: 'username',    label: 'Username',     default: false },
   { key: 'mobile',      label: 'Mobile',        default: true },
-  { key: 'address',     label: 'Address',       default: true },
+  { key: 'email',       label: 'Email',        default: false },
+  { key: 'house_no',    label: 'House No.',    default: false },
+  { key: 'locality',    label: 'Locality',      default: true },
+  { key: 'city',        label: 'City',         default: false },
+  { key: 'pincode',     label: 'Pincode',      default: false },
+  { key: 'area',        label: 'Area',         default: false },
   { key: 'service',     label: 'Service',       default: true },
   { key: 'package',     label: 'Package',       default: true },
+  { key: 'price',       label: 'Price',        default: false },
+  { key: 'discount',    label: 'Discount',     default: false },
   { key: 'status',      label: 'Status',        default: true },
+  { key: 'installation_date', label: 'Install Date', default: false },
   { key: 'payment',     label: 'Payment',       default: true },
   { key: 'billing',     label: 'Next Billing',  default: false },
   { key: 'balance',     label: 'Balance',       default: false },
@@ -124,7 +133,10 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
         c.name?.toLowerCase().includes(q) ||
         c.mobile?.includes(q) ||
         c.customer_id?.toLowerCase().includes(q) ||
-        c.locality?.toLowerCase().includes(q);
+        c.locality?.toLowerCase().includes(q) ||
+        c.house_no?.toLowerCase().includes(q) ||
+        c.city?.toLowerCase().includes(q) ||
+        c.pincode?.includes(q);
       const matchesService = serviceTypeFilter === 'All' || c.service_type === serviceTypeFilter;
       return matchesSearch && matchesService;
     })
@@ -270,7 +282,7 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
           <i className="ri-search-line" style={{ position:'absolute', left:'1rem', color:'var(--text-muted)' }}/>
           <input
             type="text"
-            placeholder="Search name, ID, mobile or locality…"
+            placeholder="Search name, ID, mobile, address, city or pincode…"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="search-input"
@@ -328,11 +340,20 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
               </th>
               {visibleCols.customer_id && <th>Customer ID</th>}
               {visibleCols.name        && <th>Name</th>}
+              {visibleCols.username    && <th>Username</th>}
               {visibleCols.mobile      && <th>Mobile</th>}
-              {visibleCols.address     && <th>Address</th>}
+              {visibleCols.email       && <th>Email</th>}
+              {visibleCols.house_no    && <th>House No.</th>}
+              {visibleCols.locality    && <th>Locality</th>}
+              {visibleCols.city        && <th>City</th>}
+              {visibleCols.pincode     && <th>Pincode</th>}
+              {visibleCols.area        && <th>Area</th>}
               {visibleCols.service     && <th>Service</th>}
               {visibleCols.package     && <th>Package</th>}
+              {visibleCols.price       && <th>Price</th>}
+              {visibleCols.discount    && <th>Discount</th>}
               {visibleCols.status      && <th>Status</th>}
+              {visibleCols.installation_date && <th>Install Date</th>}
               {visibleCols.payment     && <th>Payment</th>}
               {visibleCols.billing     && <th>Next Billing</th>}
               {visibleCols.balance     && <th>Balance</th>}
@@ -359,20 +380,23 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                         <div className="user-avatar">{cust.name?.[0]?.toUpperCase()}</div>
                         <div className="user-info-stack">
                           <span className="user-name-text">{toTitleCase(cust.name)}</span>
-                          {cust.username && <span className="user-subtext">@{cust.username}</span>}
+                          {!visibleCols.username && cust.username && <span className="user-subtext">@{cust.username}</span>}
                         </div>
                       </div>
                     </td>
                   )}
+                  {visibleCols.username && <td style={{ fontSize:'0.85rem', color:'var(--text-muted)' }}>{cust.username || '—'}</td>}
                   {visibleCols.mobile  && <td style={{ letterSpacing:'0.05em', fontWeight:600 }}>{cust.mobile}</td>}
-                  {visibleCols.address && (
-                    <td>
-                      <div className="address-stack">
-                        <span className="address-main">{renderAddress(cust.house_no, cust.locality)}</span>
-                        <span className="address-sub">{toTitleCase(cust.city)}{cust.pincode ? ` ${cust.pincode}` : ''}</span>
-                      </div>
+                  {visibleCols.email && <td style={{ fontSize:'0.85rem' }}>{cust.email || '—'}</td>}
+                  {visibleCols.house_no && <td style={{ fontSize:'0.85rem' }}>{toTitleCase(cust.house_no) || '—'}</td>}
+                  {visibleCols.locality && (
+                    <td style={{ fontSize:'0.85rem', fontWeight:500 }}>
+                      {toTitleCase(cust.locality) || cust.assigned_area?.name || '—'}
                     </td>
                   )}
+                  {visibleCols.city && <td style={{ fontSize:'0.85rem' }}>{toTitleCase(cust.city) || '—'}</td>}
+                  {visibleCols.pincode && <td style={{ fontSize:'0.85rem' }}>{cust.pincode || '—'}</td>}
+                  {visibleCols.area && <td style={{ fontSize:'0.85rem' }}>{cust.assigned_area?.name || '—'}</td>}
                   {visibleCols.service && (
                     <td>
                       <span className={`status-badge status-${cust.service_type === 'Cable' ? 'info' : 'active'}`}>{cust.service_type}</span>
@@ -381,8 +405,19 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                   {visibleCols.package && (
                     <td style={{ fontSize:'0.85rem', color:'var(--text-muted)' }}>{cust.package?.name || '—'}</td>
                   )}
+                  {visibleCols.price && (
+                    <td style={{ fontSize:'0.85rem', fontWeight:600 }}>₹{parseFloat(cust.package?.price || 0).toFixed(0)}</td>
+                  )}
+                  {visibleCols.discount && (
+                    <td style={{ fontSize:'0.85rem', color:'var(--danger)', fontWeight:600 }}>₹{parseFloat(cust.discount || 0).toFixed(0)}</td>
+                  )}
                   {visibleCols.status && (
                     <td><span className={`status-badge status-${cust.status?.toLowerCase()}`}>{cust.status}</span></td>
+                  )}
+                  {visibleCols.installation_date && (
+                    <td style={{ fontSize:'0.85rem' }}>
+                      {cust.installation_date ? new Date(cust.installation_date).toLocaleDateString('en-IN') : '—'}
+                    </td>
                   )}
                   {visibleCols.payment && (
                     <td>
