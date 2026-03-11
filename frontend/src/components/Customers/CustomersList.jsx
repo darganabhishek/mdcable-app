@@ -14,20 +14,12 @@ const STATUS_TABS = ['All', 'Active', 'Inactive', 'Suspended', 'Renewals Due'];
 const ALL_COLUMNS = [
   { key: 'customer_id', label: 'Customer ID', default: true },
   { key: 'name',        label: 'Name',         default: true },
-  { key: 'username',    label: 'Username',     default: false },
   { key: 'mobile',      label: 'Mobile',        default: true },
   { key: 'address',     label: 'Address',       default: true },
-  { key: 'area',        label: 'Area',         default: false },
-  { key: 'service',     label: 'Service',       default: true },
-  { key: 'package',     label: 'Package',       default: true },
-  { key: 'price',       label: 'Price',        default: false },
-  { key: 'discount',    label: 'Discount',     default: false },
-  { key: 'status',      label: 'Status',        default: true },
-  { key: 'installation_date', label: 'Install Date', default: false },
-  { key: 'payment',     label: 'Payment',       default: true },
-  { key: 'billing',     label: 'Next Billing',  default: false },
-  { key: 'balance',     label: 'Balance',       default: false },
+  { key: 'billing',     label: 'Next billing cycle', default: true },
+  { key: 'balance',     label: 'Balance',       default: true },
   { key: 'actions',     label: 'Actions',       default: true },
+  { key: 'service',     label: 'Service',       default: true },
 ];
 
 const SORT_OPTIONS = [
@@ -50,9 +42,20 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
   const [sortKey,           setSortKey]           = useState('createdAt_desc');
   const [showFilters,       setShowFilters]       = useState(false);
   const [showColumns,       setShowColumns]       = useState(false);
-  const [visibleCols,       setVisibleCols]       = useState(
-    () => Object.fromEntries(ALL_COLUMNS.map(c => [c.key, c.default]))
-  );
+  const [visibleCols,       setVisibleCols]       = useState(() => {
+    const saved = localStorage.getItem('customer_column_prefs');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        const initial = {};
+        ALL_COLUMNS.forEach(c => initial[c.key] = parsed.hasOwnProperty(c.key) ? parsed[c.key] : c.default);
+        return initial;
+      } catch (e) { console.error("Parse prefs failed", e); }
+    }
+    const initial = {};
+    ALL_COLUMNS.forEach(c => initial[c.key] = c.default);
+    return initial;
+  });
   const [loading,           setLoading]           = useState(true);
   const [isModalOpen,       setIsModalOpen]       = useState(false);
   const [isBulkModalOpen,   setIsBulkModalOpen]   = useState(false);
@@ -208,9 +211,13 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
 
   const openAddModal = () => { setEditingCustomer(null); setIsModalOpen(true); };
   const openEditModal = (c) => { setEditingCustomer(c); setIsModalOpen(true); };
-  const openQRModal  = (c) => { setQrCustomer(c); setIsQRModalOpen(true); };
-
-  const toggleCol = (key) => setVisibleCols(p => ({ ...p, [key]: !p[key] }));
+  const toggleCol = (key) => {
+    setVisibleCols(prev => {
+      const next = { ...prev, [key]: !prev[key] };
+      localStorage.setItem('customer_column_prefs', JSON.stringify(next));
+      return next;
+    });
+  };
 
   if (loading) return <div className="loading-state">Loading users…</div>;
 
@@ -338,20 +345,12 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
               </th>
               {visibleCols.customer_id && <th>Customer ID</th>}
               {visibleCols.name        && <th>Name</th>}
-              {visibleCols.username    && <th>Username</th>}
               {visibleCols.mobile      && <th>Mobile</th>}
               {visibleCols.address     && <th>Address</th>}
-              {visibleCols.area        && <th>Area</th>}
-              {visibleCols.service     && <th>Service</th>}
-              {visibleCols.package     && <th>Package</th>}
-              {visibleCols.price       && <th>Price</th>}
-              {visibleCols.discount    && <th>Discount</th>}
-              {visibleCols.status      && <th>Status</th>}
-              {visibleCols.installation_date && <th>Install Date</th>}
-              {visibleCols.payment     && <th>Payment</th>}
-              {visibleCols.billing     && <th>Next Billing</th>}
+              {visibleCols.billing     && <th>Next billing cycle</th>}
               {visibleCols.balance     && <th>Balance</th>}
               {visibleCols.actions     && <th className="text-right">Actions</th>}
+              {visibleCols.service     && <th>Service</th>}
             </tr>
           </thead>
           <tbody>
@@ -374,12 +373,11 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                         <div className="user-avatar">{cust.name?.[0]?.toUpperCase()}</div>
                         <div className="user-info-stack">
                           <span className="user-name-text">{toTitleCase(cust.name)}</span>
-                          {!visibleCols.username && cust.username && <span className="user-subtext">@{cust.username}</span>}
+                          {cust.username && <span className="user-subtext">@{cust.username}</span>}
                         </div>
                       </div>
                     </td>
                   )}
-                  {visibleCols.username && <td style={{ fontSize:'0.85rem', color:'var(--text-muted)' }}>{cust.username || '—'}</td>}
                   {visibleCols.mobile  && <td style={{ letterSpacing:'0.05em', fontWeight:600 }}>{cust.mobile}</td>}
                   {visibleCols.address && (
                     <td style={{ fontSize:'0.85rem' }}>
@@ -391,45 +389,17 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                       </div>
                     </td>
                   )}
-                  {visibleCols.area && <td style={{ fontSize:'0.85rem' }}>{cust.assigned_area?.name || '—'}</td>}
-                  {visibleCols.service && (
-                    <td>
-                      <span className={`status-badge status-${cust.service_type === 'Cable' ? 'info' : 'active'}`}>{cust.service_type}</span>
-                    </td>
-                  )}
-                  {visibleCols.package && (
-                    <td style={{ fontSize:'0.85rem', color:'var(--text-muted)' }}>{cust.package?.name || '—'}</td>
-                  )}
-                  {visibleCols.price && (
-                    <td style={{ fontSize:'0.85rem', fontWeight:600 }}>₹{parseFloat(cust.package?.price || 0).toFixed(0)}</td>
-                  )}
-                  {visibleCols.discount && (
-                    <td style={{ fontSize:'0.85rem', color:'var(--danger)', fontWeight:600 }}>₹{parseFloat(cust.discount || 0).toFixed(0)}</td>
-                  )}
-                  {visibleCols.status && (
-                    <td><span className={`status-badge status-${cust.status?.toLowerCase()}`}>{cust.status}</span></td>
-                  )}
-                  {visibleCols.installation_date && (
-                    <td style={{ fontSize:'0.85rem' }}>
-                      {cust.installation_date ? new Date(cust.installation_date).toLocaleDateString('en-IN') : '—'}
-                    </td>
-                  )}
-                  {visibleCols.payment && (
-                    <td>
-                      <span className={`status-badge status-${ps.cls}`}>{ps.label}</span>
-                      {activeTab === 'Renewals Due' && cust.amount_due > 0 && (
-                        <span style={{ display:'block', fontSize:'0.7rem', color:'var(--danger)', fontWeight:700 }}>₹{cust.amount_due.toFixed(0)} due</span>
-                      )}
-                    </td>
-                  )}
                   {visibleCols.billing && (
                     <td style={{ fontSize:'0.85rem' }}>
-                      {cust.next_billing_date ? new Date(cust.next_billing_date).toLocaleDateString('en-IN') : '—'}
+                      {cust.next_billing_date ? new Date(cust.next_billing_date).toLocaleDateString('en-IN', { day:'2-digit', month:'short' }) : '—'}
                     </td>
                   )}
                   {visibleCols.balance && (
-                    <td style={{ fontWeight:700, color: parseFloat(cust.balance) >= 0 ? 'var(--success)' : 'var(--danger)' }}>
-                      ₹{parseFloat(cust.balance || 0).toFixed(2)}
+                    <td style={{ 
+                      fontWeight:700, 
+                      color: parseFloat(cust.balance) >= 0 ? 'var(--success)' : 'var(--danger)' 
+                    }}>
+                      ₹{parseFloat(cust.balance || 0).toFixed(0)}
                     </td>
                   )}
                   {visibleCols.actions && (
@@ -438,17 +408,16 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                         <button className="btn-action edit" onClick={() => generateInvoice(cust)} title="Invoice"><i className="ri-file-list-3-line"/></button>
                         <button className="btn-action edit" onClick={() => generateReceipt(cust)} title="Receipt"><i className="ri-bill-line"/></button>
                         <button className="btn-action edit" onClick={() => openQRModal(cust)} title="QR Code"><i className="ri-qr-code-line"/></button>
-                        {isTechnician && cust.status === 'Active' && (
-                          <button className="btn-action edit" onClick={() => handleStatusChange(cust.id,'Inactive')} title="Deactivate"><i className="ri-user-unfollow-line"/></button>
-                        )}
-                        {isTechnician && cust.status !== 'Active' && (
-                          <button className="btn-action edit" onClick={() => handleStatusChange(cust.id,'Active')} title="Activate"><i className="ri-refresh-line"/></button>
-                        )}
                         <button className="btn-action edit" onClick={() => openEditModal(cust)} title="Edit"><i className="ri-edit-line"/></button>
                         {!isTechnician && (
                           <button className="btn-action delete" onClick={() => handleDelete(cust.id)} title="Delete"><i className="ri-delete-bin-line"/></button>
                         )}
                       </div>
+                    </td>
+                  )}
+                  {visibleCols.service && (
+                    <td>
+                      <span className={`status-badge status-${cust.service_type === 'Cable' ? 'info' : 'active'}`}>{cust.service_type}</span>
                     </td>
                   )}
                 </tr>
