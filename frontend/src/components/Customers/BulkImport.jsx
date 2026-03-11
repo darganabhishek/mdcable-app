@@ -61,7 +61,7 @@ const BulkImport = ({ onClose, onSave }) => {
         const workbook = XLSX.read(data, { type: 'array' });
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { cellDates: true });
 
         if (jsonData.length === 0) {
             setError('The uploaded file is empty.');

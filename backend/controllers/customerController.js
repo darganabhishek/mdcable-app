@@ -177,6 +177,17 @@ const createBulkCustomers = async (req, res) => {
         return s;
     };
 
+    const parseDate = (val) => {
+      if (!val || val === '') return null;
+      if (val instanceof Date) return val;
+      // Handle XLSX serial numbers (Numbers around 30000+ are likely dates)
+      if (typeof val === 'number' && val > 30000) {
+        return new Date((val - 25569) * 86400 * 1000);
+      }
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? null : d;
+    };
+
     // Process rows
     const validCustomers = customersArray.map(c => {
       const name = findValue(c, nameAliases);
@@ -217,10 +228,11 @@ const createBulkCustomers = async (req, res) => {
         pincode: cleanString(pincode) || '110023',
         area_id: area_id,
         package_id: package_id,
-        installation_date: installation_date ? new Date(installation_date) : new Date(),
-        next_billing_date: billingDateRaw ? new Date(billingDateRaw) : 
-                          (installation_date ? new Date(new Date(installation_date).setMonth(new Date(installation_date).getMonth() + 1)) : 
-                          new Date(new Date().setMonth(new Date().getMonth() + 1))),
+        installation_date: parseDate(installation_date) || new Date(),
+        next_billing_date: parseDate(billingDateRaw) || 
+                          (parseDate(installation_date) ? 
+                            new Date(new Date(parseDate(installation_date)).setMonth(new Date(parseDate(installation_date)).getMonth() + 1)) : 
+                            new Date(new Date().setMonth(new Date().getMonth() + 1))),
         status: cleanString(status) || 'Active',
         service_type: service_type,
         discount: parseFloat(discount) || 0
