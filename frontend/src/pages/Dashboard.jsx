@@ -9,6 +9,7 @@ import RolePermissions from '../components/Users/RolePermissions';
 import PackagesList from '../components/Packages/PackagesList'; // Added PackagesList import
 import DiscrepancyList from '../components/Customers/DiscrepancyList';
 import DashboardOverview from '../components/Dashboard/DashboardOverview';
+import Maintenance from '../components/Users/Maintenance';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -89,6 +90,13 @@ const Dashboard = () => {
                                 <i className="ri-lock-password-line"></i>
                                 <span>Role Permissions</span>
                             </button>
+                            <button 
+                              className={`nav-item ${activeTab === 'Maintenance' ? 'active' : ''}`}
+                              onClick={() => setActiveTab('Maintenance')}
+                            >
+                                <i className="ri-tools-line"></i>
+                                <span>System Maintenance</span>
+                            </button>
                         </>
                     )}
                 </nav>
@@ -123,6 +131,7 @@ const Dashboard = () => {
                     {activeTab === 'Discrepancy' && <DiscrepancyList />}
                     {activeTab === 'Access Control' && <UsersList />}
                     {activeTab === 'Permissions' && <RolePermissions />}
+                    {activeTab === 'Maintenance' && <Maintenance />}
                 </div>
                 <footer className="developer-footer">
                     Designed & Developed by <strong>Abhishek Dargan</strong>

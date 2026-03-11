@@ -147,6 +147,7 @@ const createBulkCustomers = async (req, res) => {
     const emailAliases = ['email', 'mail', 'email_address'];
     const serviceTypeAliases = ['service type', 'service_type', 'service', 'type', 'connection'];
     const areaAliases = ['area', 'subgroup', 'target area', 'zone', 'region'];
+    const billingDateAliases = ['next_billing_date', 'billing_date', 'next_billing', 'billing', 'next cycle', 'due_date'];
 
     const existingAreas = await Area.findAll();
     const existingPackages = await Package.findAll();
@@ -199,6 +200,8 @@ const createBulkCustomers = async (req, res) => {
       const packageRaw = findValue(c, planAliases);
       const package_id = (packageRaw && packageMap[String(packageRaw).toLowerCase().trim()]) ? packageMap[String(packageRaw).toLowerCase().trim()] : null;
 
+      const billingDateRaw = findValue(c, billingDateAliases);
+
       // Clean phone number: remove non-digits
       const phone = phoneRaw ? String(phoneRaw).replace(/\D/g, '') : null;
 
@@ -215,7 +218,9 @@ const createBulkCustomers = async (req, res) => {
         area_id: area_id,
         package_id: package_id,
         installation_date: installation_date ? new Date(installation_date) : new Date(),
-        next_billing_date: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+        next_billing_date: billingDateRaw ? new Date(billingDateRaw) : 
+                          (installation_date ? new Date(new Date(installation_date).setMonth(new Date(installation_date).getMonth() + 1)) : 
+                          new Date(new Date().setMonth(new Date().getMonth() + 1))),
         status: cleanString(status) || 'Active',
         service_type: service_type,
         discount: parseFloat(discount) || 0

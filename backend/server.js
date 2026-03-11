@@ -12,6 +12,7 @@ const userRoutes = require('./routes/userRoutes');
 const packageRoutes = require('./routes/packageRoutes');
 const areaRoutes = require('./routes/areaRoutes');
 const permissionRoutes = require('./routes/permissionRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const seedUsers = require('./seed');
 const seedPermissions = require('./seedPermissions');
 
@@ -41,6 +42,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/areas', areaRoutes);
 app.use('/api/permissions', permissionRoutes);
+app.use('/api/admin', adminRoutes);
 
 const PORT = process.env.PORT || 5000;
 
