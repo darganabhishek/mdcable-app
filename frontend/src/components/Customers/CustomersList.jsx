@@ -241,6 +241,7 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
 
   const openAddModal = () => { setEditingCustomer(null); setIsModalOpen(true); };
   const openEditModal = (c) => { setEditingCustomer(c); setIsModalOpen(true); };
+  const openQRModal = (c) => { setQrCustomer(c); setIsQRModalOpen(true); };
   const toggleCol = (key) => {
     setVisibleCols(prev => {
       const next = { ...prev, [key]: !prev[key] };
