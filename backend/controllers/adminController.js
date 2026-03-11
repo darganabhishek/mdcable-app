@@ -55,7 +55,10 @@ const syncBillingDates = async (req, res) => {
       }
 
       // 3. Update customer record
+      const finalInstallationDate = parseDate(customer.installation_date) || new Date(customer.createdAt);
+      
       await customer.update({
+        installation_date: finalInstallationDate,
         next_billing_date: nextBillingDate,
         balance: currentBalance.toFixed(2)
       });
