@@ -309,14 +309,18 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
             <i className="ri-layout-column-line"/> Columns
           </button>
           {showColumns && (
-            <div style={{
-              position:'absolute', right:0, top:'110%', zIndex:2147483647,
-              backgroundColor:'#020617', border:'1px solid var(--surface-border)',
-              borderRadius:'0.75rem', padding:'1rem', minWidth:'220px',
-              boxShadow:'0 20px 60px rgba(0,0,0,0.9)',
-              maxHeight: '400px', overflowY: 'auto',
-              opacity: 1, pointerEvents: 'auto'
-            }}>
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              style={{
+                position:'absolute', right:0, top:'110%', zIndex:2147483647,
+                backgroundColor:'#020617', border:'1px solid var(--surface-border)',
+                borderRadius:'0.75rem', padding:'1rem', minWidth:'220px',
+                boxShadow:'0 20px 60px rgba(0,0,0,0.9)',
+                maxHeight: '400px', overflowY: 'auto',
+                opacity: 1, pointerEvents: 'auto'
+              }}
+            >
               {ALL_COLUMNS.map(col => (
                 <label key={col.key} style={{ display:'flex', alignItems:'center', gap:'0.5rem', padding:'0.3rem 0', cursor:'pointer', fontSize:'0.85rem' }}>
                   <input type="checkbox" checked={visibleCols[col.key]} onChange={() => toggleCol(col.key)} />
