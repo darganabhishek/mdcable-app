@@ -218,6 +218,27 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [activeActionsId]);
 
+  const openWhatsApp = (cust) => {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const balance = parseFloat(cust.balance) || 0;
+    const nextDate = cust.next_billing_date ? new Date(cust.next_billing_date) : null;
+    const dateStr = nextDate ? nextDate.toLocaleDateString('en-IN', { day:'2-digit', month:'short' }) : 'N/A';
+    
+    let msg = `Hi ${toTitleCase(cust.name)},\n\n`;
+    if (balance < 0) {
+      msg += `Your payment of ₹${Math.abs(balance).toFixed(0)} is due for your ${cust.service_type} service. `;
+      msg += `Your next billing date is ${dateStr}.\n\n`;
+      msg += `Please pay to avoid disconnection. Thank you!\n- M.D. Cable Networks`;
+    } else {
+      msg += `Greetings from M.D. Cable Networks! Your ${cust.service_type} service is active. `;
+      msg += `Your next billing date is ${dateStr}.\n\nThank you!`;
+    }
+
+    const phone = cust.mobile.replace(/\D/g, '');
+    const cleanPhone = phone.startsWith('91') ? phone : `91${phone}`;
+    window.open(`https://wa.me/${cleanPhone}/?text=${encodeURIComponent(msg)}`, '_blank');
+  };
+
   const openAddModal = () => { setEditingCustomer(null); setIsModalOpen(true); };
   const openEditModal = (c) => { setEditingCustomer(c); setIsModalOpen(true); };
   const toggleCol = (key) => {
@@ -396,6 +417,7 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                         }}>
                           <button className="btn-action" onClick={() => generateInvoice(cust)} title="Invoice" style={{ color: 'var(--primary)' }}><i className="ri-file-list-3-line"/></button>
                           <button className="btn-action" onClick={() => generateReceipt(cust)} title="Receipt" style={{ color: 'var(--success)' }}><i className="ri-bill-line"/></button>
+                          <button className="btn-action" onClick={() => openWhatsApp(cust)} title="WhatsApp Reminder" style={{ color: '#25D366' }}><i className="ri-whatsapp-line"/></button>
                           <button className="btn-action" onClick={() => openQRModal(cust)} title="QR Code" style={{ color: 'var(--info)' }}><i className="ri-qr-code-line"/></button>
                           <button className="btn-action edit" onClick={() => openEditModal(cust)} title="Edit" style={{ color: 'var(--warning)' }}><i className="ri-edit-line"/></button>
                           {!isTechnician && (

@@ -108,7 +108,8 @@ const getDashboardStats = async (req, res) => {
         recentCustomers,
         recentPayments,
         dailyDuesRaw,
-        revPerAreaRaw
+        revPerAreaRaw,
+        atRiskCount
     ] = await Promise.all([
         // 1. Collections Metrics
         Payment.sum('amount', { where: { payment_date: { [Op.gte]: startOfMonth } } }).catch(() => 0),
@@ -253,7 +254,15 @@ const getDashboardStats = async (req, res) => {
             where: { payment_date: { [Op.gte]: startOfMonth } },
             group: ['customer->assigned_area.name'],
             raw: true
-        }).catch(() => [])
+        }).catch(() => []),
+
+        // 15. Churn Analysis (At-Risk)
+        Customer.count({
+            where: {
+                status: { [Op.ne]: 'Inactive' },
+                next_billing_date: { [Op.lt]: new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000) }
+            }
+        }).catch(() => 0)
     ]);
 
     // --- Data Processing (In-Memory) ---
@@ -299,6 +308,8 @@ const getDashboardStats = async (req, res) => {
         return acc + Math.max(0, parseFloat(cust.package?.price || 0) - parseFloat(cust.discount || 0));
     }, 0);
 
+    const churnRate = counts[0] > 0 ? ((atRiskCount / counts[0]) * 100).toFixed(1) : 0;
+
     // Final Object Construction
     const response = {
         monthlyCollection: parseFloat(monthlySum || 0),
@@ -312,6 +323,8 @@ const getDashboardStats = async (req, res) => {
         renewalsDueList: renewalsData,
         totalPaymentDue: parseFloat(totalDueSum || 0),
         projectedRevenue,
+        churnRate,
+        atRiskCount,
         areaAnalytics: areaAnalyticsRaw.map(item => ({ 
             name: item.area_name || item['assigned_area.name'] || 'Unassigned', 
             value: parseInt(item.count || item.value || 0) 
@@ -380,9 +393,72 @@ const getUpcomingRenewals = async (req, res) => {
   }
 };
 
+// @desc    Get collection leaderboard (by staff)
+// @route   GET /api/reports/staff-collections
+// @access  Private (Admin, Super Admin)
+const getStaffCollectionLeaderboard = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    const stats = await Payment.findAll({
+      attributes: [
+        [sequelize.col('collector.name'), 'staff_name'],
+        [sequelize.fn('SUM', sequelize.literal("CASE WHEN payment_date >= '" + today.toISOString().split('T')[0] + "' THEN amount ELSE 0 END")), 'today'],
+        [sequelize.fn('SUM', sequelize.literal("CASE WHEN payment_date >= '" + startOfMonth.toISOString().split('T')[0] + "' THEN amount ELSE 0 END")), 'monthly'],
+        [sequelize.fn('COUNT', sequelize.col('Payment.id')), 'total_count']
+      ],
+      include: [{ model: User, as: 'collector', attributes: [] }],
+      group: ['collector.id', 'collector.name'],
+      order: [[sequelize.literal('monthly'), 'DESC']],
+      raw: true
+    });
+
+    res.json(stats);
+  } catch (error) {
+    console.error('Error fetching collection leaderboard:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// @desc    Get churn analysis (at-risk customers)
+// @route   GET /api/reports/churn-analysis
+// @access  Private (Admin, Super Admin)
+const getChurnAnalysis = async (req, res) => {
+  try {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // At-risk: Active or Suspended but billing date passed by 30+ days
+    const atRiskCustomers = await Customer.findAll({
+      where: {
+        status: { [Op.ne]: 'Inactive' },
+        next_billing_date: { [Op.lt]: thirtyDaysAgo }
+      },
+      include: [{ model: Package, as: 'package', attributes: ['name', 'price'] }],
+      order: [['next_billing_date', 'ASC']]
+    });
+
+    const totalCustomers = await Customer.count();
+    const churnRate = totalCustomers > 0 ? ((atRiskCustomers.length / totalCustomers) * 100).toFixed(1) : 0;
+
+    res.json({
+      churnRate,
+      atRiskCount: atRiskCustomers.length,
+      customers: atRiskCustomers
+    });
+  } catch (error) {
+    console.error('Error in churn analysis:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   getCollectionReport,
   getRenewalReport,
   getDashboardStats,
-  getUpcomingRenewals
+  getUpcomingRenewals,
+  getStaffCollectionLeaderboard,
+  getChurnAnalysis
 };

@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { getCollectionReport, getRenewalReport, getDashboardStats, getUpcomingRenewals } = require('../controllers/reportController');
+const { getCollectionReport, getRenewalReport, getDashboardStats, getUpcomingRenewals, getStaffCollectionLeaderboard, getChurnAnalysis } = require('../controllers/reportController');
 const { authenticate, authorize } = require('../middleware/auth');
 
 router.get('/dashboard', authorize(['Admin', 'Technician', 'Area Manager']), getDashboardStats);
 router.get('/collections', authorize('reports:view'), getCollectionReport);
+router.get('/staff-collections', authorize('reports:view'), getStaffCollectionLeaderboard);
+router.get('/churn-analysis', authorize('reports:view'), getChurnAnalysis);
 router.get('/renewals', authorize('reports:view'), getRenewalReport);
 router.get('/upcoming-renewals', authorize('reports:view'), getUpcomingRenewals);
 

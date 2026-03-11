@@ -146,6 +146,16 @@ const DashboardOverview = ({ setActiveTab, setInitialAction }) => {
           </div>
 
           {!isTechnician && (
+            <div className="action-card metric-card" onClick={() => setActiveTab('Reports')}>
+              <div className="action-icon suspended">📉</div>
+              <div className="metric-info">
+                <span>Churn Rate</span>
+                <p className="metric-value danger">{stats.churnRate || 0}%</p>
+              </div>
+            </div>
+          )}
+
+          {!isTechnician && (
             <div className="action-card metric-card" onClick={() => setActiveTab('Payments')}>
               <div className="action-icon projected">📑</div>
               <div className="metric-info">

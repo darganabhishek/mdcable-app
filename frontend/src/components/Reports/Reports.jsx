@@ -15,7 +15,14 @@ const Reports = () => {
   const fetchReport = async () => {
     setLoading(true);
     try {
-      const endpoint = reportType === 'collections' ? '/reports/collections' : '/reports/renewals';
+      let endpoint = '';
+      switch(reportType) {
+        case 'collections': endpoint = '/reports/collections'; break;
+        case 'renewals': endpoint = '/reports/renewals'; break;
+        case 'staff': endpoint = '/reports/staff-collections'; break;
+        case 'churn': endpoint = '/reports/churn-analysis'; break;
+        default: endpoint = '/reports/collections';
+      }
       const res = await axios.get(`${import.meta.env.VITE_API_URL}${endpoint}`, { params: filters });
       setData(res.data);
     } catch (error) {
@@ -54,6 +61,20 @@ const Reports = () => {
           >
             <i className="ri-refresh-line" style={{ marginRight: '0.5rem' }}></i>
             Subscription Renewals
+          </button>
+          <button 
+            className={`tab-btn ${reportType === 'staff' ? 'active' : ''}`}
+            onClick={() => setReportType('staff')}
+          >
+            <i className="ri-group-line" style={{ marginRight: '0.5rem' }}></i>
+            Staff Leaderboard
+          </button>
+          <button 
+            className={`tab-btn ${reportType === 'churn' ? 'active' : ''}`}
+            onClick={() => setReportType('churn')}
+          >
+            <i className="ri-user-unfollow-line" style={{ marginRight: '0.5rem' }}></i>
+            Churn Analysis
           </button>
         </div>
       </div>
@@ -105,6 +126,28 @@ const Reports = () => {
                 </div>
             )}
 
+            {reportType === 'staff' && (
+                <div className="summary-cards">
+                    <div className="stat-card glass-panel highlight-card">
+                        <h3>Top Performer</h3>
+                        <p className="stat-value">{data[0]?.staff_name || 'N/A'}</p>
+                    </div>
+                </div>
+            )}
+
+            {reportType === 'churn' && (
+                <div className="summary-cards">
+                    <div className="stat-card glass-panel highlight-card" style={{ borderColor: 'var(--danger)' }}>
+                        <h3>Churn Rate</h3>
+                        <p className="stat-value" style={{ color: 'var(--danger)' }}>{data.churnRate}%</p>
+                    </div>
+                    <div className="stat-card glass-panel">
+                        <h3>At-Risk Customers</h3>
+                        <p className="stat-value">{data.atRiskCount}</p>
+                    </div>
+                </div>
+            )}
+
             <div className="table-responsive">
                 <table className="data-table">
                     <thead>
@@ -116,13 +159,27 @@ const Reports = () => {
                                     <th>Amount Paid</th>
                                     <th>Field Collector</th>
                                 </>
-                            ) : (
+                            ) : reportType === 'renewals' ? (
                                 <>
                                     <th>Process ID</th>
                                     <th>Subscribed Customer</th>
                                     <th>Previous Expiry</th>
                                     <th>Extended To</th>
                                     <th>Current Logic</th>
+                                </>
+                            ) : reportType === 'staff' ? (
+                                <>
+                                    <th>Staff Member</th>
+                                    <th>Today's Collection</th>
+                                    <th>Monthly Collection</th>
+                                    <th>Total Collections Done</th>
+                                </>
+                            ) : (
+                                <>
+                                    <th>At-Risk Customer</th>
+                                    <th>Last Billing Cycle</th>
+                                    <th>Due For</th>
+                                    <th>Contact Info</th>
                                 </>
                             )}
                         </tr>
@@ -168,7 +225,47 @@ const Reports = () => {
                                 </td>
                             </tr>
                         ))}
-                        {((reportType === 'collections' && data.payments?.length === 0) || (reportType === 'renewals' && data.renewals?.length === 0)) && (
+                        {reportType === 'staff' && data?.map((item, idx) => (
+                          <tr key={idx}>
+                              <td>
+                                  <div className="user-cell">
+                                      <div className="user-avatar" style={{ 
+                                        background: idx === 0 ? 'rgba(245, 158, 11, 0.1)' : 'rgba(148, 163, 184, 0.1)', 
+                                        color: idx === 0 ? 'var(--warning)' : 'var(--text-muted)' 
+                                      }}>
+                                          {idx === 0 ? <i className="ri-medal-fill"></i> : <i className="ri-user-line"></i>}
+                                      </div>
+                                      <strong>{item.staff_name}</strong>
+                                  </div>
+                              </td>
+                              <td style={{ color: 'var(--success)', fontWeight: 700 }}>₹{parseFloat(item.today || 0).toLocaleString()}</td>
+                              <td style={{ fontWeight: 700 }}>₹{parseFloat(item.monthly || 0).toLocaleString()}</td>
+                              <td>{item.total_count}</td>
+                          </tr>
+                        ))}
+                        {reportType === 'churn' && data.customers?.map(item => {
+                          const lastDate = new Date(item.next_billing_date);
+                          const daysOverdue = Math.floor((new Date() - lastDate) / (1000 * 60 * 60 * 24));
+                          return (
+                            <tr key={item.id}>
+                                <td>
+                                    <div className="user-cell">
+                                        <div className="user-avatar" style={{ background: 'rgba(251, 113, 133, 0.1)', color: 'var(--danger)' }}>
+                                            <i className="ri-error-warning-line"></i>
+                                        </div>
+                                        <strong>{item.name}</strong>
+                                    </div>
+                                </td>
+                                <td>{lastDate.toLocaleDateString()}</td>
+                                <td><span className="status-badge status-suspended">{daysOverdue} days overdue</span></td>
+                                <td>{item.mobile}</td>
+                            </tr>
+                          );
+                        })}
+                        {((reportType === 'collections' && data.payments?.length === 0) || 
+                          (reportType === 'renewals' && data.renewals?.length === 0) ||
+                          (reportType === 'staff' && data?.length === 0) ||
+                          (reportType === 'churn' && data.customers?.length === 0)) && (
                             <tr>
                                 <td colSpan="5" className="text-center py-4 text-muted">No tactical data found for the selected period.</td>
                             </tr>
