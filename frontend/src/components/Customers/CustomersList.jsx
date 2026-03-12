@@ -286,7 +286,7 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
   if (loading) return <div className="loading-state">Loading users…</div>;
 
   return (
-    <div className="module-container">
+    <>
       {/* ─── Modals (Top Level for stacking) ─── */}
       {isModalOpen && (
         <CustomerForm
@@ -324,7 +324,7 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
         </div>
       )}
 
-      {/* ─── Header ─── */}
+      <div className="module-container">
       <div className="module-header">
         <div>
           <h2 style={{ marginBottom: '0.25rem' }}>Customer Base</h2>
@@ -557,7 +557,8 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
       </div>
 
 
-    </div>
+      </div>
+    </>
   );
 };
 
