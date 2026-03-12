@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { User } = require('../models');
 const { logActivity } = require('../middleware/logMiddleware');
 
 // @desc    Login user
