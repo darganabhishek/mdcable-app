@@ -25,16 +25,24 @@ const getCustomers = async (req, res) => {
       order: [['createdAt', 'DESC']]
     });
 
-    // Check and update status dynamically for the response
+    // Check and update status dynamically - ONLY update if different to save performance
     const updatedCustomers = await Promise.all(customers.map(async (c) => {
-      const raw = c.get({ clone: true });
-      if (raw.status === 'Active' && raw.next_billing_date && new Date(raw.next_billing_date) < today) {
-        raw.status = 'Expired';
-        // Persist to DB
-        await c.update({ status: 'Expired' });
-      } else if (raw.status === 'Expired' && raw.next_billing_date && new Date(raw.next_billing_date) >= today) {
-        raw.status = 'Active';
-        await c.update({ status: 'Active' });
+      let statusChanged = false;
+      let currentStatus = c.status;
+
+      if (currentStatus === 'Active' && c.next_billing_date && new Date(c.next_billing_date) < today) {
+        currentStatus = 'Expired';
+        statusChanged = true;
+      } else if (currentStatus === 'Expired' && c.next_billing_date && new Date(c.next_billing_date) >= today) {
+        currentStatus = 'Active';
+        statusChanged = true;
+      }
+
+      const raw = c.get({ plain: true });
+      if (statusChanged) {
+        raw.status = currentStatus;
+        // Run update in background to not block the response too much
+        c.update({ status: currentStatus }).catch(err => console.error('Status persist failed:', err));
       }
       return raw;
     }));
