@@ -18,6 +18,7 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('Overview');
     const [initialAction, setInitialAction] = useState(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const handleLogout = () => {
         logout();
@@ -25,8 +26,11 @@ const Dashboard = () => {
     };
 
     return (
-        <div className="dashboard-layout">
-            <aside className="sidebar glass-panel">
+        <div className={`dashboard-layout ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+            <aside className={`sidebar glass-panel ${isSidebarOpen ? 'show' : ''}`}>
+                <button className="mobile-close" onClick={() => setIsSidebarOpen(false)}>
+                    <i className="ri-close-line"></i>
+                </button>
                 <div className="sidebar-header">
                     <h2 className="text-gradient">M.D. Cable Networks</h2>
                 </div>
@@ -109,8 +113,12 @@ const Dashboard = () => {
                     )}
                 </nav>
             </aside>
+            {isSidebarOpen && <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)}></div>}
             <main className="main-content">
                 <header className="topbar">
+                    <button className="mobile-menu-toggle" onClick={() => setIsSidebarOpen(true)}>
+                        <i className="ri-menu-2-line"></i>
+                    </button>
                     <div className="user-info">
                         <i className="ri-user-6-fill"></i>
                         Welcome, <strong>{user?.name}</strong>

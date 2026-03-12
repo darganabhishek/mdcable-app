@@ -19,6 +19,7 @@ const ALL_COLUMNS = [
   { key: 'billing',     label: 'Next billing cycle', default: true },
   { key: 'balance',     label: 'Balance',       default: true },
   { key: 'service',     label: 'Service',       default: true },
+  { key: 'actions',     label: 'Actions',       default: true },
 ];
 
 const SORT_OPTIONS = [
@@ -406,6 +407,7 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
               {visibleCols.billing     && <th>Next billing cycle</th>}
               {visibleCols.balance     && <th>Balance</th>}
               {visibleCols.service     && <th>Service</th>}
+              {visibleCols.actions     && <th className="text-right">Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -416,37 +418,18 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                   <td>
                     <input type="checkbox" className="custom-checkbox"
                       checked={selectedCustomers.includes(cust.id)}
-                      onChange={() => handleSelectToggle(cust.id)}
+                      onChange={() => handleSelectCustomer(cust.id)}
                     />
                   </td>
                   {visibleCols.customer_id && (
-                    <td className="id-action-cell" style={{ position:'relative' }}>
+                    <td>
                       <span 
-                        onClick={() => setActiveActionsId(activeActionsId === cust.id ? null : cust.id)}
                         style={{ 
-                          fontWeight:800, color:'var(--primary)', fontSize:'0.85rem', 
-                          cursor:'pointer', textDecoration:'underline', textUnderlineOffset:'2px' 
+                          fontWeight:800, color:'var(--primary)', fontSize:'0.85rem'
                         }}
                       >
                         {cust.customer_id}
                       </span>
-                      {activeActionsId === cust.id && (
-                        <div className="glass-panel" style={{
-                          position:'absolute', left:'100%', top:0, zIndex:2147483647,
-                          marginLeft:'10px', background:'#020617', border:'1px solid var(--surface-border)',
-                          borderRadius:'0.75rem', padding:'0.5rem', display:'flex', gap:'0.5rem',
-                          boxShadow:'0 15px 40px rgba(0,0,0,0.8)', whiteSpace:'nowrap'
-                        }}>
-                          <button className="btn-action" onClick={() => generateInvoice(cust)} title="Invoice" style={{ color: 'var(--primary)' }}><i className="ri-file-list-3-line"/></button>
-                          <button className="btn-action" onClick={() => generateReceipt(cust)} title="Receipt" style={{ color: 'var(--success)' }}><i className="ri-bill-line"/></button>
-                          <button className="btn-action" onClick={() => openWhatsApp(cust)} title="WhatsApp Reminder" style={{ color: '#25D366' }}><i className="ri-whatsapp-line"/></button>
-                          <button className="btn-action" onClick={() => openQRModal(cust)} title="QR Code" style={{ color: 'var(--info)' }}><i className="ri-qr-code-line"/></button>
-                          <button className="btn-action edit" onClick={() => openEditModal(cust)} title="Edit" style={{ color: 'var(--warning)' }}><i className="ri-edit-line"/></button>
-                          {!isTechnician && (
-                            <button className="btn-action delete" onClick={() => handleDelete(cust.id)} title="Delete" style={{ color: 'var(--danger)' }}><i className="ri-delete-bin-line"/></button>
-                          )}
-                        </div>
-                      )}
                     </td>
                   )}
                   {visibleCols.name && (
@@ -490,6 +473,20 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                   {visibleCols.service && (
                     <td>
                       <span className={`status-badge status-${cust.service_type === 'Cable' ? 'info' : 'active'}`}>{cust.service_type}</span>
+                    </td>
+                  )}
+                  {visibleCols.actions && (
+                    <td>
+                      <div className="action-buttons justify-end">
+                        <button className="btn-action" onClick={() => generateInvoice(cust)} title="Invoice" style={{ color: 'var(--primary)' }}><i className="ri-file-list-3-line"/></button>
+                        <button className="btn-action" onClick={() => generateReceipt(cust)} title="Receipt" style={{ color: 'var(--success)' }}><i className="ri-bill-line"/></button>
+                        <button className="btn-action" onClick={() => openWhatsApp(cust)} title="WhatsApp Reminder" style={{ color: '#25D366' }}><i className="ri-whatsapp-line"/></button>
+                        <button className="btn-action" onClick={() => openQRModal(cust)} title="QR Code" style={{ color: 'var(--info)' }}><i className="ri-qr-code-line"/></button>
+                        <button className="btn-action edit" onClick={() => openEditModal(cust)} title="Edit" style={{ color: 'var(--warning)' }}><i className="ri-edit-line"/></button>
+                        {!isTechnician && (
+                          <button className="btn-action delete" onClick={() => handleDelete(cust.id)} title="Delete" style={{ color: 'var(--danger)' }}><i className="ri-delete-bin-line"/></button>
+                        )}
+                      </div>
                     </td>
                   )}
                 </tr>

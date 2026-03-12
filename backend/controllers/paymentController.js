@@ -207,6 +207,7 @@ const deletePayment = async (req, res) => {
         balance: currentBalance.toFixed(2)
       });
 
+      await logActivity(req.user.id, 'DELETE_PAYMENT', payment.id, 'Payment', { amount: payment.amount, transaction_id: payment.transaction_id, note: 'Reverted billing cycle' }, req.ip);
       return res.json({ message: 'Transaction removed and customer cycle reverted' });
     }
 
