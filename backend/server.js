@@ -51,6 +51,7 @@ app.get('/', (req, res) => {
     res.send('M.D. Cable Networks API is running');
 });
 
+// Health check
 app.get('/health', (req, res) => {
     res.json({ 
         status: 'UP', 
@@ -58,6 +59,22 @@ app.get('/health', (req, res) => {
         timestamp: new Date().toISOString()
     });
 });
+
+/**
+ * Safe Schema Fix: Ensures 'username' column exists in Users table
+ */
+const fixSchema = async () => {
+    try {
+        const [results] = await sequelize.query("SHOW COLUMNS FROM Users LIKE 'username'");
+        if (results.length === 0) {
+            console.log('--- Missing "username" column detected. Adding it now... ---');
+            await sequelize.query("ALTER TABLE Users ADD COLUMN username VARCHAR(255) UNIQUE AFTER name");
+            console.log('✅ "username" column added successfully.');
+        }
+    } catch (err) {
+        console.warn('⚠️ Schema fix warning (might be first run):', err.message);
+    }
+};
 
 console.log('--- Production System Initializing ---');
 console.log('Target Port:', PORT);
@@ -68,6 +85,9 @@ const startServer = async () => {
         console.log('Connecting to database...');
         await sequelize.authenticate();
         console.log('✅ Database connection established.');
+
+        // Run safe schema fixes before sync
+        await fixSchema();
 
         // In production, sync but avoid 'alter: true' for high availability
         if (process.env.NODE_ENV !== 'production') {
