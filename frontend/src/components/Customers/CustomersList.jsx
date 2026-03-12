@@ -447,15 +447,14 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                       </span>
 
                       {activeActionsId === cust.id && (
-                        <div className="id-dropdown glass-panel">
-                          <div className="dropdown-label">Quick Actions</div>
-                          <button className="dropdown-item" onClick={() => generateInvoice(cust)}><i className="ri-file-list-3-line" style={{ color: 'var(--primary)' }}/> Generate Invoice</button>
-                          <button className="dropdown-item" onClick={() => generateReceipt(cust)}><i className="ri-bill-line" style={{ color: 'var(--success)' }}/> Generate Receipt</button>
-                          <button className="dropdown-item" onClick={() => openWhatsApp(cust)}><i className="ri-whatsapp-line" style={{ color: '#25D366' }}/> WhatsApp Reminder</button>
-                          <button className="dropdown-item" onClick={() => openQRModal(cust)}><i className="ri-qr-code-line" style={{ color: 'var(--info)' }}/> Show QR Code</button>
-                          <button className="dropdown-item" onClick={() => openEditModal(cust)}><i className="ri-edit-line" style={{ color: 'var(--warning)' }}/> Edit Customer</button>
+                        <div className="id-actions-row glass-panel">
+                          <button className="btn-action-sm invoice" onClick={() => generateInvoice(cust)} title="Generate Invoice"><i className="ri-file-list-3-line"/></button>
+                          <button className="btn-action-sm receipt" onClick={() => generateReceipt(cust)} title="Generate Receipt"><i className="ri-bill-line"/></button>
+                          <button className="btn-action-sm whatsapp" onClick={() => openWhatsApp(cust)} title="WhatsApp Reminder"><i className="ri-whatsapp-line"/></button>
+                          <button className="btn-action-sm qr" onClick={() => openQRModal(cust)} title="Show QR Code"><i className="ri-qr-code-line"/></button>
+                          <button className="btn-action-sm edit" onClick={() => openEditModal(cust)} title="Edit Customer"><i className="ri-edit-line"/></button>
                           {!isTechnician && (
-                            <button className="dropdown-item delete" onClick={() => handleDelete(cust.id)}><i className="ri-delete-bin-line"/> Delete Record</button>
+                            <button className="btn-action-sm delete" onClick={() => handleDelete(cust.id)} title="Delete Record"><i className="ri-delete-bin-line"/></button>
                           )}
                         </div>
                       )}
