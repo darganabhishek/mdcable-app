@@ -126,7 +126,18 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
 
   const filteredCustomers = sortFn(
     baseList.filter(c => {
-      if (activeTab !== 'All' && activeTab !== 'Renewals Due' && c.status !== activeTab) return false;
+      // Tab filtering
+      const payStatus = getPaymentStatus(c);
+      if (activeTab === 'Renewals Due') {
+        const isDue = renewalsDue.some(r => r.id === c.id);
+        if (!isDue) return false;
+      } else if (activeTab === 'Expired') {
+        if (payStatus.label !== 'Expired') return false;
+      } else if (activeTab === 'Active') {
+        if (payStatus.label === 'Expired' || c.status !== 'Active') return false;
+      } else if (activeTab !== 'All') {
+        if (c.status !== activeTab) return false;
+      }
       const q = searchQuery.toLowerCase();
       const matchesSearch = !q ||
         c.name?.toLowerCase().includes(q) ||
@@ -145,6 +156,8 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
   const tabCount = (tab) => {
     if (tab === 'All')          return customers.length;
     if (tab === 'Renewals Due') return renewalsDue.length;
+    if (tab === 'Expired')      return customers.filter(c => getPaymentStatus(c).label === 'Expired').length;
+    if (tab === 'Active')       return customers.filter(c => c.status === 'Active' && getPaymentStatus(c).label !== 'Expired').length;
     return customers.filter(c => c.status === tab).length;
   };
 

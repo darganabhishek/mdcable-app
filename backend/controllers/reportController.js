@@ -130,7 +130,7 @@ const getDashboardStats = async (req, res) => {
                 status: { [Op.ne]: 'Inactive' },
                 next_billing_date: { [Op.lte]: today }
             },
-            include: [{ model: Package, as: 'package', attributes: ['name', 'price'] }],
+            include: [{ model: Package, as: 'package', attributes: ['name', 'price'], required: false }],
             attributes: ['id', 'customer_id', 'name', 'mobile', 'balance', 'next_billing_date']
         }).catch(() => []),
 
@@ -381,7 +381,7 @@ const getUpcomingRenewals = async (req, res) => {
         }
       },
       include: [
-        { model: Package, as: 'package' }
+        { model: Package, as: 'package', required: false }
       ],
       order: [['next_billing_date', 'ASC']]
     });

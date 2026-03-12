@@ -44,8 +44,8 @@ const getCustomers = async (req, res) => {
     // 3. Simple Fetch
     const customers = await Customer.findAll({
       include: [
-        { model: Area, as: 'assigned_area' },
-        { model: Package, as: 'package' }
+        { model: Area, as: 'assigned_area', required: false },
+        { model: Package, as: 'package', required: false }
       ],
       order: [['createdAt', 'DESC']]
     });
@@ -425,8 +425,8 @@ const getRenewalsDue = async (req, res) => {
         next_billing_date: { [Op.lte]: today }
       },
       include: [
-        { model: Area, as: 'assigned_area', attributes: ['name'] },
-        { model: Package, as: 'package', attributes: ['name', 'price'] }
+        { model: Area, as: 'assigned_area', attributes: ['name'], required: false },
+        { model: Package, as: 'package', attributes: ['name', 'price'], required: false }
       ],
       order: [['next_billing_date', 'ASC']]
     });
