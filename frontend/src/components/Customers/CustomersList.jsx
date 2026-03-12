@@ -19,7 +19,6 @@ const ALL_COLUMNS = [
   { key: 'billing',     label: 'Next billing cycle', default: true },
   { key: 'balance',     label: 'Balance',       default: true },
   { key: 'service',     label: 'Service',       default: true },
-  { key: 'actions',     label: 'Actions',       default: true },
 ];
 
 const SORT_OPTIONS = [
@@ -271,7 +270,11 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
     setEditingCustomer(c); 
     setIsModalOpen(true); 
   };
-  const openQRModal = (c) => { setQrCustomer(c); setIsQRModalOpen(true); };
+  const openQRModal = (c) => { 
+    console.log("CustomersList: Opening QR Modal", { id: c.id });
+    setQrCustomer(c); 
+    setIsQRModalOpen(true); 
+  };
   const toggleCol = (key) => {
     setVisibleCols(prev => {
       const next = { ...prev, [key]: !prev[key] };
@@ -284,6 +287,43 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
 
   return (
     <div className="module-container">
+      {/* ─── Modals (Top Level for stacking) ─── */}
+      {isModalOpen && (
+        <CustomerForm
+          customer={editingCustomer}
+          onClose={() => setIsModalOpen(false)}
+          onSave={() => { setIsModalOpen(false); fetchCustomers(); fetchRenewalsDue(); }}
+        />
+      )}
+      {isBulkModalOpen && (
+        <BulkImport
+          onClose={() => setIsBulkModalOpen(false)}
+          onSave={() => { setIsBulkModalOpen(false); fetchCustomers(); fetchRenewalsDue(); }}
+        />
+      )}
+      {isQRModalOpen && qrCustomer && (
+        <div className="modal-overlay" style={{ zIndex: 100000 }}>
+          <div className="modal-content glass-panel animate-slide-up" style={{ maxWidth:'400px', textAlign:'center' }}>
+            <button className="btn-close" onClick={() => setIsQRModalOpen(false)}><i className="ri-close-line"/></button>
+            <div className="modal-header">
+              <h3 className="text-gradient">Customer ID Card</h3>
+              <p style={{ color:'var(--text-muted)', fontSize:'0.9rem' }}>Scan to record payments instantly.</p>
+            </div>
+            <div style={{ background:'white', padding:'1.5rem', borderRadius:'1rem', display:'inline-block', marginTop:'1.5rem' }}>
+              <QRCodeSVG value={String(qrCustomer.id)} size={200} level="H" includeMargin={true}/>
+            </div>
+            <div style={{ marginTop:'1.5rem', borderTop:'1px solid var(--surface-border)', paddingTop:'1.5rem' }}>
+              <h4 style={{ margin:0 }}>{toTitleCase(qrCustomer.name)}</h4>
+              <p style={{ color:'var(--primary)', fontWeight:800, margin:'0.25rem 0' }}>{qrCustomer.customer_id}</p>
+              <p style={{ fontSize:'0.85rem', color:'var(--text-muted)' }}>{qrCustomer.mobile}</p>
+            </div>
+            <div className="modal-actions" style={{ justifyContent:'center' }}>
+              <button className="btn-primary" onClick={() => window.print()}><i className="ri-printer-line"/> Print ID</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ─── Header ─── */}
       <div className="module-header">
         <div>
@@ -452,9 +492,9 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                           <button className="btn-action-sm receipt" onClick={() => generateReceipt(cust)} title="Generate Receipt"><i className="ri-bill-line"/></button>
                           <button className="btn-action-sm whatsapp" onClick={() => openWhatsApp(cust)} title="WhatsApp Reminder"><i className="ri-whatsapp-line"/></button>
                           <button className="btn-action-sm qr" onClick={() => openQRModal(cust)} title="Show QR Code"><i className="ri-qr-code-line"/></button>
-                          <button className="btn-action-sm edit" onClick={() => openEditModal(cust)} title="Edit Customer"><i className="ri-edit-line"/></button>
+                          <button className="btn-action-sm edit" onClick={() => openEditModal(cust)} title="Edit Configuration"><i className="ri-edit-line"/></button>
                           {!isTechnician && (
-                            <button className="btn-action-sm delete" onClick={() => handleDelete(cust.id)} title="Delete Record"><i className="ri-delete-bin-line"/></button>
+                            <button className="btn-action-sm delete" onClick={() => handleDelete(cust.id)} title="Delete Customer"><i className="ri-delete-bin-line"/></button>
                           )}
                         </div>
                       )}
@@ -503,20 +543,7 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                       <span className={`status-badge status-${cust.service_type === 'Cable' ? 'info' : 'active'}`}>{cust.service_type}</span>
                     </td>
                   )}
-                  {visibleCols.actions && (
-                    <td>
-                      <div className="action-buttons justify-end">
-                        <button className="btn-action" onClick={() => generateInvoice(cust)} title="Invoice" style={{ color: 'var(--primary)' }}><i className="ri-file-list-3-line"/></button>
-                        <button className="btn-action" onClick={() => generateReceipt(cust)} title="Receipt" style={{ color: 'var(--success)' }}><i className="ri-bill-line"/></button>
-                        <button className="btn-action" onClick={() => openWhatsApp(cust)} title="WhatsApp Reminder" style={{ color: '#25D366' }}><i className="ri-whatsapp-line"/></button>
-                        <button className="btn-action" onClick={() => openQRModal(cust)} title="QR Code" style={{ color: 'var(--info)' }}><i className="ri-qr-code-line"/></button>
-                        <button className="btn-action edit" onClick={() => openEditModal(cust)} title="Edit" style={{ color: 'var(--warning)' }}><i className="ri-edit-line"/></button>
-                        {!isTechnician && (
-                          <button className="btn-action delete" onClick={() => handleDelete(cust.id)} title="Delete" style={{ color: 'var(--danger)' }}><i className="ri-delete-bin-line"/></button>
-                        )}
-                      </div>
-                    </td>
-                  )}
+
                 </tr>
               );
             })}
@@ -529,42 +556,7 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
         </table>
       </div>
 
-      {/* ─── Modals ─── */}
-      {isModalOpen && (
-        <CustomerForm
-          customer={editingCustomer}
-          onClose={() => setIsModalOpen(false)}
-          onSave={() => { setIsModalOpen(false); fetchCustomers(); fetchRenewalsDue(); }}
-        />
-      )}
-      {isBulkModalOpen && (
-        <BulkImport
-          onClose={() => setIsBulkModalOpen(false)}
-          onSave={() => { setIsBulkModalOpen(false); fetchCustomers(); fetchRenewalsDue(); }}
-        />
-      )}
-      {isQRModalOpen && qrCustomer && (
-        <div className="modal-overlay">
-          <div className="modal-content glass-panel animate-slide-up" style={{ maxWidth:'400px', textAlign:'center' }}>
-            <button className="btn-close" onClick={() => setIsQRModalOpen(false)}><i className="ri-close-line"/></button>
-            <div className="modal-header">
-              <h3 className="text-gradient">Customer ID Card</h3>
-              <p style={{ color:'var(--text-muted)', fontSize:'0.9rem' }}>Scan to record payments instantly.</p>
-            </div>
-            <div style={{ background:'white', padding:'1.5rem', borderRadius:'1rem', display:'inline-block', marginTop:'1.5rem' }}>
-              <QRCodeSVG value={qrCustomer.id} size={200} level="H" includeMargin={true}/>
-            </div>
-            <div style={{ marginTop:'1.5rem', borderTop:'1px solid var(--surface-border)', paddingTop:'1.5rem' }}>
-              <h4 style={{ margin:0 }}>{toTitleCase(qrCustomer.name)}</h4>
-              <p style={{ color:'var(--primary)', fontWeight:800, margin:'0.25rem 0' }}>{qrCustomer.customer_id}</p>
-              <p style={{ fontSize:'0.85rem', color:'var(--text-muted)' }}>{qrCustomer.mobile}</p>
-            </div>
-            <div className="modal-actions" style={{ justifyContent:'center' }}>
-              <button className="btn-primary" onClick={() => window.print()}><i className="ri-printer-line"/> Print ID</button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 };
