@@ -205,7 +205,7 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
   const handleSelectAll = (e) =>
     setSelectedCustomers(e.target.checked ? filteredCustomers.map(c => c.id) : []);
 
-  const handleSelectToggle = (id) =>
+  const handleSelectCustomer = (id) =>
     setSelectedCustomers(p => p.includes(id) ? p.filter(i => i !== id) : [...p, id]);
 
   const handleBulkDelete = async () => {
@@ -422,14 +422,42 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                     />
                   </td>
                   {visibleCols.customer_id && (
-                    <td>
+                    <td className="id-action-cell" style={{ position: 'relative' }}>
                       <span 
+                        className="customer-id-link"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveActionsId(activeActionsId === cust.id ? null : cust.id);
+                        }}
                         style={{ 
-                          fontWeight:800, color:'var(--primary)', fontSize:'0.85rem'
+                          fontWeight:800, color:'var(--primary)', fontSize:'0.85rem', cursor: 'pointer',
+                          display: 'inline-flex', alignItems: 'center', gap: '0.25rem'
                         }}
                       >
                         {cust.customer_id}
+                        <i className={`ri-arrow-${activeActionsId === cust.id ? 'up' : 'down'}-s-line`} style={{ fontSize: '1rem', opacity: 0.7 }} />
                       </span>
+
+                      {activeActionsId === cust.id && (
+                        <div 
+                          className="id-dropdown glass-panel"
+                          style={{
+                            position: 'absolute', top: '100%', left: 0, zIndex: 1000,
+                            minWidth: '200px', padding: '0.5rem', marginTop: '0.5rem',
+                            animation: 'fadeIn 0.2s ease-out'
+                          }}
+                        >
+                          <div className="dropdown-label" style={{ padding: '0.5rem', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid var(--surface-border)', marginBottom: '0.5rem' }}>Quick Actions</div>
+                          <button className="dropdown-item" onClick={() => generateInvoice(cust)}><i className="ri-file-list-3-line" style={{ color: 'var(--primary)' }}/> Generate Invoice</button>
+                          <button className="dropdown-item" onClick={() => generateReceipt(cust)}><i className="ri-bill-line" style={{ color: 'var(--success)' }}/> Generate Receipt</button>
+                          <button className="dropdown-item" onClick={() => openWhatsApp(cust)}><i className="ri-whatsapp-line" style={{ color: '#25D366' }}/> WhatsApp Reminder</button>
+                          <button className="dropdown-item" onClick={() => openQRModal(cust)}><i className="ri-qr-code-line" style={{ color: 'var(--info)' }}/> Show QR Code</button>
+                          <button className="dropdown-item" onClick={() => openEditModal(cust)}><i className="ri-edit-line" style={{ color: 'var(--warning)' }}/> Edit Customer</button>
+                          {!isTechnician && (
+                            <button className="dropdown-item delete" onClick={() => handleDelete(cust.id)} style={{ color: 'var(--danger)' }}><i className="ri-delete-bin-line"/> Delete Record</button>
+                          )}
+                        </div>
+                      )}
                     </td>
                   )}
                   {visibleCols.name && (
