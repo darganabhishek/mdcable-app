@@ -354,3 +354,80 @@
 .btn-action.edit:hover i.ri-bill-line {
   filter: drop-shadow(0 0 5px currentColor);
 }
+
+/* ID Actions Dropdown */
+.id-action-cell {
+  position: relative;
+}
+
+.id-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  min-width: 220px;
+  background: var(--bg-main);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.dropdown-label {
+  padding: 0.6rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--surface-border);
+  margin-bottom: 0.4rem;
+}
+
+.dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+}
+
+.dropdown-item i {
+  font-size: 1.1rem;
+  width: 1.25rem;
+  display: flex;
+  justify-content: center;
+}
+
+.dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--primary);
+  transform: translateX(4px);
+}
+
+.dropdown-item.delete:hover {
+  color: var(--danger);
+  background: rgba(251, 113, 133, 0.08);
+}
+
+.customer-id-link {
+  transition: var(--transition);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+}
+
+.customer-id-link:hover {
+  background: var(--primary-light);
+}
