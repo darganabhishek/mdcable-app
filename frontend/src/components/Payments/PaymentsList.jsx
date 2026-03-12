@@ -203,7 +203,7 @@ const PaymentsList = () => {
 
       {/* ─── Table ─── */}
       <div className="table-responsive">
-        <table className="data-table">
+        <table className="data-table mobile-card-view">
           <thead>
             <tr>
               {visibleCols.date           && <th>Date</th>}
@@ -221,7 +221,7 @@ const PaymentsList = () => {
             {filteredPayments.map(payment => (
               <tr key={payment.id}>
                 {visibleCols.date && (
-                  <td>
+                  <td data-label="Date">
                     <div className="user-cell">
                       <div className="user-avatar" style={{ background:'rgba(99,102,241,0.1)' }}>
                         <i className="ri-calendar-line"/>
@@ -233,12 +233,12 @@ const PaymentsList = () => {
                   </td>
                 )}
                 {visibleCols.transaction_id && (
-                  <td style={{ fontFamily:'monospace', fontWeight:600, color:'var(--primary)', fontSize:'0.8rem' }}>
+                  <td data-label="Transaction ID" style={{ fontFamily:'monospace', fontWeight:600, color:'var(--primary)', fontSize:'0.8rem' }}>
                     {payment.transaction_id || 'LEGACY-TRX'}
                   </td>
                 )}
                 {visibleCols.customer && (
-                  <td>
+                  <td data-label="Customer">
                     <div className="user-cell">
                       <div className="user-avatar">{payment.customer?.name?.[0]?.toUpperCase()}</div>
                       <div className="user-info-stack">
@@ -249,13 +249,13 @@ const PaymentsList = () => {
                   </td>
                 )}
                 {visibleCols.amount && (
-                  <td className="amount-col">₹{parseFloat(payment.amount).toLocaleString('en-IN')}</td>
+                  <td data-label="Amount" className="amount-col">₹{parseFloat(payment.amount).toLocaleString('en-IN')}</td>
                 )}
                 {visibleCols.method && (
-                  <td style={{ fontSize:'0.85rem' }}>{payment.payment_method || '—'}</td>
+                  <td data-label="Method" style={{ fontSize:'0.85rem' }}>{payment.payment_method || '—'}</td>
                 )}
                 {visibleCols.status && (
-                  <td>
+                  <td data-label="Status">
                     <span className={`status-badge status-${payment.status?.toLowerCase()}`}>{payment.status}</span>
                   </td>
                 )}
@@ -268,7 +268,7 @@ const PaymentsList = () => {
                   </td>
                 )}
                 {visibleCols.actions && (
-                  <td>
+                  <td data-label="Actions">
                     <div className="action-buttons">
                       <button className="btn-action edit"   onClick={() => handleEdit(payment)}      title="Edit"><i className="ri-edit-line"/></button>
                       {!isTechnician && (

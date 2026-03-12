@@ -439,7 +439,7 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
 
       {/* ─── Table ─── */}
       <div className="table-responsive">
-        <table className="data-table">
+        <table className="data-table mobile-card-view">
           <thead>
             <tr>
               <th style={{ width:'40px' }}>
@@ -455,7 +455,7 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
               {visibleCols.billing     && <th>Next billing cycle</th>}
               {visibleCols.balance     && <th>Balance</th>}
               {visibleCols.service     && <th>Service</th>}
-              {visibleCols.actions     && <th className="text-right">Actions</th>}
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -463,14 +463,14 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
               const ps = getPaymentStatus(cust);
               return (
                 <tr key={cust.id} className={selectedCustomers.includes(cust.id) ? 'selected-row' : ''}>
-                  <td>
+                  <td data-label="Select">
                     <input type="checkbox" className="custom-checkbox"
                       checked={selectedCustomers.includes(cust.id)}
                       onChange={() => handleSelectCustomer(cust.id)}
                     />
                   </td>
                   {visibleCols.customer_id && (
-                    <td className="id-action-cell" style={{ position: 'relative' }}>
+                    <td className="id-action-cell" data-label="Customer ID" style={{ position: 'relative' }}>
                       <span 
                         className="customer-id-link"
                         onClick={(e) => {
@@ -501,7 +501,7 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                     </td>
                   )}
                   {visibleCols.name && (
-                    <td>
+                    <td data-label="Customer">
                       <div className="user-cell">
                         <div className="user-avatar">{cust.name?.[0]?.toUpperCase()}</div>
                         <div className="user-info-stack">
@@ -511,9 +511,9 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                       </div>
                     </td>
                   )}
-                  {visibleCols.mobile  && <td style={{ letterSpacing:'0.05em', fontWeight:600 }}>{cust.mobile}</td>}
+                  {visibleCols.mobile  && <td data-label="Mobile" style={{ letterSpacing:'0.05em', fontWeight:600 }}>{cust.mobile}</td>}
                   {visibleCols.address && (
-                    <td style={{ fontSize:'0.85rem' }}>
+                    <td data-label="Address" style={{ fontSize:'0.85rem' }}>
                       <div className="address-stack">
                         <span className="address-main">{renderAddress(cust.house_no, cust.locality)}</span>
                         {(cust.city || cust.pincode) && (
@@ -523,12 +523,12 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                     </td>
                   )}
                   {visibleCols.billing && (
-                    <td style={{ fontSize:'0.85rem' }}>
+                    <td data-label="Next Billing" style={{ fontSize:'0.85rem' }}>
                       {cust.next_billing_date ? new Date(cust.next_billing_date).toLocaleDateString('en-IN', { day:'2-digit', month:'short' }) : '—'}
                     </td>
                   )}
                   {visibleCols.balance && (
-                    <td style={{ 
+                    <td data-label="Balance" style={{ 
                       fontWeight:700, 
                       color: parseFloat(cust.balance) >= 0 ? 'var(--success)' : 'var(--danger)' 
                     }}>
@@ -539,7 +539,7 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                     </td>
                   )}
                   {visibleCols.service && (
-                    <td>
+                    <td data-label="Service">
                       <span className={`status-badge status-${cust.service_type === 'Cable' ? 'info' : 'active'}`}>{cust.service_type}</span>
                     </td>
                   )}

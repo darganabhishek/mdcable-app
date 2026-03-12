@@ -45,3 +45,10 @@
   align-items: center;
 }
 
+@media (max-width: 768px) {
+  .action-buttons {
+    justify-content: flex-end;
+    width: 100%;
+  }
+}
+

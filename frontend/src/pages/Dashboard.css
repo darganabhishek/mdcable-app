@@ -139,11 +139,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1.25rem;
   background: rgba(15, 23, 42, 0.3);
   border-radius: var(--radius-lg);
   border: 1px solid var(--surface-border);
   backdrop-filter: blur(10px);
+  min-height: 64px;
 }
 
 .user-info {
@@ -203,11 +204,12 @@
     height: 100vh;
     transform: translateX(-100%);
     border-radius: 0;
-    width: 300px;
+    width: 280px;
   }
   
   .sidebar.show {
     transform: translateX(0);
+    box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
   }
   
   .sidebar-overlay {
@@ -220,14 +222,40 @@
 
   .mobile-close {
     display: flex;
+    position: absolute;
+    top: 1.5rem;
+    right: 1rem;
   }
 
   .main-content {
-    padding: 1rem;
+    padding: var(--page-padding);
   }
 
   .topbar {
-    padding: 1rem;
+    padding: 0.75rem 1rem;
+  }
+  
+  .user-info span {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .topbar {
+    gap: 0.5rem;
+  }
+  
+  .user-info {
+    font-size: 0.85rem;
+  }
+  
+  .btn-logout {
+    padding: 0.5rem 0.75rem;
+    font-size: 0; /* Hide text, show only icon on small phones */
+  }
+  
+  .btn-logout i {
+    font-size: 1.25rem;
   }
 }
 

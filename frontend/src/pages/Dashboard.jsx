@@ -121,11 +121,11 @@ const Dashboard = () => {
                     </button>
                     <div className="user-info">
                         <i className="ri-user-6-fill"></i>
-                        Welcome, <strong>{user?.name}</strong>
+                        <span>Welcome, <strong>{user?.name}</strong></span>
                     </div>
-                    <button onClick={handleLogout} className="btn-logout">
+                    <button onClick={handleLogout} className="btn-logout" title="Logout">
                         <i className="ri-logout-box-r-line"></i>
-                        Logout
+                        <span>Logout</span>
                     </button>
                 </header>
                 <div className="content-area">

@@ -10,8 +10,8 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .action-buttons {
@@ -19,6 +19,23 @@
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
+  width: 100%;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .module-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .action-buttons {
+    justify-content: flex-start;
+  }
+  
+  .btn-add {
+    width: 100%;
+  }
 }
 
 .module-header h2 {
