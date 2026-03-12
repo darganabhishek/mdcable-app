@@ -71,7 +71,7 @@ const DashboardOverview = ({ setActiveTab, setInitialAction }) => {
 
   return (
     <div className="dashboard-overview">
-      <div className="module-header" style={{ marginBottom: '2.5rem' }}>
+      <div className="module-header dashboard-header">
         <div>
           <h1 className="page-title">{isTechnician ? 'Network Operations Dashboard' : 'Business Intelligence Dashboard'}</h1>
           <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem', fontSize: '1.1rem' }}>
@@ -238,7 +238,7 @@ const DashboardOverview = ({ setActiveTab, setInitialAction }) => {
         </div>
       </div>
 
-      <div className="charts-grid-bottom" style={{ marginTop: '2.5rem' }}>
+      <div className="charts-grid-bottom charts-section">
         <div className="chart-container glass-panel">
           <h3>
               <i className="ri-map-pin-2-line"></i>
