@@ -65,14 +65,25 @@ app.get('/health', (req, res) => {
  */
 const fixSchema = async () => {
     try {
-        const [results] = await sequelize.query("SHOW COLUMNS FROM Users LIKE 'username'");
-        if (results.length === 0) {
-            console.log('--- Missing "username" column detected. Adding it now... ---');
+        console.log('--- Checking database schema ---');
+        // List all columns to be 100% sure what we have
+        const [columns] = await sequelize.query("SHOW COLUMNS FROM Users");
+        const columnNames = columns.map(c => c.Field.toLowerCase());
+        console.log('Current columns in Users table:', columnNames.join(', '));
+
+        if (!columnNames.includes('username')) {
+            console.log('--- "username" column not found. Attempting to add it... ---');
             await sequelize.query("ALTER TABLE Users ADD COLUMN username VARCHAR(255) UNIQUE AFTER name");
             console.log('✅ "username" column added successfully.');
+        } else {
+            console.log('✅ "username" column already exists.');
         }
     } catch (err) {
-        console.warn('⚠️ Schema fix warning (might be first run):', err.message);
+        if (err.message.includes('Duplicate column name')) {
+            console.log('✅ "username" column already exists (detected during ALTER).');
+        } else {
+            console.warn('⚠️ Schema fix warning:', err.message);
+        }
     }
 };
 
