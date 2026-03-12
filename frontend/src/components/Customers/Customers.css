@@ -402,12 +402,19 @@
   box-shadow: 0 4px 12px var(--primary-shadow);
 }
 
-.btn-action-sm.invoice:hover  { background: var(--primary); }
-.btn-action-sm.receipt:hover  { background: var(--success); }
-.btn-action-sm.whatsapp:hover { background: #25D366; }
-.btn-action-sm.qr:hover       { background: var(--info); }
-.btn-action-sm.edit:hover     { background: var(--warning); }
-.btn-action-sm.delete:hover   { background: var(--danger); }
+.btn-action-sm.invoice:hover  { background: var(--primary); color: white; }
+.btn-action-sm.receipt:hover  { background: var(--success); color: white; }
+.btn-action-sm.whatsapp:hover { background: #25D366; color: white; }
+.btn-action-sm.qr:hover       { background: var(--info); color: white; }
+.btn-action-sm.edit:hover     { background: var(--warning); color: white; }
+.btn-action-sm.delete:hover   { background: var(--danger); color: white; }
+
+.btn-action-sm.invoice  { color: var(--primary); background: rgba(129, 140, 248, 0.1); border-color: rgba(129, 140, 248, 0.2); }
+.btn-action-sm.receipt  { color: var(--success); background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); }
+.btn-action-sm.whatsapp { color: #25D366; background: rgba(37, 211, 102, 0.1); border-color: rgba(37, 211, 102, 0.2); }
+.btn-action-sm.qr       { color: var(--info); background: rgba(6, 182, 212, 0.1); border-color: rgba(6, 182, 212, 0.2); }
+.btn-action-sm.edit     { color: var(--warning); background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2); }
+.btn-action-sm.delete   { color: var(--danger); background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); }
 
 .customer-id-link {
   transition: all 0.2s;
