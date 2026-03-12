@@ -30,7 +30,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('(.*)', cors(corsOptions)); // Handle all preflight requests with valid wildcard syntax
+// Note: Global app.use(cors()) already handles OPTIONS preflight for Express 5
 app.use(express.json());
 
 // Routes will be mounted here
