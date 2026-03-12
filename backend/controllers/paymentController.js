@@ -1,4 +1,5 @@
 const { Payment, Customer, User, Package } = require('../models');
+const { logActivity } = require('../middleware/logMiddleware');
 
 // @desc    Get all payments
 // @route   GET /api/payments
@@ -112,6 +113,9 @@ const createPayment = async (req, res) => {
       await customer.save();
     }
 
+    // Log Payment
+    await logActivity(req.user.id, 'RECORD_PAYMENT', payment.id, 'Payment', { amount: payment.amount, transaction_id: payment.transaction_id, customer_id: customer.customer_id }, req.ip);
+
     res.status(201).json(payment);
   } catch (error) {
     console.error('Error recording payment:', error);
@@ -207,6 +211,8 @@ const deletePayment = async (req, res) => {
     }
 
     await payment.destroy();
+    // Log Delete
+    await logActivity(req.user.id, 'DELETE_PAYMENT', payment.id, 'Payment', { amount: payment.amount, transaction_id: payment.transaction_id }, req.ip);
     res.json({ message: 'Transaction removed' });
   } catch (error) {
     console.error('Error deleting payment:', error);

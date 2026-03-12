@@ -9,6 +9,7 @@ import RolePermissions from '../components/Users/RolePermissions';
 import PackagesList from '../components/Packages/PackagesList'; // Added PackagesList import
 import DashboardOverview from '../components/Dashboard/DashboardOverview';
 import Maintenance from '../components/Users/Maintenance';
+import ActivityLogs from './ActivityLogs';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -89,6 +90,13 @@ const Dashboard = () => {
                                 <i className="ri-tools-line"></i>
                                 <span>System Maintenance</span>
                             </button>
+                            <button 
+                              className={`nav-item ${activeTab === 'Activity Logs' ? 'active' : ''}`}
+                              onClick={() => setActiveTab('Activity Logs')}
+                            >
+                                <i className="ri-history-line"></i>
+                                <span>Activity Logs</span>
+                            </button>
                         </>
                     )}
                 </nav>
@@ -123,6 +131,7 @@ const Dashboard = () => {
                     {activeTab === 'Access Control' && <UsersList />}
                     {activeTab === 'Permissions' && <RolePermissions />}
                     {activeTab === 'Maintenance' && <Maintenance />}
+                    {activeTab === 'Activity Logs' && <ActivityLogs />}
                 </div>
                 <footer className="developer-footer">
                     Designed & Developed by <strong>Abhishek Dargan</strong>

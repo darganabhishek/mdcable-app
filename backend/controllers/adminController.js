@@ -1,5 +1,6 @@
 const { Customer, Payment, Package } = require('../models');
 const { Op } = require('sequelize');
+const { logActivity } = require('../middleware/logMiddleware');
 
 // @desc    Sync all billing dates based on installation date and payment history
 // @route   POST /api/admin/sync-billing
@@ -16,29 +17,22 @@ const syncBillingDates = async (req, res) => {
       if (!val) return null;
       const d = new Date(val);
       if (isNaN(d.getTime())) return null;
-      // If date is 1970 (likely corrupted from serial import), treat as null to fallback to createdAt
       if (d.getFullYear() === 1970) return null;
       return d;
     };
 
     for (const customer of customers) {
-      // 1. Establish a base installation date
       let baseDate = parseDate(customer.installation_date);
-      
       if (!baseDate) {
-        // Fallback: If installation date is missing, use createdAt
-        // To avoid "Same for all" when bulk imported, we use the ID to "stagger" the base day
         const createdAt = new Date(customer.createdAt);
         const staggerDays = parseInt(customer.id.replace(/-/g, '').slice(-2), 16) % 28;
         baseDate = new Date(createdAt);
-        baseDate.setDate(1 + staggerDays); // Distribute across the month (1-28)
+        baseDate.setDate(1 + staggerDays);
       }
 
-      // Initial next billing date is the same day of the following month
+      // Initial next billing date 
       let nextBillingDate = new Date(baseDate);
-      nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
 
-      // 2. Calculate impact of all completed payments
       const payments = await Payment.findAll({
         where: { customer_id: customer.id, status: 'Completed' }
       });
@@ -51,14 +45,16 @@ const syncBillingDates = async (req, res) => {
       let currentBalance = totalPaid;
       
       if (monthlyRate > 0) {
-        // Advance the billing date for every full month of credit
-        while (currentBalance >= monthlyRate) {
-          currentBalance -= monthlyRate;
-          nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
+        // --- Floor/Modulo Logic ---
+        const monthsCovered = Math.floor(totalPaid / monthlyRate);
+        const remainingBalance = totalPaid % monthlyRate;
+        
+        if (monthsCovered > 0) {
+          nextBillingDate.setMonth(nextBillingDate.getMonth() + monthsCovered);
         }
+        currentBalance = remainingBalance;
       }
 
-      // 3. Update customer record
       await customer.update({
         installation_date: baseDate,
         next_billing_date: nextBillingDate,
@@ -67,6 +63,9 @@ const syncBillingDates = async (req, res) => {
 
       updatedCount++;
     }
+
+    // Log admin action
+    await logActivity(req.user.id, 'SYNC_BILLING_DATES', null, 'Admin', { count: updatedCount }, req.ip);
 
     res.json({ message: `Successfully synchronized ${updatedCount} customers.`, count: updatedCount });
   } catch (error) {
@@ -79,6 +78,10 @@ const syncPermissions = async (req, res) => {
   try {
     const seedPermissions = require('../seedPermissions');
     await seedPermissions();
+    
+    // Log admin action
+    await logActivity(req.user.id, 'SYNC_PERMISSIONS', null, 'Admin', {}, req.ip);
+
     res.json({ message: 'Permissions successfully synchronized and repaired.' });
   } catch (error) {
     console.error('Seed Error:', error);
@@ -86,7 +89,23 @@ const syncPermissions = async (req, res) => {
   }
 };
 
+const getActivityLogs = async (req, res) => {
+  try {
+    const { ActivityLog, User } = require('../models');
+    const logs = await ActivityLog.findAll({
+      include: [{ model: User, as: 'user', attributes: ['name', 'role'] }],
+      order: [['createdAt', 'DESC']],
+      limit: 200 // Limit for performance
+    });
+    res.json(logs);
+  } catch (error) {
+    console.error('Fetch Logs Error:', error);
+    res.status(500).json({ message: 'Server error fetching activity logs.' });
+  }
+};
+
 module.exports = {
   syncBillingDates,
-  syncPermissions
+  syncPermissions,
+  getActivityLogs
 };

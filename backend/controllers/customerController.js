@@ -1,4 +1,5 @@
 const { Customer, Area, Package } = require('../models');
+const { logActivity } = require('../middleware/logMiddleware');
 
 // Helper to sanitize UUIDs (convert empty strings to null)
 const sanitizeUUID = (id) => {
@@ -168,6 +169,9 @@ const createCustomer = async (req, res) => {
       discount: discount || 0
     });
 
+    // Log individual creation
+    await logActivity(req.user.id, 'CREATE_CUSTOMER', customer.id, 'Customer', { name: customer.name, customer_id: customer.customer_id }, req.ip);
+
     res.status(201).json(customer);
   } catch (error) {
     console.error('Error creating customer:', error);
@@ -336,6 +340,9 @@ const updateCustomer = async (req, res) => {
 
     await customer.update(updateData);
     
+    // Log Update
+    await logActivity(req.user.id, 'UPDATE_CUSTOMER', customer.id, 'Customer', { name: customer.name, customer_id: customer.customer_id }, req.ip);
+
     res.json(customer);
   } catch (error) {
     console.error('Error updating customer:', error);
@@ -356,6 +363,9 @@ const deleteCustomer = async (req, res) => {
 
     await customer.destroy();
     
+    // Log Deletion
+    await logActivity(req.user.id, 'DELETE_CUSTOMER', customer.id, 'Customer', { name: customer.name, customer_id: customer.customer_id }, req.ip);
+
     res.json({ message: 'Customer removed' });
   } catch (error) {
     console.error('Error deleting customer:', error);

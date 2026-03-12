@@ -6,6 +6,7 @@ const Renewal = require('./Renewal');
 const Package = require('./Package');
 const Area = require('./Area');
 const RolePermission = require('./RolePermission');
+const ActivityLog = require('./ActivityLog');
 
 // Define Relationships
 
@@ -32,6 +33,10 @@ Package.belongsTo(Area, { foreignKey: 'area_id', as: 'area' });
 Area.hasMany(Customer, { foreignKey: 'area_id', as: 'customers' });
 Customer.belongsTo(Area, { foreignKey: 'area_id', as: 'assigned_area' });
 
+// User has many activity logs
+User.hasMany(ActivityLog, { foreignKey: 'user_id', as: 'activities' });
+ActivityLog.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
 module.exports = {
   sequelize,
   User,
@@ -40,5 +45,6 @@ module.exports = {
   Renewal,
   Package,
   Area,
-  RolePermission
+  RolePermission,
+  ActivityLog
 };

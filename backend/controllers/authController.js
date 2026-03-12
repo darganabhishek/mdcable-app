@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { User } = require('../models');
+const { logActivity } = require('../middleware/logMiddleware');
 
 // @desc    Login user
 // @route   POST /api/auth/login
@@ -26,6 +26,9 @@ const login = async (req, res) => {
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+    // Log Activity
+    await logActivity(user.id, 'USER_LOGIN', user.id, 'User', {}, req.ip);
 
     res.json({ token, user: payload });
   } catch (error) {
