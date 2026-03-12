@@ -261,8 +261,16 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
     window.open(`https://wa.me/${cleanPhone}/?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
-  const openAddModal = () => { setEditingCustomer(null); setIsModalOpen(true); };
-  const openEditModal = (c) => { setEditingCustomer(c); setIsModalOpen(true); };
+  const openAddModal = () => { 
+    console.log("CustomersList: Opening Add Modal");
+    setEditingCustomer(null); 
+    setIsModalOpen(true); 
+  };
+  const openEditModal = (c) => { 
+    console.log("CustomersList: Opening Edit Modal", { id: c.id });
+    setEditingCustomer(c); 
+    setIsModalOpen(true); 
+  };
   const openQRModal = (c) => { setQrCustomer(c); setIsQRModalOpen(true); };
   const toggleCol = (key) => {
     setVisibleCols(prev => {

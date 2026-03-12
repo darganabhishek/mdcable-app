@@ -31,14 +31,16 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
     // Fetch available packages and areas
     const fetchData = async () => {
       try {
+        console.log("CustomerForm: Fetching dependency data...");
         const [pkgRes, areaRes] = await Promise.all([
           axios.get(`${import.meta.env.VITE_API_URL}/packages`),
           axios.get(`${import.meta.env.VITE_API_URL}/areas`)
         ]);
-        setPackages(pkgRes.data.filter(p => p.status === 'Active'));
-        setAreas(areaRes.data);
+        console.log("CustomerForm: Data fetched", { pkgCount: pkgRes.data?.length, areaCount: areaRes.data?.length });
+        setPackages(Array.isArray(pkgRes.data) ? pkgRes.data.filter(p => p.status === 'Active') : []);
+        setAreas(Array.isArray(areaRes.data) ? areaRes.data : []);
       } catch (err) {
-        console.error("Failed to load dependency data", err);
+        console.error("CustomerForm: Failed to load dependency data", err);
       }
     };
     fetchData();
@@ -138,6 +140,8 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
     const discount = parseFloat(formData.discount) || 0;
     return Math.max(0, total - discount).toFixed(2);
   };
+
+  console.log("CustomerForm: Rendering Modal", { isEditing: !!customer, areaCount: areas.length, pkgCount: packages.length });
 
   return (
     <div className="modal-overlay">
