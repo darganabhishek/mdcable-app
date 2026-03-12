@@ -9,20 +9,25 @@
   padding: 0.5rem;
   border: 1px solid var(--surface-border);
   gap: 0.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.report-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .tab-btn {
   background: transparent;
   border: none;
   color: var(--text-muted);
-  padding: 0.75rem 2rem;
+  padding: 0.75rem 1.5rem;
   border-radius: var(--radius-md);
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition);
-  font-size: 0.95rem;
-  flex: 1;
-  text-align: center;
+  font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 .tab-btn:hover {
@@ -87,10 +92,20 @@
 }
 
 .stat-value {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 800;
   color: var(--text-main);
   letter-spacing: -0.03em;
+}
+
+@media (max-width: 768px) {
+  .stat-card {
+    padding: 1.5rem;
+  }
+  
+  .stat-value {
+    font-size: 1.75rem;
+  }
 }
 
 .highlight-card {

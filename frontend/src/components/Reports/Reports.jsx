@@ -150,7 +150,7 @@ const Reports = () => {
             )}
 
             <div className="table-responsive">
-                <table className="data-table">
+                <table className="data-table mobile-card-view">
                     <thead>
                         <tr>
                             {reportType === 'collections' ? (
@@ -188,7 +188,7 @@ const Reports = () => {
                     <tbody>
                         {reportType === 'collections' && data.payments?.map(item => (
                             <tr key={item.id}>
-                                <td>
+                                <td data-label="Date">
                                     <div className="user-cell">
                                         <div className="user-avatar" style={{ background: 'rgba(59, 130, 246, 0.1)', color: 'var(--info)' }}>
                                             <i className="ri-calendar-2-line"></i>
@@ -196,9 +196,9 @@ const Reports = () => {
                                         {new Date(item.payment_date).toLocaleDateString()}
                                     </div>
                                 </td>
-                                <td><strong>{item.customer?.name}</strong></td>
-                                <td className="amount-col">₹ {parseFloat(item.amount).toLocaleString()}</td>
-                                <td>
+                                <td data-label="Customer"><strong>{item.customer?.name}</strong></td>
+                                <td data-label="Amount" className="amount-col">₹ {parseFloat(item.amount).toLocaleString()}</td>
+                                <td data-label="Collector">
                                     <div className="collector-badge">
                                         <i className="ri-user-star-line"></i>
                                         {item.collector?.name}
@@ -208,8 +208,8 @@ const Reports = () => {
                         ))}
                         {reportType === 'renewals' && data.renewals?.map(item => (
                             <tr key={item.id}>
-                                <td className="text-sm text-muted">#RES-{item.id.substring(0,6)}</td>
-                                <td>
+                                <td data-label="Ref" className="text-sm text-muted">#RES-{item.id.substring(0,6)}</td>
+                                <td data-label="Customer">
                                     <div className="user-cell">
                                         <div className="user-avatar" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)' }}>
                                             <i className="ri-user-received-2-line"></i>
@@ -217,9 +217,9 @@ const Reports = () => {
                                         <strong>{item.customer?.name}</strong>
                                     </div>
                                 </td>
-                                <td>{new Date(item.previous_expiry).toLocaleDateString()}</td>
-                                <td><span style={{ fontWeight: 700, color: 'var(--success)' }}>{new Date(item.new_expiry).toLocaleDateString()}</span></td>
-                                <td>
+                                <td data-label="Prev Expiry">{new Date(item.previous_expiry).toLocaleDateString()}</td>
+                                <td data-label="New Expiry"><span style={{ fontWeight: 700, color: 'var(--success)' }}>{new Date(item.new_expiry).toLocaleDateString()}</span></td>
+                                <td data-label="Logic">
                                     <span className={`status-badge status-${item.status.toLowerCase()}`}>
                                         {item.status}
                                     </span>
@@ -228,20 +228,20 @@ const Reports = () => {
                         ))}
                         {reportType === 'staff' && Array.isArray(data) && data.map((item, idx) => (
                           <tr key={idx}>
-                              <td>
-                                  <div className="user-cell">
-                                      <div className="user-avatar" style={{ 
-                                        background: idx === 0 ? 'rgba(245, 158, 11, 0.1)' : 'rgba(148, 163, 184, 0.1)', 
-                                        color: idx === 0 ? 'var(--warning)' : 'var(--text-muted)' 
-                                      }}>
-                                          {idx === 0 ? <i className="ri-medal-fill"></i> : <i className="ri-user-line"></i>}
-                                      </div>
-                                      <strong>{item.staff_name}</strong>
-                                  </div>
-                              </td>
-                              <td style={{ color: 'var(--success)', fontWeight: 700 }}>₹{parseFloat(item.today || 0).toLocaleString()}</td>
-                              <td style={{ fontWeight: 700 }}>₹{parseFloat(item.monthly || 0).toLocaleString()}</td>
-                              <td>{item.total_count}</td>
+                               <td data-label="Staff">
+                                   <div className="user-cell">
+                                       <div className="user-avatar" style={{ 
+                                         background: idx === 0 ? 'rgba(245, 158, 11, 0.1)' : 'rgba(148, 163, 184, 0.1)', 
+                                         color: idx === 0 ? 'var(--warning)' : 'var(--text-muted)' 
+                                       }}>
+                                           {idx === 0 ? <i className="ri-medal-fill"></i> : <i className="ri-user-line"></i>}
+                                       </div>
+                                       <strong>{item.staff_name}</strong>
+                                   </div>
+                               </td>
+                               <td data-label="Today" style={{ color: 'var(--success)', fontWeight: 700 }}>₹{parseFloat(item.today || 0).toLocaleString()}</td>
+                               <td data-label="Monthly" style={{ fontWeight: 700 }}>₹{parseFloat(item.monthly || 0).toLocaleString()}</td>
+                               <td data-label="Total">{item.total_count}</td>
                           </tr>
                         ))}
                         {reportType === 'churn' && data.customers?.map(item => {
@@ -249,7 +249,7 @@ const Reports = () => {
                           const daysOverdue = Math.floor((new Date() - lastDate) / (1000 * 60 * 60 * 24));
                           return (
                             <tr key={item.id}>
-                                <td>
+                                <td data-label="Customer">
                                     <div className="user-cell">
                                         <div className="user-avatar" style={{ background: 'rgba(251, 113, 133, 0.1)', color: 'var(--danger)' }}>
                                             <i className="ri-error-warning-line"></i>
@@ -257,9 +257,9 @@ const Reports = () => {
                                         <strong>{item.name}</strong>
                                     </div>
                                 </td>
-                                <td>{lastDate.toLocaleDateString()}</td>
-                                <td><span className="status-badge status-suspended">{daysOverdue} days overdue</span></td>
-                                <td>{item.mobile}</td>
+                                <td data-label="Last Billing">{lastDate.toLocaleDateString()}</td>
+                                <td data-label="Due For"><span className="status-badge status-suspended">{daysOverdue} days overdue</span></td>
+                                <td data-label="Contact">{item.mobile}</td>
                             </tr>
                           );
                         })}

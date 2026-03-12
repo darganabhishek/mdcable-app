@@ -63,20 +63,20 @@ const UsersList = () => {
       </div>
 
       <div className="table-responsive">
-        <table className="data-table">
+        <table className="data-table mobile-card-view">
           <thead>
             <tr>
               <th>Staff Member</th>
               <th>System Username</th>
               <th>Access Role</th>
               <th>Joined Date</th>
-              <th className="text-right">Management</th>
+              <th>Management</th>
             </tr>
           </thead>
           <tbody>
             {users.map((user) => (
               <tr key={user.id}>
-                <td>
+                <td data-label="Staff">
                     <div className="user-cell">
                         <div className="user-avatar">
                             {user.name.charAt(0)}
@@ -84,16 +84,16 @@ const UsersList = () => {
                         <strong>{user.name}</strong>
                     </div>
                 </td>
-                <td>
+                <td data-label="Username">
                     <span style={{ color: 'var(--text-muted)', fontFamily: 'monospace' }}>@{user.username}</span>
                 </td>
-                <td>
+                <td data-label="Role">
                   <span className={`role-badge role-${user.role.replace(/\s+/g, '-').toLowerCase()}`}>
                     {user.role}
                   </span>
                 </td>
-                <td>{new Date(user.createdAt).toLocaleDateString()}</td>
-                <td>
+                <td data-label="Date">{new Date(user.createdAt).toLocaleDateString()}</td>
+                <td data-label="Management">
                   <div className="action-buttons justify-end">
                     <button className="btn-icon-only" onClick={() => openEditModal(user)} title="Edit Privileges">
                         <i className="ri-settings-3-line"></i>

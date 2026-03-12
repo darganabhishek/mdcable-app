@@ -108,7 +108,7 @@ const PackagesList = () => {
   if (loading) return <div className="loading-state">Loading inventory...</div>;
 
   const renderPackageTable = (pkgs) => (
-    <table className="data-table mb-4">
+    <table className="data-table mobile-card-view mb-4">
       <thead>
         <tr>
           <th>Service Name</th>
@@ -116,13 +116,13 @@ const PackagesList = () => {
           <th>Monthly Fee</th>
           <th>Description</th>
           <th>Status</th>
-          <th className="text-right">Actions</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         {pkgs.map(pkg => (
           <tr key={pkg.id}>
-            <td>
+            <td data-label="Package">
                 <div className="user-cell">
                     <div className="user-avatar" style={{ background: pkg.service_type === 'Cable' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: pkg.service_type === 'Cable' ? 'var(--info)' : 'var(--success)' }}>
                         <i className={pkg.service_type === 'Cable' ? 'ri-tv-2-line' : 'ri-router-line'}></i>
@@ -130,25 +130,25 @@ const PackagesList = () => {
                     <strong>{pkg.name}</strong>
                 </div>
             </td>
-            <td>
+            <td data-label="Category">
               <span className={`status-badge ${pkg.service_type === 'Cable' ? 'status-info' : 'status-active'}`}>
                 {pkg.service_type}
               </span>
             </td>
-            <td>
+            <td data-label="Price">
                 <span style={{ fontWeight: 800 }}>₹{parseFloat(pkg.price).toFixed(2)}</span>
             </td>
-            <td style={{ maxWidth: '250px' }}>
+            <td data-label="Features" style={{ maxWidth: '250px' }}>
                 <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                     {pkg.description || 'No features listed.'}
                 </div>
             </td>
-            <td>
+            <td data-label="Status">
               <span className={`status-badge ${pkg.status === 'Active' ? 'status-active' : 'status-inactive'}`}>
                 {pkg.status}
               </span>
             </td>
-            <td>
+            <td data-label="Actions">
               <div className="action-buttons justify-end">
                 <button className="btn-action edit" onClick={() => openEditModal(pkg)} title="Edit Package">
                     <i className="ri-edit-line"></i>

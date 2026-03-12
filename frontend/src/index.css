@@ -505,37 +505,70 @@ input[type="date"].input-control::-webkit-calendar-picker-indicator:hover {
   
   .mobile-card-view tr {
     display: block;
-    margin-bottom: 1.5rem;
-    background: var(--surface);
+    margin-bottom: 2rem;
+    background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--surface-border);
     border-radius: var(--radius-lg);
     padding: 1rem;
-    box-shadow: 0 4px 12px var(--surface-shadow);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
   }
   
   .mobile-card-view td {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 0.5rem !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    padding: 0.85rem 0.5rem !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
     text-align: right;
+    min-height: 48px;
   }
   
   .mobile-card-view td:last-child {
     border-bottom: none !important;
+    margin-top: 0.5rem;
+    padding-top: 1.25rem !important;
+    border-top: 1px solid var(--surface-border) !important;
+    justify-content: center;
+    width: 100%;
   }
   
   .mobile-card-view td::before {
     content: attr(data-label);
     font-weight: 700;
     color: var(--text-muted);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
     text-align: left;
-    margin-right: 1rem;
+    margin-right: 1.5rem;
     flex-shrink: 0;
   }
+
+  .mobile-card-view .user-cell {
+    justify-content: flex-end;
+  }
+}
+
+/* Horizontal Scroll Navigation Utility */
+.tab-scroll-header {
+  display: flex !important;
+  overflow-x: auto !important;
+  gap: 0.75rem !important;
+  padding: 0.25rem 0.5rem 1rem 0.5rem !important;
+  margin-bottom: 1rem !important;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.tab-scroll-header::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-scroll-header > * {
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
 }
 
