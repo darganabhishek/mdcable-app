@@ -10,6 +10,7 @@ import PackagesList from '../components/Packages/PackagesList'; // Added Package
 import DashboardOverview from '../components/Dashboard/DashboardOverview';
 import Maintenance from '../components/Users/Maintenance';
 import ActivityLogs from './ActivityLogs';
+import DiscrepancyList from '../components/Customers/DiscrepancyList';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -69,6 +70,13 @@ const Dashboard = () => {
                     )}
                     {user?.role === 'Super Admin' && (
                         <>
+                            <button 
+                              className={`nav-item ${activeTab === 'Discrepancy Search' ? 'active' : ''}`}
+                              onClick={() => setActiveTab('Discrepancy Search')}
+                            >
+                                <i className="ri-search-eye-line"></i>
+                                <span>Discrepancy Search</span>
+                            </button>
                             <button 
                               className={`nav-item ${activeTab === 'Access Control' ? 'active' : ''}`}
                               onClick={() => setActiveTab('Access Control')}
@@ -132,6 +140,7 @@ const Dashboard = () => {
                     {activeTab === 'Permissions' && <RolePermissions />}
                     {activeTab === 'Maintenance' && <Maintenance />}
                     {activeTab === 'Activity Logs' && <ActivityLogs />}
+                    {activeTab === 'Discrepancy Search' && <DiscrepancyList />}
                 </div>
                 <footer className="developer-footer">
                     Designed & Developed by <strong>Abhishek Dargan</strong>

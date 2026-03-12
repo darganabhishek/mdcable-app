@@ -108,6 +108,43 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  // --- Helpers ---
+  const toTitleCase = (str) => {
+    if (!str || str.toLowerCase() === 'null') return '';
+    return str.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  };
+
+  const renderAddress = (house_no, locality) => {
+    const parts = [house_no, locality].filter(p => p && p.toLowerCase() !== 'null');
+    return parts.length > 0 ? parts.map(toTitleCase).join(', ') : '-';
+  };
+
+  const getPaymentStatus = (cust) => {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const in5Days = new Date(); in5Days.setDate(today.getDate() + 5);
+    
+    const balance = parseFloat(cust.balance) || 0;
+    const nextDate = cust.next_billing_date ? new Date(cust.next_billing_date) : null;
+    
+    if (cust.status === 'Suspended') return { label: 'Suspended', cls: 'danger' };
+    if (cust.status === 'Inactive') return { label: 'Inactive', cls: 'muted' };
+    
+    if (nextDate && nextDate <= today) return { label: 'Expired', cls: 'danger' };
+    if (nextDate && nextDate <= in5Days && nextDate > today) return { label: 'Renewal Due Soon', cls: 'warning' };
+    
+    if (balance > 0) return { label: `Credit ₹${balance.toFixed(0)}`, cls: 'active' };
+    return { label: 'Active', cls: 'active' };
+  };
+
+  // Tab counts
+  const tabCount = (tab) => {
+    if (tab === 'All')          return customers.length;
+    if (tab === 'Renewals Due') return renewalsDue.length;
+    if (tab === 'Expired')      return customers.filter(c => getPaymentStatus(c).label === 'Expired').length;
+    if (tab === 'Active')       return customers.filter(c => c.status === 'Active' && getPaymentStatus(c).label !== 'Expired').length;
+    return customers.filter(c => c.status === tab).length;
+  };
+
   // --- Filtering & Sorting ---
   const sortFn = (arr) => {
     const opt = SORT_OPTIONS.find(o => o.value === sortKey);
@@ -151,43 +188,6 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
       return matchesSearch && matchesService;
     })
   );
-
-  // Tab counts
-  const tabCount = (tab) => {
-    if (tab === 'All')          return customers.length;
-    if (tab === 'Renewals Due') return renewalsDue.length;
-    if (tab === 'Expired')      return customers.filter(c => getPaymentStatus(c).label === 'Expired').length;
-    if (tab === 'Active')       return customers.filter(c => c.status === 'Active' && getPaymentStatus(c).label !== 'Expired').length;
-    return customers.filter(c => c.status === tab).length;
-  };
-
-  // --- Helpers ---
-  const toTitleCase = (str) => {
-    if (!str || str.toLowerCase() === 'null') return '';
-    return str.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-  };
-
-  const renderAddress = (house_no, locality) => {
-    const parts = [house_no, locality].filter(p => p && p.toLowerCase() !== 'null');
-    return parts.length > 0 ? parts.map(toTitleCase).join(', ') : '-';
-  };
-
-  const getPaymentStatus = (cust) => {
-    const today = new Date(); today.setHours(0,0,0,0);
-    const in5Days = new Date(); in5Days.setDate(today.getDate() + 5);
-    
-    const balance = parseFloat(cust.balance) || 0;
-    const nextDate = cust.next_billing_date ? new Date(cust.next_billing_date) : null;
-    
-    if (cust.status === 'Suspended') return { label: 'Suspended', cls: 'danger' };
-    if (cust.status === 'Inactive') return { label: 'Inactive', cls: 'muted' };
-    
-    if (nextDate && nextDate <= today) return { label: 'Expired', cls: 'danger' };
-    if (nextDate && nextDate <= in5Days && nextDate > today) return { label: 'Renewal Due Soon', cls: 'warning' };
-    
-    if (balance > 0) return { label: `Credit ₹${balance.toFixed(0)}`, cls: 'active' };
-    return { label: 'Active', cls: 'active' };
-  };
 
   // --- Actions ---
   const handleDelete = async (id) => {
