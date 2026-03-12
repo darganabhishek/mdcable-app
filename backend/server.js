@@ -65,18 +65,25 @@ app.get('/health', (req, res) => {
  */
 const fixSchema = async () => {
     try {
-        console.log('--- Checking database schema ---');
-        // List all columns to be 100% sure what we have
-        const [columns] = await sequelize.query("SHOW COLUMNS FROM Users");
-        const columnNames = columns.map(c => c.Field.toLowerCase());
-        console.log('Current columns in Users table:', columnNames.join(', '));
+        console.log('--- Checking database schema (Case-Insensitive) ---');
+        
+        // Find if any version of 'users' table exists
+        const [tables] = await sequelize.query("SHOW TABLES");
+        const allTables = tables.map(t => Object.values(t)[0].toLowerCase());
+        const tableName = allTables.includes('users') ? (tables.find(t => Object.values(t)[0].toLowerCase() === 'users') ? Object.values(tables.find(t => Object.values(t)[0].toLowerCase() === 'users'))[0] : 'Users') : 'Users';
+        
+        console.log(`Targeting table: ${tableName}`);
 
+        // Check columns in the detected table
+        const [columns] = await sequelize.query(`SHOW COLUMNS FROM \`${tableName}\``);
+        const columnNames = columns.map(c => c.Field.toLowerCase());
+        
         if (!columnNames.includes('username')) {
-            console.log('--- "username" column not found. Attempting to add it... ---');
-            await sequelize.query("ALTER TABLE Users ADD COLUMN username VARCHAR(255) UNIQUE AFTER name");
+            console.log(`--- "username" column not found in ${tableName}. Adding it... ---`);
+            await sequelize.query(`ALTER TABLE \`${tableName}\` ADD COLUMN username VARCHAR(255) UNIQUE AFTER name`);
             console.log('✅ "username" column added successfully.');
         } else {
-            console.log('✅ "username" column already exists.');
+            console.log(`✅ "username" column already exists in ${tableName}.`);
         }
     } catch (err) {
         if (err.message.includes('Duplicate column name')) {
