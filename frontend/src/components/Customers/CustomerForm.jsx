@@ -10,8 +10,8 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
     email: '',
     house_no: '',
     locality: '',
-    city: 'Kanpur',
-    pincode: '',
+    city: 'Delhi',
+    pincode: '110023',
     area: '',
     area_id: '',
     service_type: 'Cable',
@@ -19,7 +19,8 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
     internet_package_id: '',
     installation_date: new Date().toISOString().split('T')[0],
     status: 'Active',
-    discount: 0
+    discount: 0,
+    initial_payment: 0
   });
   const [packages, setPackages] = useState([]);
   const [areas, setAreas] = useState([]);
@@ -316,7 +317,7 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
                   <input type="number" name="discount" className="input-control" value={formData.discount} onChange={handleChange} placeholder="0" min="0" step="1" />
               </div>
             </div>
-            <div className="input-group full-width">
+            <div className="input-group">
               <label className="input-label">Customer Status</label>
               <div className="input-with-icon">
                    <i className="ri-shield-user-line"></i>
@@ -324,9 +325,19 @@ const CustomerForm = ({ customer, onClose, onSave }) => {
                     <option value="Active">Active / Working</option>
                     <option value="Inactive">Inactive / Expired</option>
                     <option value="Suspended">Suspended / Blocked</option>
+                    <option value="Expired">Expired / Due</option>
                   </select>
               </div>
             </div>
+            {!customer && (
+              <div className="input-group">
+                <label className="input-label">Initial Payment (₹)</label>
+                <div className="input-with-icon">
+                    <i className="ri-wallet-3-line"></i>
+                    <input type="number" name="initial_payment" className="input-control" value={formData.initial_payment || ''} onChange={handleChange} placeholder="0" min="0" step="1" />
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="price-estimation glass-panel" style={{ marginTop: '2rem', padding: '1.5rem', border: '1px solid var(--surface-border)', background: 'var(--primary-light)' }}>

@@ -13,6 +13,9 @@ const sanitizeUUID = (id) => {
 // @access  Private
 const getCustomers = async (req, res) => {
   try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const customers = await Customer.findAll({
       include: [
         { model: Area, as: 'assigned_area' },
@@ -20,7 +23,22 @@ const getCustomers = async (req, res) => {
       ],
       order: [['createdAt', 'DESC']]
     });
-    res.json(customers);
+
+    // Check and update status dynamically for the response
+    const updatedCustomers = await Promise.all(customers.map(async (c) => {
+      const raw = c.get({ clone: true });
+      if (raw.status === 'Active' && raw.next_billing_date && new Date(raw.next_billing_date) < today) {
+        raw.status = 'Expired';
+        // Persist to DB
+        await c.update({ status: 'Expired' });
+      } else if (raw.status === 'Expired' && raw.next_billing_date && new Date(raw.next_billing_date) >= today) {
+        raw.status = 'Active';
+        await c.update({ status: 'Active' });
+      }
+      return raw;
+    }));
+
+    res.json(updatedCustomers);
   } catch (error) {
     console.error('Error fetching customers:', error);
     res.status(500).json({ message: 'Server error' });
@@ -63,12 +81,36 @@ const createCustomer = async (req, res) => {
 
     const sanitizedEmail = (email && email.trim()) ? email.trim() : null;
     const sanitizedUsername = (username && username.trim()) ? username.trim() : null;
+    const initial_payment = parseFloat(req.body.initial_payment) || 0;
+
+    // Helper to calculate installation billing
+    const calculateInitialBilling = async (pkgId, instDate, payment, disc) => {
+      const pkg = pkgId ? await Package.findByPk(pkgId) : null;
+      const pkgPrice = pkg ? parseFloat(pkg.price) : 0;
+      const monthlyRate = Math.max(0, pkgPrice - (parseFloat(disc) || 0));
+      
+      let nextBilling = instDate ? new Date(instDate) : new Date();
+      let balance = payment;
+
+      if (monthlyRate > 0) {
+        const monthsCovered = Math.floor(payment / monthlyRate);
+        const remainingBalance = payment % monthlyRate;
+        
+        if (monthsCovered > 0) {
+          nextBilling.setMonth(nextBilling.getMonth() + monthsCovered);
+        }
+        balance = remainingBalance;
+      }
+      return { nextBilling, balance };
+    };
     
     // Function to generate a random customer ID
     const generateId = () => `MD-${Math.floor(1000 + Math.random() * 9000)}-${Date.now().toString().slice(-4)}`;
 
     if (service_type === 'Both') {
-      // Create two records
+      const cableBilling = await calculateInitialBilling(cable_package_id, installation_date, initial_payment / 2, parseFloat(discount) / 2);
+      const internetBilling = await calculateInitialBilling(internet_package_id, installation_date, initial_payment / 2, parseFloat(discount) / 2);
+
       const cableCustomer = await Customer.create({
         customer_id: generateId(),
         username: sanitizedUsername, 
@@ -79,7 +121,8 @@ const createCustomer = async (req, res) => {
         installation_date, status,
         service_type: 'Cable',
         package_id: sanitizeUUID(cable_package_id),
-        next_billing_date: installation_date ? new Date(new Date(installation_date).setMonth(new Date(installation_date).getMonth() + 1)) : null,
+        next_billing_date: cableBilling.nextBilling,
+        balance: cableBilling.balance,
         discount: parseFloat(discount) / 2 || 0 
       });
 
@@ -93,12 +136,20 @@ const createCustomer = async (req, res) => {
         installation_date, status,
         service_type: 'Internet',
         package_id: sanitizeUUID(internet_package_id),
-        next_billing_date: installation_date ? new Date(new Date(installation_date).setMonth(new Date(installation_date).getMonth() + 1)) : null,
+        next_billing_date: internetBilling.nextBilling,
+        balance: internetBilling.balance,
         discount: parseFloat(discount) / 2 || 0
       });
 
       return res.status(201).json({ cable: cableCustomer, internet: internetCustomer });
     }
+
+    const { nextBilling, balance } = await calculateInitialBilling(
+      service_type === 'Cable' ? cable_package_id : internet_package_id,
+      installation_date,
+      initial_payment,
+      discount
+    );
 
     // Single record creation
     const customer = await Customer.create({
@@ -112,7 +163,8 @@ const createCustomer = async (req, res) => {
       installation_date, status,
       service_type,
       package_id: sanitizeUUID(service_type === 'Cable' ? cable_package_id : internet_package_id),
-      next_billing_date: installation_date ? new Date(new Date(installation_date).setMonth(new Date(installation_date).getMonth() + 1)) : null,
+      next_billing_date: nextBilling,
+      balance: balance,
       discount: discount || 0
     });
 

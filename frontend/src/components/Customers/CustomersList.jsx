@@ -9,7 +9,7 @@ import { exportQRsToPDF } from '../../utils/qrExportUtils';
 import { generateInvoice, generateReceipt, bulkGenerateDocuments } from '../../utils/documentExportUtils';
 import './Customers.css';
 
-const STATUS_TABS = ['All', 'Active', 'Inactive', 'Suspended', 'Renewals Due'];
+const STATUS_TABS = ['All', 'Active', 'Expired', 'Inactive', 'Suspended', 'Renewals Due'];
 
 const ALL_COLUMNS = [
   { key: 'customer_id', label: 'Customer ID', default: true },
@@ -161,11 +161,19 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
 
   const getPaymentStatus = (cust) => {
     const today = new Date(); today.setHours(0,0,0,0);
+    const in5Days = new Date(); in5Days.setDate(today.getDate() + 5);
+    
     const balance = parseFloat(cust.balance) || 0;
     const nextDate = cust.next_billing_date ? new Date(cust.next_billing_date) : null;
+    
+    if (cust.status === 'Suspended') return { label: 'Suspended', cls: 'danger' };
+    if (cust.status === 'Inactive') return { label: 'Inactive', cls: 'muted' };
+    
+    if (nextDate && nextDate <= today) return { label: 'Expired', cls: 'danger' };
+    if (nextDate && nextDate <= in5Days && nextDate > today) return { label: 'Renewal Due Soon', cls: 'warning' };
+    
     if (balance > 0) return { label: `Credit ₹${balance.toFixed(0)}`, cls: 'active' };
-    if (nextDate && nextDate <= today) return { label: 'Renewal Due', cls: 'warning' };
-    return { label: 'Paid', cls: 'active' };
+    return { label: 'Active', cls: 'active' };
   };
 
   // --- Actions ---
@@ -461,6 +469,9 @@ const CustomersList = ({ initialAction, onActionComplete }) => {
                       color: parseFloat(cust.balance) >= 0 ? 'var(--success)' : 'var(--danger)' 
                     }}>
                       ₹{parseFloat(cust.balance || 0).toFixed(0)}
+                      {getPaymentStatus(cust).label === 'Renewal Due Soon' && (
+                        <span className="renewal-badge-inline" style={{ fontSize:'0.7rem', display:'block', color:'var(--warning)' }}>Due Soon</span>
+                      )}
                     </td>
                   )}
                   {visibleCols.service && (

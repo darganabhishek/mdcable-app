@@ -71,26 +71,44 @@ const createPayment = async (req, res) => {
       const discount = parseFloat(customer.discount) || 0;
       const monthlyRate = Math.max(0, pkgPrice - discount);
 
-      // Balance convention: positive balance = credit the customer has paid ahead.
-      // Add incoming payment to existing balance pool.
-      let newBalance = parseFloat(customer.balance || 0) + numericAmount;
+      // 1. Calculate Total Payment (New + Existing Balance)
+      const previousBalance = parseFloat(customer.balance || 0);
+      const totalAvailable = numericAmount + previousBalance;
 
-      // Exhaustion loop — advance next_billing_date for every full month of credit
       if (monthlyRate > 0) {
-        let billingDate = customer.next_billing_date
-          ? new Date(customer.next_billing_date)
-          : new Date();
+        // 2. MonthsCovered = floor(TotalPayment / MonthlyPackagePrice)
+        const monthsCovered = Math.floor(totalAvailable / monthlyRate);
+        
+        // 3. RemainingBalance = TotalPayment % MonthlyPackagePrice
+        const remainingBalance = totalAvailable % monthlyRate;
 
-        while (newBalance >= monthlyRate) {
-          newBalance -= monthlyRate;
-          billingDate = new Date(billingDate);
-          billingDate.setMonth(billingDate.getMonth() + 1);
+        // 4. NextRenewalDate = CurrentNextRenewalDate + MonthsCovered months
+        // If current date is in the past, use today as base? Or use existing renewal date?
+        // Requirement says: "Use the current NextRenewalDate as the base billing date."
+        let baseDate = customer.next_billing_date ? new Date(customer.next_billing_date) : new Date();
+        
+        // Ensure we don't start from an expired date if they are paying now? 
+        // Actually, if they are paying for 1 month but were expired for 2 months, 
+        // the logic typically adds to the "due" date.
+        
+        if (monthsCovered > 0) {
+          baseDate.setMonth(baseDate.getMonth() + monthsCovered);
         }
-
-        customer.next_billing_date = billingDate;
+        
+        customer.next_billing_date = baseDate;
+        customer.balance = remainingBalance.toFixed(2);
+      } else {
+        // If no package price, just add to balance
+        customer.balance = totalAvailable.toFixed(2);
       }
 
-      customer.balance = newBalance.toFixed(2);
+      // Update status if they paid enough to be active
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (new Date(customer.next_billing_date) >= today && customer.status === 'Expired') {
+        customer.status = 'Active';
+      }
+
       await customer.save();
     }
 

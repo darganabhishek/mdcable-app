@@ -52,7 +52,8 @@ const Customer = sequelize.define('Customer', {
   },
   pincode: {
     type: DataTypes.STRING(6),
-    allowNull: true
+    allowNull: true,
+    defaultValue: '110023'
   },
   area_id: {
     type: DataTypes.UUID,
@@ -75,7 +76,7 @@ const Customer = sequelize.define('Customer', {
     allowNull: true
   },
   status: {
-    type: DataTypes.ENUM('Active', 'Inactive', 'Suspended'),
+    type: DataTypes.ENUM('Active', 'Inactive', 'Suspended', 'Expired'),
     defaultValue: 'Active',
   },
   balance: {
