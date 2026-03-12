@@ -14,9 +14,34 @@ const sanitizeUUID = (id) => {
 // @access  Private
 const getCustomers = async (req, res) => {
   try {
+    const { Op } = require('sequelize');
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split('T')[0];
 
+    // 1. Efficiently Update Expired Status in Bulk (Single Query)
+    await Customer.update(
+      { status: 'Expired' },
+      { 
+        where: { 
+          status: 'Active', 
+          next_billing_date: { [Op.lt]: todayStr } 
+        } 
+      }
+    ).catch(err => console.error('Bulk Expire failed:', err));
+
+    // 2. Efficiently Reset to Active if payment moved date forward (Single Query)
+    await Customer.update(
+      { status: 'Active' },
+      { 
+        where: { 
+          status: 'Expired', 
+          next_billing_date: { [Op.gte]: todayStr } 
+        } 
+      }
+    ).catch(err => console.error('Bulk Reactivate failed:', err));
+
+    // 3. Simple Fetch
     const customers = await Customer.findAll({
       include: [
         { model: Area, as: 'assigned_area' },
@@ -25,29 +50,7 @@ const getCustomers = async (req, res) => {
       order: [['createdAt', 'DESC']]
     });
 
-    // Check and update status dynamically - ONLY update if different to save performance
-    const updatedCustomers = await Promise.all(customers.map(async (c) => {
-      let statusChanged = false;
-      let currentStatus = c.status;
-
-      if (currentStatus === 'Active' && c.next_billing_date && new Date(c.next_billing_date) < today) {
-        currentStatus = 'Expired';
-        statusChanged = true;
-      } else if (currentStatus === 'Expired' && c.next_billing_date && new Date(c.next_billing_date) >= today) {
-        currentStatus = 'Active';
-        statusChanged = true;
-      }
-
-      const raw = c.get({ plain: true });
-      if (statusChanged) {
-        raw.status = currentStatus;
-        // Run update in background to not block the response too much
-        c.update({ status: currentStatus }).catch(err => console.error('Status persist failed:', err));
-      }
-      return raw;
-    }));
-
-    res.json(updatedCustomers);
+    res.json(customers);
   } catch (error) {
     console.error('Error fetching customers:', error);
     res.status(500).json({ message: 'Server error' });
