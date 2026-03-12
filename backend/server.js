@@ -18,11 +18,11 @@ const seedPermissions = require('./seedPermissions');
 
 const app = express();
 
-console.log('M.D. Cable Networks API - Deployment Version: 2026-03-11-0310');
+console.log('M.D. Cable Networks API - Deployment Version: 2026-03-13-LOGINFIX');
 
-// CORS Configuration
+// CORS Configuration - More permissive for APK/Mobile compatibility
 const corsOptions = {
-  origin: ['https://mdcable-app.vercel.app', 'http://localhost:5173', 'http://localhost:3000'],
+  origin: true, // Allow all origins for better mobile app support
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,
@@ -30,6 +30,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Handle all preflight requests
 app.use(express.json());
 
 // Routes will be mounted here
@@ -53,7 +54,7 @@ app.get('/', (req, res) => {
 app.get('/health', (req, res) => {
     res.json({ 
         status: 'UP', 
-        version: '2026-03-11-0330-STABLE',
+        version: '2026-03-13-LOGINFIX-STABLE',
         timestamp: new Date().toISOString()
     });
 });

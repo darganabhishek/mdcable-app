@@ -17,7 +17,13 @@ const Login = () => {
       await login(username, password);
       navigate('/dashboard');
     } catch (err) {
-      setError('Invalid email or password');
+      if (err.response && err.response.data && err.response.data.message) {
+        setError(err.response.data.message);
+      } else if (err.request) {
+        setError('Cannot connect to server. Check your internet.');
+      } else {
+        setError('An unexpected error occurred');
+      }
     }
   };
 
